@@ -9,4 +9,4 @@ assignees: L-M-Sherlock
 
 **Data file**
 
-You can find `SM16-v-SM17.csv` in `sm18/systems/{collection_name}/stats` folder. The private content is stored in column `Title`. I recommend removing it before uploading to GitHub and sharing. Then you can drag and drop the file here.
+You can find `SM16-v-SM17.csv` in `sm18/systems/{collection_name}/stats` folder. The private content is stored in column `Title`. I recommend removing it before uploading to GitHub and sharing. Don't forget to make a copy before you delete it. Then you can drag and drop the file here.
