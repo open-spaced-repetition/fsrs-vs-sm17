@@ -12,6 +12,20 @@ Due to the difference between the workflow of SuperMemo and Anki, it is not easy
 - To ensure FSRS has the same information as SM-17, I implement an [online learning](https://en.wikipedia.org/wiki/Online_machine_learning) version of FSRS, where FSRS has zero knowledge of the future reviews as SM-17 does.
 - The results are based on the data from a small group of people. It may be different from the result of other SuperMemo users.
 
+## Result
+
+Total users: 2
+
+Total repetitions: 72,944
+
+| Algorithm | Log Loss | RMSE | Universal Metric |
+| --- | --- | --- | --- |
+| FSRS |0.2968 | 0.2895 | 0.0278 |
+| SM-17 | 0.3601 | 0.3055 | 0.0451 |
+| SM-16 | 0.3521 | 0.3153 | 0.0574 |
+
+Smaller is better.
+
 ## Share your data
 
 If you would like to support this project, please consider sharing your data with us. The shared data will be stored in [./dataset/](./dataset/) folder. 
