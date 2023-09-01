@@ -195,6 +195,9 @@ def cross_comparsion(revlogs, algoA, algoB):
 if __name__ == "__main__":
     for file in pathlib.Path('dataset').iterdir():
         if file.is_file() and file.suffix == '.csv':
+            if file.stem in map(lambda x: x.stem, pathlib.Path('result').iterdir()):
+                print(f'{file.stem} already exists, skip')
+                continue
             try:
                 _, user = file.stem.split('_')
             except:
