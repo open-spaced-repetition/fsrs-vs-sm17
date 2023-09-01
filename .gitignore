@@ -1,4 +1,2 @@
-*.csv
-*.tsv
 .idea/*
 .DS_Store
