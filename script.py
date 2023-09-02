@@ -35,7 +35,8 @@ def data_preprocessing(csv_file_path):
 
     df['Date'] = df['Date'].apply(convert_to_datetime)
     df.dropna(subset=['Date'], inplace=True)
-    df = df[df['Success'].isin([0, 1])].copy()
+    df = df[df['Success'].isin([0, 1]) & df['Grade'].isin([0, 1, 2, 3, 4, 5])].copy()
+    df = df[(df['R (SM16)'] <= 1) & (df['R (SM17)'] <= 1) & (df['R (SM17)(exp)'] <= 1)].copy()
     dataset = df[['Date', 'Element No', 'Used interval',
                   'R (SM16)', 'R (SM17)', 'R (SM17)(exp)', 'Grade', 'Success']].sort_values(by=['Element No', 'Date'])
     dataset.rename(columns={'Element No': 'card_id',
@@ -55,7 +56,7 @@ def data_preprocessing(csv_file_path):
     dataset['t_history'] = [','.join(map(str, item[:-1]))
                             for sublist in t_history for item in sublist]
     r_history = dataset.groupby('card_id', group_keys=False)[
-        'review_rating'].apply(lambda x: cum_concat([[i] for i in x]))
+        'review_rating'].apply(lambda x: cum_concat([[int(i)] for i in x]))
     dataset['r_history'] = [','.join(map(str, item[:-1]))
                             for sublist in r_history for item in sublist]
     dataset = dataset[(dataset['i'] > 1) & (dataset['delta_t'] > 0) & (
@@ -66,6 +67,7 @@ def data_preprocessing(csv_file_path):
 def train(revlogs):
     revlogs = revlogs[(revlogs['i'] > 1) & (revlogs['delta_t'] > 0) & (
         revlogs['t_history'].str.count(',0') == 0)].copy()
+    revlogs.to_csv('revlogs.csv', index=False)
     revlogs['tensor'] = revlogs.progress_apply(lambda x: lineToTensor(
         list(zip([x['t_history']], [x['r_history']]))[0]), axis=1)
     revlogs.sort_values(by=['review_date'], inplace=True)
