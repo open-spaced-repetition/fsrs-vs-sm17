@@ -14,9 +14,9 @@ Due to the difference between the workflow of SuperMemo and Anki, it is not easy
 
 ## Result
 
-Total users: 6
+Total users: 7
 
-Total repetitions: 92,499
+Total repetitions: 113,889
 
 | Algorithm | Log Loss | RMSE | Universal Metric |
 | --- | --- | --- | --- |
