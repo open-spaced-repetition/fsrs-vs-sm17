@@ -32,6 +32,7 @@ if __name__ == "__main__":
             SM16.append(result["SM16"])
             sizes.append(result["size"])
 
+    print(f"Total number of users: {len(sizes)}")
     sizes = np.array(sizes)
     print(f"Total size: {sizes.sum()}")
     for metric in ("LogLoss", "RMSE",  "UniversalMetric"):

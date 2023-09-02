@@ -27,11 +27,15 @@ def data_preprocessing(csv_file_path):
         except ValueError:
             try:
                 return datetime.strptime(date_str, '%m月 %d %Y %H:%M:%S')
-            except ValueError as e:
-                return pd.NaT
+            except ValueError:
+                try:
+                    return datetime.strptime(date_str, '%d/%m/%Y %H:%M')
+                except ValueError:
+                    return pd.NaT
 
     df['Date'] = df['Date'].apply(convert_to_datetime)
     df.dropna(subset=['Date'], inplace=True)
+    df = df[df['Success'].isin([0, 1])].copy()
     dataset = df[['Date', 'Element No', 'Used interval',
                   'R (SM16)', 'R (SM17)', 'R (SM17)(exp)', 'Grade', 'Success']].sort_values(by=['Element No', 'Date'])
     dataset.rename(columns={'Element No': 'card_id',
@@ -205,12 +209,18 @@ if __name__ == "__main__":
             revlogs = data_preprocessing(file)
             revlogs = train(revlogs)
             result = evaluate(revlogs)
-            sm17_by_sm16, sm16_by_sm17 = cross_comparsion(revlogs, 'SM16', 'SM17(exp)')
-            sm17_by_fsrs, fsrs_by_sm17 = cross_comparsion(revlogs, 'FSRS', 'SM17(exp)')
-            fsrs_by_sm16, sm16_by_fsrs = cross_comparsion(revlogs, 'SM16', 'FSRS')
-            result['FSRS']['UniversalMetric'] = (fsrs_by_sm17 + fsrs_by_sm16) / 2
-            result['SM16']['UniversalMetric'] = (sm16_by_sm17 + sm16_by_fsrs) / 2
-            result['SM17']['UniversalMetric'] = (sm17_by_sm16 + sm17_by_fsrs) / 2
+            sm17_by_sm16, sm16_by_sm17 = cross_comparsion(
+                revlogs, 'SM16', 'SM17(exp)')
+            sm17_by_fsrs, fsrs_by_sm17 = cross_comparsion(
+                revlogs, 'FSRS', 'SM17(exp)')
+            fsrs_by_sm16, sm16_by_fsrs = cross_comparsion(
+                revlogs, 'SM16', 'FSRS')
+            result['FSRS']['UniversalMetric'] = (
+                fsrs_by_sm17 + fsrs_by_sm16) / 2
+            result['SM16']['UniversalMetric'] = (
+                sm16_by_sm17 + sm16_by_fsrs) / 2
+            result['SM17']['UniversalMetric'] = (
+                sm17_by_sm16 + sm17_by_fsrs) / 2
             result['user'] = user
             result['size'] = revlogs.shape[0]
             # save as json
