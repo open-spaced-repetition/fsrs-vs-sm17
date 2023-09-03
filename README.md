@@ -14,15 +14,15 @@ Due to the difference between the workflow of SuperMemo and Anki, it is not easy
 
 ## Result
 
-Total users: 7
+Total users: 8
 
-Total repetitions: 113,889
+Total repetitions: 122,745
 
 | Algorithm | Log Loss | RMSE | Universal Metric |
 | --- | --- | --- | --- |
-| FSRS | 0.3368 | 0.3115 | 0.0359 |
-| SM-17 | 0.3926 | 0.3231 | 0.0475 |
-| SM-16 | 0.3780 | 0.3296 | 0.0524 |
+| FSRS | 0.3518 | 0.3194 | 0.0384 |
+| SM-17 | 0.4136 | 0.3314 | 0.0514 |
+| SM-16 | 0.3989 | 0.3386 | 0.0557 |
 
 Smaller is better.
 

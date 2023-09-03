@@ -37,6 +37,7 @@ def data_preprocessing(csv_file_path):
     df.dropna(subset=['Date'], inplace=True)
     df = df[df['Success'].isin([0, 1]) & df['Grade'].isin([0, 1, 2, 3, 4, 5])].copy()
     df = df[(df['R (SM16)'] <= 1) & (df['R (SM17)'] <= 1) & (df['R (SM17)(exp)'] <= 1)].copy()
+    df['R (SM17)(exp)'] = df['R (SM17)(exp)'].map(lambda x: np.clip(x, 0.001, 0.999))
     dataset = df[['Date', 'Element No', 'Used interval',
                   'R (SM16)', 'R (SM17)', 'R (SM17)(exp)', 'Grade', 'Success']].sort_values(by=['Element No', 'Date'])
     dataset.rename(columns={'Element No': 'card_id',
@@ -67,7 +68,6 @@ def data_preprocessing(csv_file_path):
 def train(revlogs):
     revlogs = revlogs[(revlogs['i'] > 1) & (revlogs['delta_t'] > 0) & (
         revlogs['t_history'].str.count(',0') == 0)].copy()
-    revlogs.to_csv('revlogs.csv', index=False)
     revlogs['tensor'] = revlogs.progress_apply(lambda x: lineToTensor(
         list(zip([x['t_history']], [x['r_history']]))[0]), axis=1)
     revlogs.sort_values(by=['review_date'], inplace=True)
