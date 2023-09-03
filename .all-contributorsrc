@@ -51,6 +51,15 @@
       "contributions": [
         "data"
       ]
+    },
+    {
+      "login": "WinstonWantsAUserName",
+      "name": "Winston",
+      "avatar_url": "https://avatars.githubusercontent.com/u/99696589?v=4",
+      "profile": "https://github.com/WinstonWantsAUserName",
+      "contributions": [
+        "data"
+      ]
     }
   ],
   "contributorsPerLine": 7,
