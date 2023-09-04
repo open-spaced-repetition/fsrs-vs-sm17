@@ -69,6 +69,15 @@
       "contributions": [
         "data"
       ]
+    },
+    {
+      "login": "NoHeartPen",
+      "name": "John Qing",
+      "avatar_url": "https://avatars.githubusercontent.com/u/79316356?v=4",
+      "profile": "https://noheartpen.github.io/",
+      "contributions": [
+        "data"
+      ]
     }
   ],
   "contributorsPerLine": 7,
