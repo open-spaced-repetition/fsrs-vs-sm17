@@ -35,7 +35,7 @@ if __name__ == "__main__":
     print(f"Total number of users: {len(sizes)}")
     sizes = np.array(sizes)
     print(f"Total size: {sizes.sum()}")
-    for metric in ("LogLoss", "RMSE",  "UniversalMetric"):
+    for metric in ("LogLoss", "RMSE",  "UniversalMetric", "RMSE(bins)"):
         print(f"metric: {metric}")
 
         FSRS_metrics = np.array([item[metric] for item in FSRS])
