@@ -35,9 +35,12 @@ def data_preprocessing(csv_file_path):
 
     df['Date'] = df['Date'].apply(convert_to_datetime)
     df.dropna(subset=['Date'], inplace=True)
-    df = df[df['Success'].isin([0, 1]) & df['Grade'].isin([0, 1, 2, 3, 4, 5])].copy()
-    df = df[(df['R (SM16)'] <= 1) & (df['R (SM17)'] <= 1) & (df['R (SM17)(exp)'] <= 1)].copy()
-    df['R (SM17)(exp)'] = df['R (SM17)(exp)'].map(lambda x: np.clip(x, 0.001, 0.999))
+    df = df[df['Success'].isin([0, 1]) & df['Grade'].isin([
+        0, 1, 2, 3, 4, 5])].copy()
+    df = df[(df['R (SM16)'] <= 1) & (df['R (SM17)'] <= 1)
+            & (df['R (SM17)(exp)'] <= 1)].copy()
+    df['R (SM17)(exp)'] = df['R (SM17)(exp)'].map(
+        lambda x: np.clip(x, 0.001, 0.999))
     dataset = df[['Date', 'Element No', 'Used interval',
                   'R (SM16)', 'R (SM17)', 'R (SM17)(exp)', 'Grade', 'Success']].sort_values(by=['Element No', 'Date'])
     dataset.rename(columns={'Element No': 'card_id',
@@ -156,12 +159,19 @@ def evaluate(revlogs):
 
 
 def cross_comparsion(revlogs, algoA, algoB):
-    cross_comparison = revlogs[[f'R ({algoA})', f'R ({algoB})', 'y']].copy()
+    if algoA != algoB:
+        cross_comparison = revlogs[[f'R ({algoA})', f'R ({algoB})', 'y']].copy()
+        bin_algo = (algoA, algoB,)
+        pair_algo = [(algoA, algoB), (algoB, algoA)]
+    else:
+        cross_comparison = revlogs[[f'R ({algoA})', 'y']].copy()
+        bin_algo = (algoA,)
+        pair_algo = [(algoA, algoA)]
 
     def get_bin(x, bins=20):
-        return (np.log(np.exp(np.log(bins) * x).round()) / np.log(bins)).round(3)
+        return (np.log(np.minimum(np.floor(np.exp(np.log(bins+1) * x) - 1), bins-1) + 1) / np.log(bins)).round(3)
 
-    for algo in (algoA, algoB):
+    for algo in bin_algo:
         cross_comparison[f'{algo}_B-W'] = cross_comparison[f'R ({algo})'] - \
             cross_comparison['y']
         cross_comparison[f'{algo}_bin'] = cross_comparison[f'R ({algo})'].map(
@@ -173,7 +183,7 @@ def cross_comparsion(revlogs, algoA, algoB):
 
     universal_metric_list = []
 
-    for algoA, algoB in [(algoA, algoB), (algoB, algoA)]:
+    for algoA, algoB in pair_algo:
         cross_comparison_group = cross_comparison.groupby(by=f'{algoA}_bin').agg(
             {'y': ['mean'], f'{algoB}_B-W': ['mean'], f'R ({algoB})': ['mean', 'count']})
         universal_metric = mean_squared_error(cross_comparison_group['y', 'mean'], cross_comparison_group[
@@ -193,13 +203,14 @@ def cross_comparsion(revlogs, algoA, algoB):
     ax.set_ylabel('B-W Metric')
     ax.set_xlim(0, 1)
     ax.set_xticks(np.arange(0, 1.1, 0.1))
-
     fig.show()
+
     return universal_metric_list
 
 
 if __name__ == "__main__":
     for file in pathlib.Path('dataset').iterdir():
+        plt.close('all')
         if file.is_file() and file.suffix == '.csv':
             if file.stem in map(lambda x: x.stem, pathlib.Path('result').iterdir()):
                 print(f'{file.stem} already exists, skip')
@@ -223,6 +234,16 @@ if __name__ == "__main__":
                 sm16_by_sm17 + sm16_by_fsrs) / 2
             result['SM17']['UniversalMetric'] = (
                 sm17_by_sm16 + sm17_by_fsrs) / 2
+            sm17_rmse_bin = cross_comparsion(
+                revlogs, 'SM17(exp)', 'SM17(exp)')[0]
+            sm16_rmse_bin = cross_comparsion(
+                revlogs, 'SM16', 'SM16')[0]
+            fsrs_rmse_bin = cross_comparsion(
+                revlogs, 'FSRS', 'FSRS')[0]
+            result['SM17']['RMSE(bins)'] = sm17_rmse_bin
+            result['SM16']['RMSE(bins)'] = sm16_rmse_bin
+            result['FSRS']['RMSE(bins)'] = fsrs_rmse_bin
+
             result['user'] = user
             result['size'] = revlogs.shape[0]
             # save as json

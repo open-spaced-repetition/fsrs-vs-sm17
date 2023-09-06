@@ -2,17 +2,20 @@
     "FSRS": {
         "RMSE": 0.3442228235170774,
         "LogLoss": 0.38688645087024576,
-        "UniversalMetric": 0.03196473400209422
+        "UniversalMetric": 0.028618878415812857,
+        "RMSE(bins)": 0.04196903160756582
     },
     "SM16": {
         "RMSE": 0.36537011587286544,
         "LogLoss": 0.4397779356535619,
-        "UniversalMetric": 0.06720870342957605
+        "UniversalMetric": 0.06819925897200357,
+        "RMSE(bins)": 0.06488822568017967
     },
     "SM17": {
         "RMSE": 0.36294914057971817,
         "LogLoss": 0.44297188446976504,
-        "UniversalMetric": 0.06709767613589943
+        "UniversalMetric": 0.06493932782633784,
+        "RMSE(bins)": 0.06247563391244175
     },
     "user": " WolfSlytherin",
     "size": 8163

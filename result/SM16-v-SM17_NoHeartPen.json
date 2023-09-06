@@ -2,17 +2,20 @@
     "FSRS": {
         "RMSE": 0.38297828564867886,
         "LogLoss": 0.46986058186169627,
-        "UniversalMetric": 0.06920371108342595
+        "UniversalMetric": 0.07009905498985114,
+        "RMSE(bins)": 0.10840530664611463
     },
     "SM16": {
         "RMSE": 0.4029675652875937,
         "LogLoss": 0.5114346200783854,
-        "UniversalMetric": 0.09295742373517762
+        "UniversalMetric": 0.09590038613107663,
+        "RMSE(bins)": 0.16090640263520395
     },
     "SM17": {
         "RMSE": 0.3939140872125388,
         "LogLoss": 0.522325215873826,
-        "UniversalMetric": 0.06655851967363557
+        "UniversalMetric": 0.07274358112223897,
+        "RMSE(bins)": 0.1469624084870002
     },
     "user": "NoHeartPen",
     "size": 1493

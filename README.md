@@ -18,11 +18,11 @@ Total users: 14
 
 Total repetitions: 183,751
 
-| Algorithm | Log Loss | RMSE | Universal Metric |
-| --- | --- | --- | --- |
-| FSRS | 0.3726 | 0.3291 | 0.0462 |
-| SM-17 | 0.4136 | 0.3414 | 0.0576 |
-| SM-16 | 0.4210 | 0.3484 | 0.0638 |
+| Algorithm | Log Loss | RMSE | Universal Metric | RMSE(bins) |
+| --- | --- | --- | --- | --- |
+| FSRS | 0.3726 | 0.3291 | 0.0459 | 0.0704 |
+| SM-17 | 0.4136 | 0.3414 | 0.0572 | 0.0986 |
+| SM-16 | 0.4210 | 0.3484 | 0.0640 | 0.1186 |
 
 Smaller is better.
 
