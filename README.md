@@ -18,11 +18,23 @@ Total users: 14
 
 Total repetitions: 183,751
 
+### Weighted by number of repetitions
+
 | Algorithm | Log Loss | RMSE | Universal Metric | RMSE(bins) |
 | --- | --- | --- | --- | --- |
 | FSRS | 0.3726 | 0.3291 | 0.0459 | 0.0704 |
 | SM-17 | 0.4136 | 0.3414 | 0.0572 | 0.0986 |
 | SM-16 | 0.4210 | 0.3484 | 0.0640 | 0.1186 |
+
+Smaller is better.
+
+### Weighted by ln(number of repetitions)
+
+| Algorithm | Log Loss | RMSE | Universal Metric | RMSE(bins) |
+| --- | --- | --- | --- | --- |
+| FSRS | 0.4165 | 0.3515 | 0.0653 | 0.0974 |
+| SM-17 | 0.4461 | 0.3547 | 0.0673 | 0.1091 |
+| SM-16 | 0.4514 | 0.3613 | 0.0768 | 0.1232 |
 
 Smaller is better.
 
