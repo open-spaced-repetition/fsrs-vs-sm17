@@ -158,13 +158,13 @@ def evaluate(revlogs):
     }
 
 
-def cross_comparsion(revlogs, algoA, algoB):
+def cross_comparison(revlogs, algoA, algoB):
     if algoA != algoB:
-        cross_comparison = revlogs[[f'R ({algoA})', f'R ({algoB})', 'y']].copy()
+        cross_comparison_record = revlogs[[f'R ({algoA})', f'R ({algoB})', 'y']].copy()
         bin_algo = (algoA, algoB,)
         pair_algo = [(algoA, algoB), (algoB, algoA)]
     else:
-        cross_comparison = revlogs[[f'R ({algoA})', 'y']].copy()
+        cross_comparison_record = revlogs[[f'R ({algoA})', 'y']].copy()
         bin_algo = (algoA,)
         pair_algo = [(algoA, algoA)]
 
@@ -172,9 +172,9 @@ def cross_comparsion(revlogs, algoA, algoB):
         return (np.log(np.minimum(np.floor(np.exp(np.log(bins+1) * x) - 1), bins-1) + 1) / np.log(bins)).round(3)
 
     for algo in bin_algo:
-        cross_comparison[f'{algo}_B-W'] = cross_comparison[f'R ({algo})'] - \
-            cross_comparison['y']
-        cross_comparison[f'{algo}_bin'] = cross_comparison[f'R ({algo})'].map(
+        cross_comparison_record[f'{algo}_B-W'] = cross_comparison_record[f'R ({algo})'] - \
+            cross_comparison_record['y']
+        cross_comparison_record[f'{algo}_bin'] = cross_comparison_record[f'R ({algo})'].map(
             get_bin)
 
     fig = plt.figure(figsize=(6, 6))
@@ -184,7 +184,7 @@ def cross_comparsion(revlogs, algoA, algoB):
     universal_metric_list = []
 
     for algoA, algoB in pair_algo:
-        cross_comparison_group = cross_comparison.groupby(by=f'{algoA}_bin').agg(
+        cross_comparison_group = cross_comparison_record.groupby(by=f'{algoA}_bin').agg(
             {'y': ['mean'], f'{algoB}_B-W': ['mean'], f'R ({algoB})': ['mean', 'count']})
         universal_metric = mean_squared_error(cross_comparison_group['y', 'mean'], cross_comparison_group[
                                               f'R ({algoB})', 'mean'], sample_weight=cross_comparison_group[f'R ({algoB})', 'count'], squared=False)
@@ -222,11 +222,11 @@ if __name__ == "__main__":
             revlogs = data_preprocessing(file)
             revlogs = train(revlogs)
             result = evaluate(revlogs)
-            sm17_by_sm16, sm16_by_sm17 = cross_comparsion(
+            sm17_by_sm16, sm16_by_sm17 = cross_comparison(
                 revlogs, 'SM16', 'SM17(exp)')
-            sm17_by_fsrs, fsrs_by_sm17 = cross_comparsion(
+            sm17_by_fsrs, fsrs_by_sm17 = cross_comparison(
                 revlogs, 'FSRS', 'SM17(exp)')
-            fsrs_by_sm16, sm16_by_fsrs = cross_comparsion(
+            fsrs_by_sm16, sm16_by_fsrs = cross_comparison(
                 revlogs, 'SM16', 'FSRS')
             result['FSRS']['UniversalMetric'] = (
                 fsrs_by_sm17 + fsrs_by_sm16) / 2
@@ -234,11 +234,11 @@ if __name__ == "__main__":
                 sm16_by_sm17 + sm16_by_fsrs) / 2
             result['SM17']['UniversalMetric'] = (
                 sm17_by_sm16 + sm17_by_fsrs) / 2
-            sm17_rmse_bin = cross_comparsion(
+            sm17_rmse_bin = cross_comparison(
                 revlogs, 'SM17(exp)', 'SM17(exp)')[0]
-            sm16_rmse_bin = cross_comparsion(
+            sm16_rmse_bin = cross_comparison(
                 revlogs, 'SM16', 'SM16')[0]
-            fsrs_rmse_bin = cross_comparsion(
+            fsrs_rmse_bin = cross_comparison(
                 revlogs, 'FSRS', 'FSRS')[0]
             result['SM17']['RMSE(bins)'] = sm17_rmse_bin
             result['SM16']['RMSE(bins)'] = sm16_rmse_bin

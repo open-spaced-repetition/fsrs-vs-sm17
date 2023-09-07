@@ -3,7 +3,7 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-12-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-It is a simple comparsion between FSRS and SM-17. [FSRS-v-SM16-v-SM17.ipynb](./FSRS-v-SM16-v-SM17.ipynb) is the notebook for the comparsion.
+It is a simple comparison between FSRS and SM-17. [FSRS-v-SM16-v-SM17.ipynb](./FSRS-v-SM16-v-SM17.ipynb) is the notebook for the comparison.
 
 Due to the difference between the workflow of SuperMemo and Anki, it is not easy to compare the two algorithms. I tried to make the comparison as fair as possible. Here is some notes:
 - The first interval in SuperMemo is the duration between creating the card and the first review. In Anki, the first interval is the duration between the first review and the second review. So I removed the first record of each card in SM-17 data.
