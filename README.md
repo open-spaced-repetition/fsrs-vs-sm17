@@ -26,7 +26,7 @@ Total repetitions: 194,281
 | SM-17 | 0.4137 | 0.3416 | 0.0565 | 0.0963 |
 | SM-16 | 0.4211 | 0.3486 | 0.0631 | 0.1170 |
 
-Smaller is better.
+Smaller is better. If you are unsure what number to look at, look at RMSE (bins). That value can be interpreted as "the average difference between the predicted probability of recalling a card and the measured probability". For example, if MSe (bins) = 0.05, it means that that algorithm is, on average, wrong by 5% when predicting the probability of recall.
 
 ### Weighted by ln(number of repetitions)
 
