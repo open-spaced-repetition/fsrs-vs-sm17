@@ -21,7 +21,7 @@ Total repetitions: 194,281
 ### Weighted by number of repetitions
 
 | Algorithm | Log Loss | RMSE | RMSE(bins) |
-| --- | --- | --- | --- | --- |
+| --- | --- | --- | --- |
 | FSRSv4 | 0.3770 | 0.3304 | 0.0718 |
 | SM-17 | 0.4137 | 0.3416 | 0.0963 |
 | FSRSv3 | 0.4013 | 0.3394 | 0.0979 |
@@ -32,7 +32,7 @@ Smaller is better. If you are unsure what number to look at, look at RMSE (bins)
 ### Weighted by ln(number of repetitions)
 
 | Algorithm | Log Loss | RMSE | RMSE(bins) |
-| --- | --- | --- | --- | --- |
+| --- | --- | --- | --- |
 | FSRSv4 | 0.4318 | 0.3577 | 0.1057 |
 | SM-17 | 0.4581 | 0.3590 | 0.1113 |
 | FSRSv3 | 0.4526 | 0.3606 | 0.1169 |
