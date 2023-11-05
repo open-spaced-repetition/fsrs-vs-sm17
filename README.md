@@ -20,21 +20,23 @@ Total repetitions: 194,281
 
 ### Weighted by number of repetitions
 
-| Algorithm | Log Loss | RMSE | Universal Metric | RMSE(bins) |
-| --- | --- | --- | --- | --- |
-| FSRS | 0.3769 | 0.3304 | 0.0456 | 0.0717 |
-| SM-17 | 0.4137 | 0.3416 | 0.0565 | 0.0963 |
-| SM-16 | 0.4211 | 0.3486 | 0.0631 | 0.1170 |
+| Algorithm | Log Loss | RMSE | RMSE(bins) |
+| --- | --- | --- | --- |
+| FSRSv4 | 0.3770 | 0.3304 | 0.0718 |
+| SM-17 | 0.4137 | 0.3416 | 0.0963 |
+| FSRSv3 | 0.4013 | 0.3394 | 0.0979 |
+| SM-16 | 0.4211 | 0.3486 | 0.1170 |
 
 Smaller is better. If you are unsure what number to look at, look at RMSE (bins). That value can be interpreted as "the average difference between the predicted probability of recalling a card and the measured probability". For example, if RMSE (bins) = 0.05, it means that that algorithm is, on average, wrong by 5% when predicting the probability of recall.
 
 ### Weighted by ln(number of repetitions)
 
-| Algorithm | Log Loss | RMSE | Universal Metric | RMSE(bins) |
-| --- | --- | --- | --- | --- |
-| FSRS | 0.4315 | 0.3576 | 0.0712 | 0.1051 |
-| SM-17 | 0.4581 | 0.3590 | 0.0695 | 0.1113 |
-| SM-16 | 0.4614 | 0.3651 | 0.0789 | 0.1258 |
+| Algorithm | Log Loss | RMSE | RMSE(bins) |
+| --- | --- | --- | --- |
+| FSRSv4 | 0.4318 | 0.3577 | 0.1057 |
+| SM-17 | 0.4581 | 0.3590 | 0.1113 |
+| FSRSv3 | 0.4526 | 0.3606 | 0.1169 |
+| SM-16 | 0.4614 | 0.3651 | 0.1258 |
 
 Smaller is better.
 
