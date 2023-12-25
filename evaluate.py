@@ -29,7 +29,7 @@ if __name__ == "__main__":
         with open(result_file, "r") as f:
             result = json.load(f)
             FSRSv3.append(result["FSRSv3"])
-            FSRSv4.append(result["FSRSv4"])
+            FSRSv4.append(result["FSRS-4.5"])
             SM17.append(result["SM17"])
             SM16.append(result["SM16"])
             sizes.append(result["size"])
@@ -47,7 +47,7 @@ if __name__ == "__main__":
         SM16_metrics = np.array([item[metric] for item in SM16])
 
         print(
-            f"FSRSv4 mean: {np.average(FSRSv4_metrics, weights=sizes):.4f}, FSRSv3 mean: {np.average(FSRSv3_metrics, weights=sizes):.4f}, SM17 mean: {np.average(SM17_metrics, weights=sizes):.4f}, SM16 mean: {np.average(SM16_metrics, weights=sizes):.4f}"
+            f"FSRS-4.5 mean: {np.average(FSRSv4_metrics, weights=sizes):.4f}, FSRSv3 mean: {np.average(FSRSv3_metrics, weights=sizes):.4f}, SM17 mean: {np.average(SM17_metrics, weights=sizes):.4f}, SM16 mean: {np.average(SM16_metrics, weights=sizes):.4f}"
         )
 
         t_stat, p_value, df = ttest_ind(
@@ -58,11 +58,11 @@ if __name__ == "__main__":
 
         if p_value < 0.05:
             print(
-                "The performance difference between FSRSv4 and SM17 is statistically significant."
+                "The performance difference between FSRS-4.5 and SM17 is statistically significant."
             )
         else:
             print(
-                "The performance difference between FSRSv4 and SM17 is not statistically significant."
+                "The performance difference between FSRS-4.5 and SM17 is not statistically significant."
             )
 
         print(f"Cohen's d: {cohen_d(FSRSv4_metrics, SM17_metrics, sizes)}")
