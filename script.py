@@ -182,7 +182,7 @@ def FSRS_v4_train(revlogs):
                 optimizer.step()
                 model.apply(clipper)
 
-    revlogs["R (FSRSv4)"] = r
+    revlogs["R (FSRS-4.5)"] = r
 
     return revlogs
 
@@ -262,17 +262,17 @@ def evaluate(revlogs):
         revlogs["y"], revlogs["R (SM17(exp))"], squared=False
     )
     fsrs_v4_rmse = mean_squared_error(
-        revlogs["y"], revlogs["R (FSRSv4)"], squared=False
+        revlogs["y"], revlogs["R (FSRS-4.5)"], squared=False
     )
     fsrs_v3_rmse = mean_squared_error(
         revlogs["y"], revlogs["R (FSRSv3)"], squared=False
     )
     sm16_logloss = log_loss(revlogs["y"], revlogs["R (SM16)"])
     sm17_logloss = log_loss(revlogs["y"], revlogs["R (SM17(exp))"])
-    fsrs_v4_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv4)"])
+    fsrs_v4_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-4.5)"])
     fsrs_v3_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv3)"])
     return {
-        "FSRSv4": {
+        "FSRS-4.5": {
             "RMSE": fsrs_v4_rmse,
             "LogLoss": fsrs_v4_logloss,
         },
@@ -386,11 +386,11 @@ if __name__ == "__main__":
             sm17_rmse_bin = cross_comparison(revlogs, "SM17(exp)", "SM17(exp)")[0]
             sm16_rmse_bin = cross_comparison(revlogs, "SM16", "SM16")[0]
             fsrs_v3_rmse_bin = cross_comparison(revlogs, "FSRSv3", "FSRSv3")[0]
-            fsrs_v4_rmse_bin = cross_comparison(revlogs, "FSRSv4", "FSRSv4")[0]
+            fsrs_v4_rmse_bin = cross_comparison(revlogs, "FSRS-4.5", "FSRS-4.5")[0]
             result["SM17"]["RMSE(bins)"] = sm17_rmse_bin
             result["SM16"]["RMSE(bins)"] = sm16_rmse_bin
             result["FSRSv3"]["RMSE(bins)"] = fsrs_v3_rmse_bin
-            result["FSRSv4"]["RMSE(bins)"] = fsrs_v4_rmse_bin
+            result["FSRS-4.5"]["RMSE(bins)"] = fsrs_v4_rmse_bin
 
             result["user"] = user
             result["size"] = revlogs.shape[0]
