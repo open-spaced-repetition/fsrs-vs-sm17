@@ -18,6 +18,8 @@ Total users: 16
 
 Total repetitions: 194,281
 
+The following tables represent the weighted means and the 99% confidence intervals.
+
 ### Weighted by number of repetitions
 
 | Algorithm | Log Loss | RMSE | RMSE(bins) |
@@ -27,7 +29,7 @@ Total repetitions: 194,281
 | FSRSv3 | 0.4013±0.1006 | 0.3394±0.0459 | 0.0979±0.0280 |
 | SM-16 | 0.4211±0.0936 | 0.3486±0.0425 | 0.1170±0.0253 |
 
-Smaller is better. If you are unsure what number to look at, look at RMSE (bins). That value can be interpreted as "the average difference between the predicted probability of recalling a card and the measured probability". For example, if RMSE (bins) = 0.05, it means that that algorithm is, on average, wrong by 5% when predicting the probability of recall.
+Smaller is better. If you are unsure what number to look at, look at RMSE (bins). That value can be interpreted as "the average difference between the predicted probability of recalling a card and the measured probability". For example, if RMSE (bins)=0.05, it means that that algorithm is, on average, wrong by 5% when predicting the probability of recall.
 
 ### Weighted by ln(number of repetitions)
 
