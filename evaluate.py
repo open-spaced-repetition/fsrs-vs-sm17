@@ -2,6 +2,7 @@ import pathlib
 import json
 import numpy as np
 from statsmodels.stats.weightstats import ttest_ind
+import scipy.stats
 
 
 def cohen_d(group1, group2, size):
@@ -15,6 +16,30 @@ def cohen_d(group1, group2, size):
     d = (mean1 - mean2) / np.sqrt((var1 + var2) / 2)
 
     return d
+
+
+def confidence_interval(values, sizes):
+    identifiers = [i for i in range(len(values))]
+    dict_x_w = {
+        identifier: (value, weight)
+        for identifier, (value, weight) in enumerate(zip(values, sizes))
+    }
+
+    def weighted_mean(z, axis):
+        # creating an array of weights, by mapping z to dict_x_w
+        data = np.vectorize(dict_x_w.get)(z)
+        return np.average(data[0], weights=data[1], axis=axis)
+
+    CI_99_bootstrap = scipy.stats.bootstrap(
+        (identifiers,),
+        statistic=weighted_mean,
+        confidence_level=0.99,
+        axis=0,
+        method="percentile",
+    )
+    low = list(CI_99_bootstrap.confidence_interval)[0]
+    high = list(CI_99_bootstrap.confidence_interval)[1]
+    return (high - low) / 2
 
 
 if __name__ == "__main__":
@@ -40,15 +65,14 @@ if __name__ == "__main__":
     sizes = np.log(sizes)
     for metric in ("LogLoss", "RMSE", "RMSE(bins)"):
         print(f"metric: {metric}")
-
         FSRSv3_metrics = np.array([item[metric] for item in FSRSv3])
+        print(f"FSRSv3 mean: {np.average(FSRSv3_metrics, weights=sizes):.4f}±{confidence_interval(FSRSv3_metrics, sizes):.4f}")
         FSRSv4_metrics = np.array([item[metric] for item in FSRSv4])
+        print(f"FSRSv4 mean: {np.average(FSRSv4_metrics, weights=sizes):.4f}±{confidence_interval(FSRSv4_metrics, sizes):.4f}")
         SM17_metrics = np.array([item[metric] for item in SM17])
+        print(f"SM17 mean: {np.average(SM17_metrics, weights=sizes):.4f}±{confidence_interval(SM17_metrics, sizes):.4f}")
         SM16_metrics = np.array([item[metric] for item in SM16])
-
-        print(
-            f"FSRS-4.5 mean: {np.average(FSRSv4_metrics, weights=sizes):.4f}, FSRSv3 mean: {np.average(FSRSv3_metrics, weights=sizes):.4f}, SM17 mean: {np.average(SM17_metrics, weights=sizes):.4f}, SM16 mean: {np.average(SM16_metrics, weights=sizes):.4f}"
-        )
+        print(f"SM16 mean: {np.average(SM16_metrics, weights=sizes):.4f}±{confidence_interval(SM16_metrics, sizes):.4f}")
 
         t_stat, p_value, df = ttest_ind(
             FSRSv4_metrics, SM17_metrics, weights=(sizes, sizes)
