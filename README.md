@@ -24,10 +24,10 @@ The following tables represent the weighted means and the 99% confidence interva
 
 | Algorithm | Log Loss | RMSE | RMSE(bins) |
 | --- | --- | --- | --- |
-| FSRS-4.5 | 0.3703±0.0851 | 0.3277±0.0447 | 0.0611±0.0272 |
-| SM-17 | 0.4137±0.0971 | 0.3416±0.0463 | 0.0963±0.0385 |
-| FSRSv3 | 0.4013±0.0927 | 0.3394±0.0454 | 0.0979±0.0275 |
-| SM-16 | 0.4211±0.0864 | 0.3486±0.0407 | 0.1170±0.0264 |
+| FSRS-4.5 | 0.370±0.085 | 0.328±0.045 | 0.061±0.027 |
+| SM-17 | 0.414±0.097 | 0.342±0.046 | 0.096±0.039 |
+| FSRSv3 | 0.401±0.093 | 0.339±0.045 | 0.098±0.028 |
+| SM-16 | 0.421±0.086 | 0.349±0.040 | 0.117±0.026 |
 
 Smaller is better. If you are unsure what number to look at, look at RMSE (bins). That value can be interpreted as "the average difference between the predicted probability of recalling a card and the measured probability". For example, if RMSE (bins)=0.05, it means that that algorithm is, on average, wrong by 5% when predicting the probability of recall.
 
@@ -35,10 +35,10 @@ Smaller is better. If you are unsure what number to look at, look at RMSE (bins)
 
 | Algorithm | Log Loss | RMSE | RMSE(bins) |
 | --- | --- | --- | --- |
-| FSRS-4.5 | 0.4179±0.0779 | 0.3521±0.0404 | 0.0902±0.0366 |
-| SM-17 | 0.4581±0.1049 | 0.3590±0.0456 | 0.1113±0.0356 |
-| FSRSv3 | 0.4526±0.1028 | 0.3606±0.0441 | 0.1169±0.0341 |
-| SM-16 | 0.4614±0.1079 | 0.3651±0.0450 | 0.1258±0.0327 |
+| FSRS-4.5 | 0.418±0.078 | 0.352±0.040 | 0.090±0.037 |
+| SM-17 | 0.458±0.105 | 0.359±0.046 | 0.111±0.036 |
+| FSRSv3 | 0.453±0.103 | 0.361±0.044 | 0.117±0.034 |
+| SM-16 | 0.461±0.108 | 0.365±0.045 | 0.126±0.033 |
 
 Smaller is better.
 
