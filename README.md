@@ -27,7 +27,7 @@ The following tables represent the weighted means and the 99% confidence interva
 | FSRS-4.5 | 0.370±0.085 | 0.328±0.045 | 0.061±0.027 |
 | SM-17 | 0.414±0.097 | 0.342±0.046 | 0.096±0.039 |
 | FSRSv3 | 0.401±0.093 | 0.339±0.045 | 0.098±0.028 |
-| SM-16 | 0.421±0.086 | 0.349±0.040 | 0.117±0.026 |
+| SM-16 | 0.421±0.086 | 0.349±0.041 | 0.117±0.026 |
 
 Smaller is better. If you are unsure what number to look at, look at RMSE (bins). That value can be interpreted as "the average difference between the predicted probability of recalling a card and the measured probability". For example, if RMSE (bins)=0.05, it means that that algorithm is, on average, wrong by 5% when predicting the probability of recall.
 
