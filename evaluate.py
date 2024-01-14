@@ -3,6 +3,7 @@ import json
 import numpy as np
 from statsmodels.stats.weightstats import ttest_ind
 import scipy.stats
+import math
 
 
 def cohen_d(group1, group2, size):
@@ -16,6 +17,31 @@ def cohen_d(group1, group2, size):
     d = (mean1 - mean2) / np.sqrt((var1 + var2) / 2)
 
     return d
+
+def sigdig(value, CI):
+    def num_lead_zeros(x):
+        return math.inf if x == 0 else -math.floor(math.log10(abs(x))) - 1
+
+    def first_nonzero_digit(x):
+        x = str(x)
+        for digit in x:
+            if digit == "0" or digit == ".":
+                pass
+            else:
+                return int(digit)
+
+    n_lead_zeros_CI = num_lead_zeros(CI)
+    CI_sigdigs = min(len(str(CI)[2 + n_lead_zeros_CI:]), 2)  # assumes CI<1
+    decimals = n_lead_zeros_CI + CI_sigdigs
+    rounded_CI = round(CI, decimals)
+    first_sigdig_CI = first_nonzero_digit(rounded_CI)
+    if first_sigdig_CI<5:
+        rounded_value = round(value, decimals - 1)
+        return str(f'{rounded_value:.{decimals - 1}f}'), str(f'{rounded_CI:.{decimals}f}')
+    else:
+        rounded_value = round(value, max(decimals - 2, 0))
+        rounded_CI = round(CI, max(decimals - 1, 1))
+        return str(f'{rounded_value:.{max(decimals - 2, 0)}f}'), str(f'{rounded_CI:.{max(decimals - 1, 1)}f}')
 
 
 def confidence_interval(values, sizes):
@@ -37,7 +63,6 @@ def confidence_interval(values, sizes):
         axis=0,
         method="BCa",
         n_resamples=300_000,
-
     )
     low = list(CI_99_bootstrap.confidence_interval)[0]
     high = list(CI_99_bootstrap.confidence_interval)[1]
@@ -64,20 +89,65 @@ if __name__ == "__main__":
     print(f"Total number of users: {len(sizes)}")
     sizes = np.array(sizes)
     print(f"Total size: {sizes.sum()}")
-    sizes = np.log(sizes)
+    logsizes = np.log(sizes)
     for metric in ("LogLoss", "RMSE", "RMSE(bins)"):
         print(f"metric: {metric}")
+
+        FSRS45_metrics = np.array([item[metric] for item in FSRSv4])
+        wmean = np.average(FSRS45_metrics, weights=sizes)
+        CI = confidence_interval(FSRS45_metrics, sizes)
+        rounded_mean, rounded_CI = sigdig(wmean, CI)
+        print(f"FSRS-4.5 mean: {rounded_mean}±{rounded_CI}")
+
         FSRSv3_metrics = np.array([item[metric] for item in FSRSv3])
-        print(f"FSRSv3 mean: {np.average(FSRSv3_metrics, weights=sizes):.4f}±{confidence_interval(FSRSv3_metrics, sizes):.4f}")
-        FSRSv4_metrics = np.array([item[metric] for item in FSRSv4])
-        print(f"FSRSv4 mean: {np.average(FSRSv4_metrics, weights=sizes):.4f}±{confidence_interval(FSRSv4_metrics, sizes):.4f}")
+        wmean = np.average(FSRSv3_metrics, weights=sizes)
+        CI = confidence_interval(FSRSv3_metrics, sizes)
+        rounded_mean, rounded_CI = sigdig(wmean, CI)
+        print(f"FSRS v3 mean: {rounded_mean}±{rounded_CI}")
+
         SM17_metrics = np.array([item[metric] for item in SM17])
-        print(f"SM17 mean: {np.average(SM17_metrics, weights=sizes):.4f}±{confidence_interval(SM17_metrics, sizes):.4f}")
+        wmean = np.average(SM17_metrics, weights=sizes)
+        CI = confidence_interval(SM17_metrics, sizes)
+        rounded_mean, rounded_CI = sigdig(wmean, CI)
+        print(f"SM-17 mean: {rounded_mean}±{rounded_CI}")
+
         SM16_metrics = np.array([item[metric] for item in SM16])
-        print(f"SM16 mean: {np.average(SM16_metrics, weights=sizes):.4f}±{confidence_interval(SM16_metrics, sizes):.4f}")
+        wmean = np.average(SM16_metrics, weights=sizes)
+        CI = confidence_interval(SM16_metrics, sizes)
+        rounded_mean, rounded_CI = sigdig(wmean, CI)
+        print(f"SM-16 mean: {rounded_mean}±{rounded_CI}")
+
+        print('')
+
+        print(f"metric: {metric}, log(size)")
+
+        FSRS45_metrics = np.array([item[metric] for item in FSRSv4])
+        wmean = np.average(FSRS45_metrics, weights=logsizes)
+        CI = confidence_interval(FSRS45_metrics, logsizes)
+        rounded_mean, rounded_CI = sigdig(wmean, CI)
+        print(f"FSRS-4.5 mean: {rounded_mean}±{rounded_CI}")
+
+        FSRSv3_metrics = np.array([item[metric] for item in FSRSv3])
+        wmean = np.average(FSRSv3_metrics, weights=logsizes)
+        CI = confidence_interval(FSRSv3_metrics, logsizes)
+        rounded_mean, rounded_CI = sigdig(wmean, CI)
+        print(f"FSRS v3 mean: {rounded_mean}±{rounded_CI}")
+
+        SM17_metrics = np.array([item[metric] for item in SM17])
+        wmean = np.average(SM17_metrics, weights=logsizes)
+        CI = confidence_interval(SM17_metrics, logsizes)
+        rounded_mean, rounded_CI = sigdig(wmean, CI)
+        print(f"SM-17 mean: {rounded_mean}±{rounded_CI}")
+
+        SM16_metrics = np.array([item[metric] for item in SM16])
+        wmean = np.average(SM16_metrics, weights=logsizes)
+        CI = confidence_interval(SM16_metrics, logsizes)
+        rounded_mean, rounded_CI = sigdig(wmean, CI)
+        print(f"SM-16 mean: {rounded_mean}±{rounded_CI}")
+
 
         t_stat, p_value, df = ttest_ind(
-            FSRSv4_metrics, SM17_metrics, weights=(sizes, sizes)
+            FSRS45_metrics, SM17_metrics, weights=(sizes, sizes)
         )
 
         print(f"t-statistic: {t_stat}, p-value: {p_value}, df: {df}")
@@ -91,4 +161,4 @@ if __name__ == "__main__":
                 "The performance difference between FSRS-4.5 and SM17 is not statistically significant."
             )
 
-        print(f"Cohen's d: {cohen_d(FSRSv4_metrics, SM17_metrics, sizes)}")
+        print(f"Cohen's d: {cohen_d(FSRS45_metrics, SM17_metrics, sizes)}")
