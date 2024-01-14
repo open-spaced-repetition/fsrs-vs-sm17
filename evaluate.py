@@ -35,7 +35,9 @@ def confidence_interval(values, sizes):
         statistic=weighted_mean,
         confidence_level=0.99,
         axis=0,
-        method="percentile",
+        method="BCa",
+        n_resamples=300_000,
+
     )
     low = list(CI_99_bootstrap.confidence_interval)[0]
     high = list(CI_99_bootstrap.confidence_interval)[1]
