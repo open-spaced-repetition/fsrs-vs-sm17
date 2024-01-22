@@ -210,10 +210,12 @@ if __name__ == "__main__":
             if math.isnan(wilcox[i][j]):
                 pass
             else:
-                if 10 ** wilcox[i][j] > 0.01:
+                if 10 ** wilcox[i][j] > 0.1:
+                    string = f'{10 ** wilcox[i][j]:.2f}'
+                elif 10 ** wilcox[i][j] > 0.01:
                     string = f'{10 ** wilcox[i][j]:.3f}'
                 else:
-                    string = format(wilcox[i][j], 2)
+                    string = format(wilcox[i][j], 1)
                 text = ax.text(
                     j,
                     i,
