@@ -49,6 +49,8 @@ The following tables represent the weighted means and the 99% confidence interva
 
 The image below shows the p-values obtained by running the Wilcoxon signed-rank test on the RMSE (bins) of all pairs of algorithms. Red means that the row algorithm performs worse than the corresponding column algorithm, and green means that the row algorithm performs better than the corresponding column algorithm. Grey means that the p-value is >0.01, and we cannot conclude that one algorithm performs better than the other.
 
+It's worth mentioning that this test is not weighted, and therefore doesn't take into account that RMSE (bins) depends on the number of reviews.
+
 ![Wilcoxon-16-collections](https://github.com/Expertium/fsrs-vs-sm17/assets/83031600/6af35c4a-345a-4fef-9c8f-d2d98dc3a680)
 
 ## Share your data
