@@ -90,7 +90,7 @@ def weighted_avg_and_std(values, weights):
 
 if __name__ == "__main__":
     FSRSv3 = ("FSRSv3", [])
-    FSRSv4 = ("FSRSv4", [])
+    FSRSv4 = ("FSRS-4.5", [])
     SM17 = ("SM17", [])
     SM16 = ("SM16", [])
     sizes = []
