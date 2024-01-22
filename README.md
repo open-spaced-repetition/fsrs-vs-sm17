@@ -51,7 +51,7 @@ The image below shows the p-values obtained by running the Wilcoxon signed-rank 
 
 It's worth mentioning that this test is not weighted, and therefore doesn't take into account that RMSE (bins) depends on the number of reviews.
 
-![Wilcoxon-16-collections](https://github.com/Expertium/fsrs-vs-sm17/assets/83031600/6af35c4a-345a-4fef-9c8f-d2d98dc3a680)
+![Figure_1](https://github.com/Expertium/fsrs-vs-sm17/assets/83031600/a72d40d9-c570-42f0-9160-116f42a38b68)
 
 ## Share your data
 
