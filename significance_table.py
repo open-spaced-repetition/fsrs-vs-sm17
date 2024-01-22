@@ -7,7 +7,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import scipy.stats
 from scipy import stats
 
 warnings.filterwarnings("ignore")
@@ -164,7 +163,7 @@ if __name__ == "__main__":
                 if n_collections > 50:
                     result = logp_wilcox(df1[:n_collections], df2[:n_collections])[0]
                 else:
-                    result = np.log10(scipy.stats.wilcoxon(df1[:n_collections], df2[:n_collections]).pvalue)
+                    result = np.log10(stats.wilcoxon(df1[:n_collections], df2[:n_collections]).pvalue)
                 wilcox[i][j] = result
 
     color_wilcox = [[-1 for i in range(n)] for j in range(n)]
@@ -176,7 +175,7 @@ if __name__ == "__main__":
                 df1 = df[f"{models2[i]}, RMSE (bins)"]
                 df2 = df[f"{models2[j]}, RMSE (bins)"]
                 result = logp_wilcox(df1[:n_collections], df2[:n_collections])
-                p_value = scipy.stats.wilcoxon(df1[:n_collections], df2[:n_collections]).pvalue
+                p_value = stats.wilcoxon(df1[:n_collections], df2[:n_collections]).pvalue
                 if p_value > 0.01:
                     color_wilcox[i][j] = 0.5
                 else:
