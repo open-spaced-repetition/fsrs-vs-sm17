@@ -107,16 +107,20 @@ def format(exponent, n):
 
 
 if __name__ == "__main__":
-    models = ("SM16", "SM17", "FSRSv3", "FSRS-4.5")
+    models = (
+        "FSRS-4.5",
+        "SM17",
+        "FSRSv3",
+        "SM16",
+    )
     csv_name = f"{len(models)} models.csv"
     print(f"Number of tests={(len(models)-1) ** 2}")
     df = pd.DataFrame()
     sizes = []
-    result_dir = pathlib.Path("./result")
-    result_files = result_dir.glob("*.json")
     for model in models:
         RMSE = []
         logloss = []
+        result_files = pathlib.Path("./result").glob("*.json")
         for result_file in result_files:
             with open(result_file, "r") as f:
                 result = json.load(f)
@@ -159,7 +163,6 @@ if __name__ == "__main__":
                 df2 = df[f"{models2[j]}, RMSE (bins)"]
                 result = logp_wilcox(df1[:n_collections], df2[:n_collections])
                 wilcox[i][j] = result[0]
-
     color_wilcox = [[-1 for i in range(n)] for j in range(n)]
     for i in range(n):
         for j in range(n):
