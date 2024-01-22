@@ -171,12 +171,19 @@ if __name__ == "__main__":
             else:
                 df1 = df[f"{models2[i]}, RMSE (bins)"]
                 df2 = df[f"{models2[j]}, RMSE (bins)"]
-                result = logp_wilcox(df1[:n_collections], df2[:n_collections])
-                p_value = stats.wilcoxon(df1[:n_collections], df2[:n_collections]).pvalue
-                if p_value > 0.01:
+                # we'll need the second value return by my function to determine the color
+                approx = logp_wilcox(df1[:n_collections], df2[:n_collections])
+                if n_collections > 50:
+                    result = approx[0]
+                else:
+                    # use the exact result for small n
+                    result = np.log10(stats.wilcoxon(df1[:n_collections], df2[:n_collections]).pvalue)
+
+                if np.power(10, result) > 0.01:
+                    # color for insignificant p-values
                     color_wilcox[i][j] = 0.5
                 else:
-                    if result[1] == 0:
+                    if approx[1] == 0:
                         color_wilcox[i][j] = 0
                     else:
                         color_wilcox[i][j] = 1
@@ -203,7 +210,7 @@ if __name__ == "__main__":
             if math.isnan(wilcox[i][j]):
                 pass
             else:
-                if wilcox[i][j] < 0.01:
+                if 10 ** wilcox[i][j] > 0.01:
                     string = f'{10 ** wilcox[i][j]:.3f}'
                 else:
                     string = format(wilcox[i][j], 2)
