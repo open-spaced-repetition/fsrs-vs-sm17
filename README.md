@@ -40,8 +40,6 @@ Smaller is better. If you are unsure what number to look at, look at RMSE (bins)
 | SM-17 | 0.5±0.10 |   0.11±0.035 |
 | SM-16 | 0.5±0.11 |   0.13±0.032 |
 
-Smaller is better.
-
 The image below shows the p-values obtained by running the Wilcoxon signed-rank test on the RMSE (bins) of all pairs of algorithms. Red means that the row algorithm performs worse than the corresponding column algorithm, and green means that the row algorithm performs better than the corresponding column algorithm. Grey means that the p-value is >0.01, and we cannot conclude that one algorithm performs better than the other.
 
 ![Wilcoxon-16-collections](https://github.com/Expertium/fsrs-vs-sm17/assets/83031600/6af35c4a-345a-4fef-9c8f-d2d98dc3a680)
