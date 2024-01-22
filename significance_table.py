@@ -115,7 +115,6 @@ if __name__ == "__main__":
     )
     csv_name = f"{len(models)} models.csv"
     df = pd.DataFrame()
-    sizes = []
     for model in models:
         RMSE = []
         logloss = []
@@ -138,12 +137,10 @@ if __name__ == "__main__":
         df = pd.concat([df, series1], axis=1)
         df = pd.concat([df, series2], axis=1)
 
-    df = pd.concat([df, pd.Series(sizes, name=f"Sizes")], axis=1)
     df.to_csv(csv_name)
 
     # you have to run the commented out code above first
     df = pd.read_csv(csv_name)
-    sizes = df["Sizes"]
 
     n_collections = len(df)
     print(n_collections)
