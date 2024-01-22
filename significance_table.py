@@ -7,6 +7,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import scipy.stats
 from scipy import stats
 
 warnings.filterwarnings("ignore")
@@ -114,7 +115,6 @@ if __name__ == "__main__":
         "SM16",
     )
     csv_name = f"{len(models)} models.csv"
-    print(f"Number of tests={(len(models)-1) ** 2}")
     df = pd.DataFrame()
     sizes = []
     for model in models:
@@ -161,8 +161,12 @@ if __name__ == "__main__":
             else:
                 df1 = df[f"{models2[i]}, RMSE (bins)"]
                 df2 = df[f"{models2[j]}, RMSE (bins)"]
-                result = logp_wilcox(df1[:n_collections], df2[:n_collections])
-                wilcox[i][j] = result[0]
+                if n_collections > 50:
+                    result = logp_wilcox(df1[:n_collections], df2[:n_collections])[0]
+                else:
+                    result = np.log10(scipy.stats.wilcoxon(df1[:n_collections], df2[:n_collections]).pvalue)
+                wilcox[i][j] = result
+
     color_wilcox = [[-1 for i in range(n)] for j in range(n)]
     for i in range(n):
         for j in range(n):
@@ -172,10 +176,14 @@ if __name__ == "__main__":
                 df1 = df[f"{models2[i]}, RMSE (bins)"]
                 df2 = df[f"{models2[j]}, RMSE (bins)"]
                 result = logp_wilcox(df1[:n_collections], df2[:n_collections])
-                if result[1] == 0:
-                    color_wilcox[i][j] = 0
+                p_value = scipy.stats.wilcoxon(df1[:n_collections], df2[:n_collections]).pvalue
+                if p_value > 0.01:
+                    color_wilcox[i][j] = 0.5
                 else:
-                    color_wilcox[i][j] = 1
+                    if result[1] == 0:
+                        color_wilcox[i][j] = 0
+                    else:
+                        color_wilcox[i][j] = 1
 
     # small changes to labels
     index_v4 = models2.index("FSRS-4.5")
@@ -193,7 +201,7 @@ if __name__ == "__main__":
         fontsize=24,
         pad=30,
     )
-    cmap = matplotlib.colors.ListedColormap(["red", "#2db300"])
+    cmap = matplotlib.colors.ListedColormap(["red", "#989a98", "#2db300"])
     plt.imshow(color_wilcox, interpolation="none", vmin=0, cmap=cmap)
 
     for i in range(n):
@@ -201,10 +209,14 @@ if __name__ == "__main__":
             if math.isnan(wilcox[i][j]):
                 pass
             else:
+                if wilcox[i][j] < 0.01:
+                    string = f'{10 ** wilcox[i][j]:.3f}'
+                else:
+                    string = format(wilcox[i][j], 2)
                 text = ax.text(
                     j,
                     i,
-                    format(wilcox[i][j], 0),
+                    string,
                     ha="center",
                     va="center",
                     color="white",
@@ -221,4 +233,4 @@ if __name__ == "__main__":
     pathlib.Path("./plots").mkdir(parents=True, exist_ok=True)
     title = f"Wilcoxon-{n_collections}-collections"
     plt.savefig(f"./plots/{title}.png")
-    # plt.show()
+    plt.show()
