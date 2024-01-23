@@ -179,7 +179,7 @@ if __name__ == "__main__":
                     # use the exact result for small n
                     result = np.log10(stats.wilcoxon(df1[:n_collections], df2[:n_collections]).pvalue)
 
-                if np.power(10, result) > 0.01:
+                if np.power(10, result) > 0.05:
                     # color for insignificant p-values
                     color_wilcox[i][j] = 0.5
                 else:
