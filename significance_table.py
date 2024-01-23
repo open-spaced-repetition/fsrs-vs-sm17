@@ -235,5 +235,5 @@ if __name__ == "__main__":
         ax.spines[location].set_linewidth(2)
     pathlib.Path("./plots").mkdir(parents=True, exist_ok=True)
     title = f"Wilcoxon-{n_collections}-collections"
-    plt.savefig(f"./plots/{title}.png")
+    plt.savefig(f"./plots/{title}.png", bbox_inches='tight')
     plt.show()
