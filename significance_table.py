@@ -114,9 +114,7 @@ if __name__ == "__main__":
         "SM16",
     )
     csv_name = f"{len(models)} models.csv"
-    print(f"Number of tests={(len(models)-1) ** 2}")
     df = pd.DataFrame()
-    sizes = []
     for model in models:
         RMSE = []
         logloss = []
@@ -139,12 +137,10 @@ if __name__ == "__main__":
         df = pd.concat([df, series1], axis=1)
         df = pd.concat([df, series2], axis=1)
 
-    df = pd.concat([df, pd.Series(sizes, name=f"Sizes")], axis=1)
     df.to_csv(csv_name)
 
     # you have to run the commented out code above first
     df = pd.read_csv(csv_name)
-    sizes = df["Sizes"]
 
     n_collections = len(df)
     print(n_collections)
@@ -161,8 +157,12 @@ if __name__ == "__main__":
             else:
                 df1 = df[f"{models2[i]}, RMSE (bins)"]
                 df2 = df[f"{models2[j]}, RMSE (bins)"]
-                result = logp_wilcox(df1[:n_collections], df2[:n_collections])
-                wilcox[i][j] = result[0]
+                if n_collections > 50:
+                    result = logp_wilcox(df1[:n_collections], df2[:n_collections])[0]
+                else:
+                    result = np.log10(stats.wilcoxon(df1[:n_collections], df2[:n_collections]).pvalue)
+                wilcox[i][j] = result
+
     color_wilcox = [[-1 for i in range(n)] for j in range(n)]
     for i in range(n):
         for j in range(n):
@@ -171,18 +171,27 @@ if __name__ == "__main__":
             else:
                 df1 = df[f"{models2[i]}, RMSE (bins)"]
                 df2 = df[f"{models2[j]}, RMSE (bins)"]
-                result = logp_wilcox(df1[:n_collections], df2[:n_collections])
-                if result[1] == 0:
-                    color_wilcox[i][j] = 0
+                # we'll need the second value return by my function to determine the color
+                approx = logp_wilcox(df1[:n_collections], df2[:n_collections])
+                if n_collections > 50:
+                    result = approx[0]
                 else:
-                    color_wilcox[i][j] = 1
+                    # use the exact result for small n
+                    result = np.log10(stats.wilcoxon(df1[:n_collections], df2[:n_collections]).pvalue)
+
+                if np.power(10, result) > 0.05:
+                    # color for insignificant p-values
+                    color_wilcox[i][j] = 0.5
+                else:
+                    if approx[1] == 0:
+                        color_wilcox[i][j] = 0
+                    else:
+                        color_wilcox[i][j] = 1
 
     # small changes to labels
-    index_v4 = models2.index("FSRS-4.5")
     index_v3 = models2.index("FSRSv3")
     index_sm16 = models2.index("SM16")
     index_sm17 = models2.index("SM17")
-    models2[index_v4] = "FSRS-4.5"
     models2[index_v3] = "FSRS v3"
     models2[index_sm16] = "SM-16"
     models2[index_sm17] = "SM-17"
@@ -193,7 +202,7 @@ if __name__ == "__main__":
         fontsize=24,
         pad=30,
     )
-    cmap = matplotlib.colors.ListedColormap(["red", "#2db300"])
+    cmap = matplotlib.colors.ListedColormap(["red", "#989a98", "#2db300"])
     plt.imshow(color_wilcox, interpolation="none", vmin=0, cmap=cmap)
 
     for i in range(n):
@@ -201,14 +210,20 @@ if __name__ == "__main__":
             if math.isnan(wilcox[i][j]):
                 pass
             else:
+                if 10 ** wilcox[i][j] > 0.1:
+                    string = f'{10 ** wilcox[i][j]:.2f}'
+                elif 10 ** wilcox[i][j] > 0.01:
+                    string = f'{10 ** wilcox[i][j]:.3f}'
+                else:
+                    string = format(wilcox[i][j], 1)
                 text = ax.text(
                     j,
                     i,
-                    format(wilcox[i][j], 0),
+                    string,
                     ha="center",
                     va="center",
                     color="white",
-                    fontsize=13,
+                    fontsize=16,
                 )
 
     ax.set_xticks(np.arange(n), labels=models2, fontsize=12)
@@ -221,4 +236,4 @@ if __name__ == "__main__":
     pathlib.Path("./plots").mkdir(parents=True, exist_ok=True)
     title = f"Wilcoxon-{n_collections}-collections"
     plt.savefig(f"./plots/{title}.png")
-    # plt.show()
+    plt.show()

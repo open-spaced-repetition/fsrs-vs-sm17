@@ -12,6 +12,15 @@ Due to the difference between the workflow of SuperMemo and Anki, it is not easy
 - To ensure FSRS has the same information as SM-17, I implement an [online learning](https://en.wikipedia.org/wiki/Online_machine_learning) version of FSRS, where FSRS has zero knowledge of the future reviews as SM-17 does.
 - The results are based on the data from a small group of people. It may be different from the result of other SuperMemo users.
 
+### Metrics
+
+We use two metrics in the FSRS benchmark to evaluate how well these algorithms work: log loss and a custom RMSE that we call RMSE (bins).
+
+- Log Loss (also known as Binary Cross Entropy): Utilized primarily for its applicability in binary classification problems, log loss serves as a measure of the discrepancies between predicted probabilities of recall and review outcomes (1 or 0). It quantifies how well the algorithm approximates the true recall probabilities, making it an important metric for model evaluation in spaced repetition systems.
+- Weighted Root Mean Square Error in Bins (RMSE (bins)): This is a metric engineered for the FSRS benchmark. In this approach, predictions and review outcomes are grouped into bins according to the predicted probabilities of recall. Within each bin, the squared difference between the average predicted probability of recall and the average recall rate is calculated. These values are then weighted according to the sample size in each bin, and then the final weighted root mean square error is calculated. This metric provides a nuanced understanding of model performance across different probability ranges.
+
+Smaller is better. If you are unsure what metric to look at, look at RMSE (bins). That value can be interpreted as "the average difference between the predicted probability of recalling a card and the measured probability". For example, if RMSE (bins)=0.05, it means that that algorithm is, on average, wrong by 5% when predicting the probability of recall.
+
 ## Result
 
 Total users: 16
@@ -29,8 +38,6 @@ The following tables represent the weighted means and the 99% confidence interva
 | SM-17 | 0.4±0.10 |   0.10±0.039 |
 | SM-16 | 0.4±0.09 |   0.12±0.026 |
 
-Smaller is better. If you are unsure what number to look at, look at RMSE (bins). That value can be interpreted as "the average difference between the predicted probability of recalling a card and the measured probability". For example, if RMSE (bins)=0.05, it means that that algorithm is, on average, wrong by 5% when predicting the probability of recall.
-
 ### Weighted by ln(number of repetitions)
 
 | Algorithm | Log Loss |   RMSE(bins) |
@@ -40,14 +47,12 @@ Smaller is better. If you are unsure what number to look at, look at RMSE (bins)
 | SM-17 | 0.5±0.10 |   0.11±0.035 |
 | SM-16 | 0.5±0.11 |   0.13±0.032 |
 
-Smaller is better.
+The image below shows the p-values obtained by running the Wilcoxon signed-rank test on the RMSE (bins) of all pairs of algorithms. Red means that the row algorithm performs worse than the corresponding column algorithm, and green means that the row algorithm performs better than the corresponding column algorithm. Grey means that the p-value is >0.01, and we cannot conclude that one algorithm performs better than the other.
 
-The image below shows the p-values obtained by running the Wilcoxon signed-rank test on the RMSE (bins) of all pairs of algorithms. Red means that the row algorithm performs worse than the corresponding column algorithm, and green means that the row algorithm performs better than the corresponding column algorithm. The top row is green because FSRS-4.5 outperforms all other algorithms; the bottom row is red because HLR performs worse than any other algorithm.
+It's worth mentioning that this test is not weighted, and therefore doesn't take into account that RMSE (bins) depends on the number of reviews.
 
-All p-values are extremely small, many orders of magnitude smaller than 0.01. Of course, p-values this low beg the question, "Can we even trust these values?". `scipy.stats.wilcoxon` itself uses an approximation for n>50, and our modified implementation uses an approximation to return the log10(p-value) rather than the p-value itself, to avoid the limitations of floating point numbers. So it's an approximation of an approximation. Wilcoxon also relies on the assumption that the distribution of _pairwise differences_ between data points is symmetrical (even if the data itself doesn't follow a symmetrical distribution). But most importantly, this test is not weighted, meaning that it doesn't take into account the fact that RMSE (bins) depends on the number of reviews.
-Overall, these p-values can be trusted on a qualitative (but not quantitative) level, in other words, we can be sure that all of our algorithms perform differently and that no two algorithms perform exactly the same.
+![Figure_1](https://github.com/Expertium/fsrs-vs-sm17/assets/83031600/46cdba74-f85b-4e3b-b157-caf03f8bee5a)
 
-![Wilcoxon, 16 collections](./plots/Wilcoxon-16-collections.png)
 
 ## Share your data
 
