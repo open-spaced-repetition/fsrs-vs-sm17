@@ -223,11 +223,11 @@ if __name__ == "__main__":
                     ha="center",
                     va="center",
                     color="white",
-                    fontsize=20,
+                    fontsize=24,
                 )
 
-    ax.set_xticks(np.arange(n), labels=models2, fontsize=16)
-    ax.set_yticks(np.arange(n), labels=models2, fontsize=16)
+    ax.set_xticks(np.arange(n), labels=models2, fontsize=18)
+    ax.set_yticks(np.arange(n), labels=models2, fontsize=18)
     ax.set_xticks(np.arange(n) - 0.5, minor=True)
     ax.set_yticks(np.arange(n) - 0.5, minor=True)
     plt.grid(True, alpha=1, color="black", linewidth=2, which="minor")
