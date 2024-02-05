@@ -110,6 +110,7 @@ if __name__ == "__main__":
     models = (
         "FSRS-4.5",
         "SM17",
+        "FSRSv4",
         "FSRSv3",
         "SM16",
     )
@@ -190,9 +191,11 @@ if __name__ == "__main__":
 
     # small changes to labels
     index_v3 = models2.index("FSRSv3")
+    index_v4 = models2.index("FSRSv4")
     index_sm16 = models2.index("SM16")
     index_sm17 = models2.index("SM17")
     models2[index_v3] = "FSRS v3"
+    models2[index_v4] = "FSRS v4"
     models2[index_sm16] = "SM-16"
     models2[index_sm17] = "SM-17"
 

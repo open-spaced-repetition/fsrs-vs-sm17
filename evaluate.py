@@ -90,7 +90,8 @@ def weighted_avg_and_std(values, weights):
 
 if __name__ == "__main__":
     FSRSv3 = ("FSRSv3", [])
-    FSRSv4 = ("FSRS-4.5", [])
+    FSRSv4 = ("FSRSv4", [])
+    FSRSv45 = ("FSRS-4.5", [])
     SM17 = ("SM17", [])
     SM16 = ("SM16", [])
     sizes = []
@@ -100,7 +101,8 @@ if __name__ == "__main__":
         with open(result_file, "r") as f:
             result = json.load(f)
             FSRSv3[1].append(result["FSRSv3"])
-            FSRSv4[1].append(result["FSRS-4.5"])
+            FSRSv4[1].append(result["FSRSv4"])
+            FSRSv45[1].append(result["FSRS-4.5"])
             SM17[1].append(result["SM17"])
             SM16[1].append(result["SM16"])
             sizes.append(result["size"])
@@ -115,7 +117,7 @@ if __name__ == "__main__":
     ):
         print(f"Scale: {scale}")
         for metric in ("LogLoss", "RMSE(bins)"):
-            for model in (FSRSv4, FSRSv3, SM17, SM16):
+            for model in (FSRSv45, FSRSv4, FSRSv3, SM17, SM16):
                 metrics = np.array([item[metric] for item in model[1]])
                 wmean, wstd = weighted_avg_and_std(metrics, size)
                 CI = confidence_interval(metrics, size)
