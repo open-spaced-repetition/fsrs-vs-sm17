@@ -33,7 +33,8 @@ The following tables represent the weighted means and the 99% confidence interva
 
 | Algorithm | Log Loss |   RMSE(bins) |
 | --- | --- | --- 
-| FSRS-4.5 | 0.4±0.09 |   0.06±0.027 |
+| FSRS-4.5 | 0.4±0.08 |   0.06±0.024 |
+| FSRSv4 | 0.4±0.09 |   0.08±0.025 |
 | FSRSv3 | 0.4±0.09 |   0.10±0.027 |
 | SM-17 | 0.4±0.10 |   0.10±0.039 |
 | SM-16 | 0.4±0.09 |   0.12±0.026 |
@@ -42,10 +43,11 @@ The following tables represent the weighted means and the 99% confidence interva
 
 | Algorithm | Log Loss |   RMSE(bins) |
 | --- | --- | --- |
-| FSRS-4.5 | 0.4±0.08 |   0.09±0.037 |
-| FSRSv3 | 0.5±0.10 |   0.12±0.034 |
-| SM-17 | 0.5±0.10 |   0.11±0.035 |
-| SM-16 | 0.5±0.11 |   0.13±0.032 |
+| FSRS-4.5 | 0.4±0.08 |   0.09±0.038 |
+| SM-17 | 0.5±0.10 |   0.11±0.036 |
+| FSRSv4 | 0.4±0.09 |   0.12±0.048 |
+| FSRSv3 | 0.5±0.10 |   0.13±0.044 |
+| SM-16 | 0.5±0.11 |   0.13±0.033 |
 
 The image below shows the p-values obtained by running the Wilcoxon signed-rank test on the RMSE (bins) of all pairs of algorithms. Red means that the row algorithm performs worse than the corresponding column algorithm, and green means that the row algorithm performs better than the corresponding column algorithm. Grey means that the p-value is >0.05, and we cannot conclude that one algorithm performs better than the other.
 

@@ -8,8 +8,9 @@ from fsrs_optimizer import (
     FSRS,
     RevlogDataset,
     WeightClipper,
+    DEFAULT_WEIGHT,
 )
-from models import FSRSv3, FSRS3WeightClipper
+from models import FSRS3, FSRS4
 from tqdm.auto import tqdm
 from torch.utils.data import DataLoader
 import torch
@@ -95,46 +96,30 @@ def data_preprocessing(csv_file_path):
         & (dataset["delta_t"] > 0)
         & (dataset["t_history"].str.count(",0") == 0)
     ].copy()
+    dataset = dataset[
+        (dataset["i"] > 1)
+        & (dataset["delta_t"] > 0)
+        & (dataset["t_history"].str.count(",0") == 0)
+    ].copy()
+    dataset["tensor"] = dataset.progress_apply(
+        lambda x: lineToTensor(list(zip([x["t_history"]], [x["r_history"]]))[0]), axis=1
+    )
+    dataset.sort_values(by=["review_date"], inplace=True)
+    dataset.reset_index(drop=True, inplace=True)
     return dataset
 
 
-def FSRS_v4_train(revlogs):
-    revlogs = revlogs[
-        (revlogs["i"] > 1)
-        & (revlogs["delta_t"] > 0)
-        & (revlogs["t_history"].str.count(",0") == 0)
-    ].copy()
-    revlogs["tensor"] = revlogs.progress_apply(
-        lambda x: lineToTensor(list(zip([x["t_history"]], [x["r_history"]]))[0]), axis=1
-    )
-    revlogs.sort_values(by=["review_date"], inplace=True)
-    revlogs.reset_index(drop=True, inplace=True)
+enable_experience_replay = True
+replay_steps = 64
+replay_size = 8192
+lr = 8e-3
+batch_size = 512
 
-    model = FSRS(
-        [
-            0.4,
-            0.6,
-            2.4,
-            5.8,
-            4.93,
-            0.94,
-            0.86,
-            0.01,
-            1.49,
-            0.14,
-            0.94,
-            2.18,
-            0.05,
-            0.34,
-            1.26,
-            0.29,
-            2.61,
-        ]
-    )
-    optimizer = torch.optim.Adam(model.parameters(), lr=8e-3)
+
+def FSRS_latest_train(revlogs):
+    model = FSRS(DEFAULT_WEIGHT)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     loss_fn = torch.nn.BCELoss(reduction="none")
-    enable_experience_replay = True
-    replay_steps = 32
 
     dataset = RevlogDataset(revlogs)
     dataloader = DataLoader(dataset, shuffle=False, collate_fn=collate_fn)
@@ -160,11 +145,13 @@ def FSRS_v4_train(revlogs):
 
         if enable_experience_replay and (i + 1) % replay_steps == 0:
             # experience replay
-            replay_dataset = RevlogDataset(revlogs[: i + 1])  # avoid data leakage
+            replay_dataset = RevlogDataset(
+                revlogs[max(0, i + 1 - replay_size) : i + 1]
+            )  # avoid data leakage
             replay_generator = torch.Generator().manual_seed(42 + i)
             replay_dataloader = DataLoader(
                 replay_dataset,
-                batch_size=(i + 1) // 32,
+                batch_size=batch_size,
                 shuffle=True,
                 collate_fn=collate_fn,
                 generator=replay_generator,
@@ -187,71 +174,61 @@ def FSRS_v4_train(revlogs):
     return revlogs
 
 
-def FSRS_v3_train(revlogs):
-    revlogs = revlogs[
-        (revlogs["i"] > 1)
-        & (revlogs["delta_t"] > 0)
-        & (revlogs["t_history"].str.count(",0") == 0)
-    ].copy()
-    revlogs["tensor"] = revlogs.progress_apply(
-        lambda x: lineToTensor(list(zip([x["t_history"]], [x["r_history"]]))[0]), axis=1
-    )
-    revlogs.sort_values(by=["review_date"], inplace=True)
-    revlogs.reset_index(drop=True, inplace=True)
+def FSRS_old_train(revlogs):
+    for model, name in ((FSRS3(), "FSRSv3"), (FSRS4(), "FSRSv4")):
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+        loss_fn = torch.nn.BCELoss(reduction="none")
 
-    model = FSRSv3()
-    optimizer = torch.optim.Adam(model.parameters(), lr=8e-3)
-    loss_fn = torch.nn.BCELoss(reduction="none")
-    enable_experience_replay = True
-    replay_steps = 32
+        dataset = RevlogDataset(revlogs)
+        dataloader = DataLoader(dataset, shuffle=False, collate_fn=collate_fn)
+        d = []
+        s = []
+        r = []
 
-    dataset = RevlogDataset(revlogs)
-    dataloader = DataLoader(dataset, shuffle=False, collate_fn=collate_fn)
-    clipper = FSRS3WeightClipper()
-    d = []
-    s = []
-    r = []
+        for i, sample in enumerate(tqdm(dataloader)):
+            model.train()
+            optimizer.zero_grad()
+            sequence, delta_t, label, seq_len = sample
+            output, _ = model(sequence)
+            stability, difficulty = output[seq_len - 1, 0].transpose(0, 1)
+            d.append(difficulty.detach().numpy()[0])
+            s.append(stability.detach().numpy()[0])
+            retention = model.forgetting_curve(delta_t, stability)
+            r.append(retention.detach().numpy()[0])
+            loss = loss_fn(retention, label).sum()
+            loss.backward()
+            optimizer.step()
+            model.apply(model.clipper)
 
-    for i, sample in enumerate(tqdm(dataloader)):
-        model.train()
-        optimizer.zero_grad()
-        sequence, delta_t, label, seq_len = sample
-        output, _ = model(sequence)
-        stability, difficulty = output[seq_len - 1, 0].transpose(0, 1)
-        d.append(difficulty.detach().numpy()[0])
-        s.append(stability.detach().numpy()[0])
-        retention = model.forgetting_curve(delta_t, stability)
-        r.append(retention.detach().numpy()[0])
-        loss = loss_fn(retention, label).sum()
-        loss.backward()
-        optimizer.step()
-        model.apply(clipper)
+            if enable_experience_replay and (i + 1) % replay_steps == 0:
+                # experience replay
+                replay_dataset = RevlogDataset(
+                    revlogs[max(0, i + 1 - replay_size) : i + 1]
+                )  # avoid data leakage
+                replay_generator = torch.Generator().manual_seed(42 + i)
+                replay_dataloader = DataLoader(
+                    replay_dataset,
+                    batch_size=batch_size,
+                    shuffle=True,
+                    collate_fn=collate_fn,
+                    generator=replay_generator,
+                )
+                for j, batch in enumerate(replay_dataloader):
+                    model.train()
+                    optimizer.zero_grad()
+                    sequences, delta_ts, labels, seq_lens = batch
+                    real_batch_size = seq_lens.shape[0]
+                    outputs, _ = model(sequences)
+                    stabilities = outputs[
+                        seq_lens - 1, torch.arange(real_batch_size), 0
+                    ]
+                    retentions = model.forgetting_curve(delta_ts, stabilities)
+                    loss = loss_fn(retentions, labels).sum()
+                    loss.backward()
+                    optimizer.step()
+                    model.apply(model.clipper)
 
-        if enable_experience_replay and (i + 1) % replay_steps == 0:
-            # experience replay
-            replay_dataset = RevlogDataset(revlogs[: i + 1])  # avoid data leakage
-            replay_generator = torch.Generator().manual_seed(42 + i)
-            replay_dataloader = DataLoader(
-                replay_dataset,
-                batch_size=(i + 1) // 32,
-                shuffle=True,
-                collate_fn=collate_fn,
-                generator=replay_generator,
-            )
-            for j, batch in enumerate(replay_dataloader):
-                model.train()
-                optimizer.zero_grad()
-                sequences, delta_ts, labels, seq_lens = batch
-                real_batch_size = seq_lens.shape[0]
-                outputs, _ = model(sequences)
-                stabilities = outputs[seq_lens - 1, torch.arange(real_batch_size), 0]
-                retentions = model.forgetting_curve(delta_ts, stabilities)
-                loss = loss_fn(retentions, labels).sum()
-                loss.backward()
-                optimizer.step()
-                model.apply(clipper)
-
-    revlogs["R (FSRSv3)"] = r
+        revlogs[f"R ({name})"] = r
 
     return revlogs
 
@@ -261,18 +238,26 @@ def evaluate(revlogs):
     sm17_rmse = mean_squared_error(
         revlogs["y"], revlogs["R (SM17(exp))"], squared=False
     )
-    fsrs_v4_rmse = mean_squared_error(
+    fsrs_v45_rmse = mean_squared_error(
         revlogs["y"], revlogs["R (FSRS-4.5)"], squared=False
+    )
+    fsrs_v4_rmse = mean_squared_error(
+        revlogs["y"], revlogs["R (FSRSv4)"], squared=False
     )
     fsrs_v3_rmse = mean_squared_error(
         revlogs["y"], revlogs["R (FSRSv3)"], squared=False
     )
     sm16_logloss = log_loss(revlogs["y"], revlogs["R (SM16)"])
     sm17_logloss = log_loss(revlogs["y"], revlogs["R (SM17(exp))"])
-    fsrs_v4_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-4.5)"])
+    fsrs_v45_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-4.5)"])
+    fsrs_v4_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv4)"])
     fsrs_v3_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv3)"])
     return {
         "FSRS-4.5": {
+            "RMSE": fsrs_v45_rmse,
+            "LogLoss": fsrs_v45_logloss,
+        },
+        "FSRSv4": {
             "RMSE": fsrs_v4_rmse,
             "LogLoss": fsrs_v4_logloss,
         },
@@ -374,8 +359,8 @@ if __name__ == "__main__":
             except:
                 continue
             revlogs = data_preprocessing(file)
-            revlogs = FSRS_v3_train(revlogs)
-            revlogs = FSRS_v4_train(revlogs)
+            revlogs = FSRS_old_train(revlogs)
+            revlogs = FSRS_latest_train(revlogs)
             result = evaluate(revlogs)
             # sm17_by_sm16, sm16_by_sm17 = cross_comparison(revlogs, "SM16", "SM17(exp)")
             # sm17_by_fsrs, fsrs_by_sm17 = cross_comparison(revlogs, "FSRS", "SM17(exp)")
@@ -386,11 +371,13 @@ if __name__ == "__main__":
             sm17_rmse_bin = cross_comparison(revlogs, "SM17(exp)", "SM17(exp)")[0]
             sm16_rmse_bin = cross_comparison(revlogs, "SM16", "SM16")[0]
             fsrs_v3_rmse_bin = cross_comparison(revlogs, "FSRSv3", "FSRSv3")[0]
-            fsrs_v4_rmse_bin = cross_comparison(revlogs, "FSRS-4.5", "FSRS-4.5")[0]
+            fsrs_v4_rmse_bin = cross_comparison(revlogs, "FSRSv4", "FSRSv4")[0]
+            fsrs_v45_rmse_bin = cross_comparison(revlogs, "FSRS-4.5", "FSRS-4.5")[0]
             result["SM17"]["RMSE(bins)"] = sm17_rmse_bin
             result["SM16"]["RMSE(bins)"] = sm16_rmse_bin
             result["FSRSv3"]["RMSE(bins)"] = fsrs_v3_rmse_bin
-            result["FSRS-4.5"]["RMSE(bins)"] = fsrs_v4_rmse_bin
+            result["FSRSv4"]["RMSE(bins)"] = fsrs_v4_rmse_bin
+            result["FSRS-4.5"]["RMSE(bins)"] = fsrs_v45_rmse_bin
 
             result["user"] = user
             result["size"] = revlogs.shape[0]
