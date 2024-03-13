@@ -1,24 +1,24 @@
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+import json
 from datetime import datetime
 from itertools import accumulate
 from fsrs_optimizer import (
     lineToTensor,
-    collate_fn,
     power_forgetting_curve,
+    rmse_matrix,
     FSRS,
-    RevlogDataset,
+    BatchDataset,
+    BatchLoader,
     WeightClipper,
     DEFAULT_WEIGHT,
 )
 from models import FSRS3, FSRS4
 from tqdm.auto import tqdm
-from torch.utils.data import DataLoader
-import torch
-import matplotlib.pyplot as plt
-import numpy as np
-from sklearn.metrics import mean_squared_error, log_loss
-import pathlib
-import json
+from sklearn.metrics import log_loss
+from pathlib import Path
 
 tqdm.pandas()
 
@@ -121,8 +121,8 @@ def FSRS_latest_train(revlogs):
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     loss_fn = torch.nn.BCELoss(reduction="none")
 
-    dataset = RevlogDataset(revlogs)
-    dataloader = DataLoader(dataset, shuffle=False, collate_fn=collate_fn)
+    dataset = BatchDataset(revlogs, 1, False)
+    dataloader = BatchLoader(dataset, shuffle=False)
     clipper = WeightClipper()
     d = []
     s = []
@@ -145,17 +145,11 @@ def FSRS_latest_train(revlogs):
 
         if enable_experience_replay and (i + 1) % replay_steps == 0:
             # experience replay
-            replay_dataset = RevlogDataset(
-                revlogs[max(0, i + 1 - replay_size) : i + 1]
+            replay_dataset = BatchDataset(
+                revlogs[max(0, i + 1 - replay_size) : i + 1],
+                batch_size,
             )  # avoid data leakage
-            replay_generator = torch.Generator().manual_seed(42 + i)
-            replay_dataloader = DataLoader(
-                replay_dataset,
-                batch_size=batch_size,
-                shuffle=True,
-                collate_fn=collate_fn,
-                generator=replay_generator,
-            )
+            replay_dataloader = BatchLoader(replay_dataset, seed=42 + i)
             for j, batch in enumerate(replay_dataloader):
                 model.train()
                 optimizer.zero_grad()
@@ -179,8 +173,8 @@ def FSRS_old_train(revlogs):
         optimizer = torch.optim.Adam(model.parameters(), lr=lr)
         loss_fn = torch.nn.BCELoss(reduction="none")
 
-        dataset = RevlogDataset(revlogs)
-        dataloader = DataLoader(dataset, shuffle=False, collate_fn=collate_fn)
+        dataset = BatchDataset(revlogs, 1, False)
+        dataloader = BatchLoader(dataset, shuffle=False)
         d = []
         s = []
         r = []
@@ -202,17 +196,10 @@ def FSRS_old_train(revlogs):
 
             if enable_experience_replay and (i + 1) % replay_steps == 0:
                 # experience replay
-                replay_dataset = RevlogDataset(
-                    revlogs[max(0, i + 1 - replay_size) : i + 1]
+                replay_dataset = BatchDataset(
+                    revlogs[max(0, i + 1 - replay_size) : i + 1], batch_size
                 )  # avoid data leakage
-                replay_generator = torch.Generator().manual_seed(42 + i)
-                replay_dataloader = DataLoader(
-                    replay_dataset,
-                    batch_size=batch_size,
-                    shuffle=True,
-                    collate_fn=collate_fn,
-                    generator=replay_generator,
-                )
+                replay_dataloader = BatchLoader(replay_dataset, seed=42 + i)
                 for j, batch in enumerate(replay_dataloader):
                     model.train()
                     optimizer.zero_grad()
@@ -234,18 +221,30 @@ def FSRS_old_train(revlogs):
 
 
 def evaluate(revlogs):
-    sm16_rmse = mean_squared_error(revlogs["y"], revlogs["R (SM16)"], squared=False)
-    sm17_rmse = mean_squared_error(
-        revlogs["y"], revlogs["R (SM17(exp))"], squared=False
+    sm16_rmse = rmse_matrix(
+        revlogs[["card_id", "r_history", "delta_t", "i", "y", "R (SM16)"]].rename(
+            columns={"R (SM16)": "p"}
+        )
     )
-    fsrs_v45_rmse = mean_squared_error(
-        revlogs["y"], revlogs["R (FSRS-4.5)"], squared=False
+    sm17_rmse = rmse_matrix(
+        revlogs[["card_id", "r_history", "delta_t", "i", "y", "R (SM17(exp))"]].rename(
+            columns={"R (SM17(exp))": "p"}
+        )
     )
-    fsrs_v4_rmse = mean_squared_error(
-        revlogs["y"], revlogs["R (FSRSv4)"], squared=False
+    fsrs_v45_rmse = rmse_matrix(
+        revlogs[["card_id", "r_history", "delta_t", "i", "y", "R (FSRS-4.5)"]].rename(
+            columns={"R (FSRS-4.5)": "p"}
+        )
     )
-    fsrs_v3_rmse = mean_squared_error(
-        revlogs["y"], revlogs["R (FSRSv3)"], squared=False
+    fsrs_v4_rmse = rmse_matrix(
+        revlogs[["card_id", "r_history", "delta_t", "i", "y", "R (FSRSv4)"]].rename(
+            columns={"R (FSRSv4)": "p"}
+        )
+    )
+    fsrs_v3_rmse = rmse_matrix(
+        revlogs[["card_id", "r_history", "delta_t", "i", "y", "R (FSRSv3)"]].rename(
+            columns={"R (FSRSv3)": "p"}
+        )
     )
     sm16_logloss = log_loss(revlogs["y"], revlogs["R (SM16)"])
     sm17_logloss = log_loss(revlogs["y"], revlogs["R (SM17(exp))"])
@@ -254,104 +253,34 @@ def evaluate(revlogs):
     fsrs_v3_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv3)"])
     return {
         "FSRS-4.5": {
-            "RMSE": fsrs_v45_rmse,
+            "RMSE(bins)": fsrs_v45_rmse,
             "LogLoss": fsrs_v45_logloss,
         },
         "FSRSv4": {
-            "RMSE": fsrs_v4_rmse,
+            "RMSE(bins)": fsrs_v4_rmse,
             "LogLoss": fsrs_v4_logloss,
         },
         "FSRSv3": {
-            "RMSE": fsrs_v3_rmse,
+            "RMSE(bins)": fsrs_v3_rmse,
             "LogLoss": fsrs_v3_logloss,
         },
         "SM16": {
-            "RMSE": sm16_rmse,
+            "RMSE(bins)": sm16_rmse,
             "LogLoss": sm16_logloss,
         },
         "SM17": {
-            "RMSE": sm17_rmse,
+            "RMSE(bins)": sm17_rmse,
             "LogLoss": sm17_logloss,
         },
     }
 
 
-def cross_comparison(revlogs, algoA, algoB):
-    if algoA != algoB:
-        cross_comparison_record = revlogs[[f"R ({algoA})", f"R ({algoB})", "y"]].copy()
-        bin_algo = (
-            algoA,
-            algoB,
-        )
-        pair_algo = [(algoA, algoB), (algoB, algoA)]
-    else:
-        cross_comparison_record = revlogs[[f"R ({algoA})", "y"]].copy()
-        bin_algo = (algoA,)
-        pair_algo = [(algoA, algoA)]
-
-    def get_bin(x, bins=20):
-        return (
-            np.log(np.minimum(np.floor(np.exp(np.log(bins + 1) * x) - 1), bins - 1) + 1)
-            / np.log(bins)
-        ).round(3)
-
-    for algo in bin_algo:
-        cross_comparison_record[f"{algo}_B-W"] = (
-            cross_comparison_record[f"R ({algo})"] - cross_comparison_record["y"]
-        )
-        cross_comparison_record[f"{algo}_bin"] = cross_comparison_record[
-            f"R ({algo})"
-        ].map(get_bin)
-
-    fig = plt.figure(figsize=(6, 6))
-    ax = fig.gca()
-    ax.axhline(y=0.0, color="black", linestyle="-")
-
-    universal_metric_list = []
-
-    for algoA, algoB in pair_algo:
-        cross_comparison_group = cross_comparison_record.groupby(by=f"{algoA}_bin").agg(
-            {"y": ["mean"], f"{algoB}_B-W": ["mean"], f"R ({algoB})": ["mean", "count"]}
-        )
-        universal_metric = mean_squared_error(
-            cross_comparison_group["y", "mean"],
-            cross_comparison_group[f"R ({algoB})", "mean"],
-            sample_weight=cross_comparison_group[f"R ({algoB})", "count"],
-            squared=False,
-        )
-        cross_comparison_group[f"R ({algoB})", "percent"] = (
-            cross_comparison_group[f"R ({algoB})", "count"]
-            / cross_comparison_group[f"R ({algoB})", "count"].sum()
-        )
-        ax.scatter(
-            cross_comparison_group.index,
-            cross_comparison_group[f"{algoB}_B-W", "mean"],
-            s=cross_comparison_group[f"R ({algoB})", "percent"] * 1024,
-            alpha=0.5,
-        )
-        ax.plot(
-            cross_comparison_group[f"{algoB}_B-W", "mean"],
-            label=f"{algoB} by {algoA}, UM={universal_metric:.4f}",
-        )
-        universal_metric_list.append(universal_metric)
-
-    ax.legend(loc="lower center")
-    ax.grid(linestyle="--")
-    ax.set_title(f"{algoA} vs {algoB}")
-    ax.set_xlabel("Predicted R")
-    ax.set_ylabel("B-W Metric")
-    ax.set_xlim(0, 1)
-    ax.set_xticks(np.arange(0, 1.1, 0.1))
-    fig.show()
-
-    return universal_metric_list
-
-
 if __name__ == "__main__":
-    for file in pathlib.Path("dataset").iterdir():
+    Path("result").mkdir(parents=True, exist_ok=True)
+    for file in Path("dataset").iterdir():
         plt.close("all")
         if file.is_file() and file.suffix == ".csv":
-            if file.stem in map(lambda x: x.stem, pathlib.Path("result").iterdir()):
+            if file.stem in map(lambda x: x.stem, Path("result").iterdir()):
                 print(f"{file.stem} already exists, skip")
                 continue
             try:
@@ -362,26 +291,10 @@ if __name__ == "__main__":
             revlogs = FSRS_old_train(revlogs)
             revlogs = FSRS_latest_train(revlogs)
             result = evaluate(revlogs)
-            # sm17_by_sm16, sm16_by_sm17 = cross_comparison(revlogs, "SM16", "SM17(exp)")
-            # sm17_by_fsrs, fsrs_by_sm17 = cross_comparison(revlogs, "FSRS", "SM17(exp)")
-            # fsrs_by_sm16, sm16_by_fsrs = cross_comparison(revlogs, "SM16", "FSRS")
-            # result["FSRS"]["UniversalMetric"] = (fsrs_by_sm17 + fsrs_by_sm16) / 2
-            # result["SM16"]["UniversalMetric"] = (sm16_by_sm17 + sm16_by_fsrs) / 2
-            # result["SM17"]["UniversalMetric"] = (sm17_by_sm16 + sm17_by_fsrs) / 2
-            sm17_rmse_bin = cross_comparison(revlogs, "SM17(exp)", "SM17(exp)")[0]
-            sm16_rmse_bin = cross_comparison(revlogs, "SM16", "SM16")[0]
-            fsrs_v3_rmse_bin = cross_comparison(revlogs, "FSRSv3", "FSRSv3")[0]
-            fsrs_v4_rmse_bin = cross_comparison(revlogs, "FSRSv4", "FSRSv4")[0]
-            fsrs_v45_rmse_bin = cross_comparison(revlogs, "FSRS-4.5", "FSRS-4.5")[0]
-            result["SM17"]["RMSE(bins)"] = sm17_rmse_bin
-            result["SM16"]["RMSE(bins)"] = sm16_rmse_bin
-            result["FSRSv3"]["RMSE(bins)"] = fsrs_v3_rmse_bin
-            result["FSRSv4"]["RMSE(bins)"] = fsrs_v4_rmse_bin
-            result["FSRS-4.5"]["RMSE(bins)"] = fsrs_v45_rmse_bin
 
             result["user"] = user
             result["size"] = revlogs.shape[0]
             # save as json
-            pathlib.Path("result").mkdir(parents=True, exist_ok=True)
+            Path("result").mkdir(parents=True, exist_ok=True)
             with open(f"result/{file.stem}.json", "w") as f:
                 json.dump(result, f, indent=4)

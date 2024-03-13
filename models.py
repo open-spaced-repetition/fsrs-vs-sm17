@@ -28,7 +28,21 @@ class FSRS3WeightClipper:
 
 class FSRS3(nn.Module):
     # 13 params
-    init_w = [1, 1, 5, -0.5, -0.5, 0.2, 1.4, -0.2, 0.8, 2, -0.2, 0.2, 1]
+    init_w = [
+        0.9605,
+        1.7234,
+        4.8527,
+        -1.1917,
+        -1.2956,
+        0.0573,
+        1.7352,
+        -0.1673,
+        1.065,
+        1.8907,
+        -0.3832,
+        0.5867,
+        1.0721,
+    ]
 
     def __init__(self, w: List[float] = init_w):
         super(FSRS3, self).__init__()

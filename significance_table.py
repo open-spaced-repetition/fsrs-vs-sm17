@@ -161,7 +161,9 @@ if __name__ == "__main__":
                 if n_collections > 50:
                     result = logp_wilcox(df1[:n_collections], df2[:n_collections])[0]
                 else:
-                    result = np.log10(stats.wilcoxon(df1[:n_collections], df2[:n_collections]).pvalue)
+                    result = np.log10(
+                        stats.wilcoxon(df1[:n_collections], df2[:n_collections]).pvalue
+                    )
                 wilcox[i][j] = result
 
     color_wilcox = [[-1 for i in range(n)] for j in range(n)]
@@ -178,7 +180,9 @@ if __name__ == "__main__":
                     result = approx[0]
                 else:
                     # use the exact result for small n
-                    result = np.log10(stats.wilcoxon(df1[:n_collections], df2[:n_collections]).pvalue)
+                    result = np.log10(
+                        stats.wilcoxon(df1[:n_collections], df2[:n_collections]).pvalue
+                    )
 
                 if np.power(10, result) > 0.05:
                     # color for insignificant p-values
@@ -214,9 +218,9 @@ if __name__ == "__main__":
                 pass
             else:
                 if 10 ** wilcox[i][j] > 0.1:
-                    string = f'{10 ** wilcox[i][j]:.2f}'
+                    string = f"{10 ** wilcox[i][j]:.2f}"
                 elif 10 ** wilcox[i][j] > 0.01:
-                    string = f'{10 ** wilcox[i][j]:.3f}'
+                    string = f"{10 ** wilcox[i][j]:.3f}"
                 else:
                     string = format(wilcox[i][j], 1)
                 text = ax.text(
@@ -238,5 +242,5 @@ if __name__ == "__main__":
         ax.spines[location].set_linewidth(2)
     pathlib.Path("./plots").mkdir(parents=True, exist_ok=True)
     title = f"Wilcoxon-{n_collections}-collections"
-    plt.savefig(f"./plots/{title}.png", bbox_inches='tight')
+    plt.savefig(f"./plots/{title}.png", bbox_inches="tight")
     plt.show()
