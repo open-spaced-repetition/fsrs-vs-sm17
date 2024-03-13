@@ -23,7 +23,7 @@ from pathlib import Path
 tqdm.pandas()
 
 
-def data_preprocessing(csv_file_path):
+def data_preprocessing(csv_file_path, save_csv=False):
     try:
         df = pd.read_csv(csv_file_path, encoding="utf-8")
     except:
@@ -106,6 +106,24 @@ def data_preprocessing(csv_file_path):
     )
     dataset.sort_values(by=["review_date"], inplace=True)
     dataset.reset_index(drop=True, inplace=True)
+    if save_csv:
+        Path("converted").mkdir(parents=True, exist_ok=True)
+        save = dataset[
+            [
+                "card_id",
+                "review_date",
+                "delta_t",
+                "review_rating",
+                "R (SM16)",
+                "R (SM17(exp))",
+            ]
+        ].copy()
+        save["review_date"] = save["review_date"].rank(method="dense").astype("int64")
+        save["card_id"] = pd.factorize(save["card_id"])[0]
+        save.rename(
+            columns={"review_rating": "rating", "review_date": "review_th"}, inplace=True
+        )
+        save.to_csv(f"converted/{csv_file_path.stem}.csv", index=False)
     return dataset
 
 

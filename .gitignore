@@ -1,3 +1,5 @@
+converted/*
 .idea/*
 .DS_Store
 *.pyc
+*.zip
