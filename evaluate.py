@@ -22,30 +22,12 @@ def sigdig(value, CI):
     def num_lead_zeros(x):
         return math.inf if x == 0 else -math.floor(math.log10(abs(x))) - 1
 
-    def first_nonzero_digit(x):
-        x = str(x)
-        for digit in x:
-            if digit == "0" or digit == ".":
-                pass
-            else:
-                return int(digit)
-
     n_lead_zeros_CI = num_lead_zeros(CI)
-    CI_sigdigs = min(len(str(CI)[2 + n_lead_zeros_CI :]), 2)
+    CI_sigdigs = 2
     decimals = n_lead_zeros_CI + CI_sigdigs
     rounded_CI = round(CI, decimals)
-    first_sigdig_CI = first_nonzero_digit(rounded_CI)
-    if first_sigdig_CI < 5:
-        rounded_value = round(value, decimals - 1)
-        return str(f"{rounded_value:.{decimals - 1}f}"), str(
-            f"{rounded_CI:.{decimals}f}"
-        )
-    else:
-        rounded_value = round(value, max(decimals - 2, 0))
-        rounded_CI = round(CI, max(decimals - 1, 1))
-        return str(f"{rounded_value:.{max(decimals - 2, 0)}f}"), str(
-            f"{rounded_CI:.{max(decimals - 1, 1)}f}"
-        )
+    rounded_value = round(value, decimals - 1)
+    return str(f"{rounded_value:.{decimals - 1}f}"), str(f"{rounded_CI:.{decimals}f}")
 
 
 def confidence_interval(values, sizes):
