@@ -15,7 +15,7 @@ from fsrs_optimizer import (
     ParameterClipper,
     DEFAULT_PARAMETER,
 )
-from models import FSRS3, FSRS4
+from models import FSRS3, FSRS4, FSRS4dot5
 from tqdm.auto import tqdm
 from sklearn.metrics import log_loss
 from pathlib import Path
@@ -183,7 +183,11 @@ def FSRS_latest_train(revlogs):
 
 
 def FSRS_old_train(revlogs):
-    for model, name in ((FSRS3(), "FSRSv3"), (FSRS4(), "FSRSv4")):
+    for model, name in (
+        (FSRS3(), "FSRSv3"),
+        (FSRS4(), "FSRSv4"),
+        (FSRS4dot5(), "FSRS-4.5"),
+    ):
         optimizer = torch.optim.Adam(model.parameters(), lr=lr)
         loss_fn = torch.nn.BCELoss(reduction="none")
 
@@ -210,8 +214,12 @@ def FSRS_old_train(revlogs):
 
             if enable_experience_replay and (i + 1) % replay_steps == 0:
                 # experience replay
+                replay_buffer = revlogs[max(0, i + 1 - replay_size) : i + 1].copy()
+                x = np.linspace(0, 1, len(replay_buffer))
+                replay_buffer["weights"] = 0.25 + 0.75 * np.power(x, 3)
                 replay_dataset = BatchDataset(
-                    revlogs[max(0, i + 1 - replay_size) : i + 1], batch_size
+                    replay_buffer,
+                    batch_size,
                 )  # avoid data leakage
                 replay_dataloader = BatchLoader(replay_dataset, seed=42 + i)
                 for j, batch in enumerate(replay_dataloader):
@@ -224,7 +232,7 @@ def FSRS_old_train(revlogs):
                         seq_lens - 1, torch.arange(real_batch_size), 0
                     ]
                     retentions = model.forgetting_curve(delta_ts, stabilities)
-                    loss = loss_fn(retentions, labels).sum()
+                    loss = (loss_fn(retentions, labels) * weights).sum()
                     loss.backward()
                     optimizer.step()
                     model.apply(model.clipper)
@@ -250,6 +258,11 @@ def evaluate(revlogs):
             ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (FSRS-5)"]
         ].rename(columns={"R (FSRS-5)": "p"})
     )
+    fsrs_v4dot5_rmse = rmse_matrix(
+        revlogs[
+            ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (FSRS-4.5)"]
+        ].rename(columns={"R (FSRS-4.5)": "p"})
+    )
     fsrs_v4_rmse = rmse_matrix(
         revlogs[
             ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (FSRSv4)"]
@@ -263,12 +276,17 @@ def evaluate(revlogs):
     sm16_logloss = log_loss(revlogs["y"], revlogs["R (SM16)"])
     sm17_logloss = log_loss(revlogs["y"], revlogs["R (SM17(exp))"])
     fsrs_v5_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-5)"])
+    fsrs_v4dot5_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-4.5)"])
     fsrs_v4_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv4)"])
     fsrs_v3_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv3)"])
     return {
         "FSRS-5": {
             "RMSE(bins)": fsrs_v5_rmse,
             "LogLoss": fsrs_v5_logloss,
+        },
+        "FSRS-4.5": {
+            "RMSE(bins)": fsrs_v4dot5_rmse,
+            "LogLoss": fsrs_v4dot5_logloss,
         },
         "FSRSv4": {
             "RMSE(bins)": fsrs_v4_rmse,
