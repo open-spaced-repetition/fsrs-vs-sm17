@@ -12,8 +12,8 @@ from fsrs_optimizer import (
     FSRS,
     BatchDataset,
     BatchLoader,
-    WeightClipper,
-    DEFAULT_WEIGHT,
+    ParameterClipper,
+    DEFAULT_PARAMETER,
 )
 from models import FSRS3, FSRS4
 from tqdm.auto import tqdm
@@ -121,7 +121,8 @@ def data_preprocessing(csv_file_path, save_csv=False):
         save["review_date"] = save["review_date"].rank(method="dense").astype("int64")
         save["card_id"] = pd.factorize(save["card_id"])[0]
         save.rename(
-            columns={"review_rating": "rating", "review_date": "review_th"}, inplace=True
+            columns={"review_rating": "rating", "review_date": "review_th"},
+            inplace=True,
         )
         save.to_csv(f"converted/{csv_file_path.stem}.csv", index=False)
     return dataset
@@ -135,13 +136,13 @@ batch_size = 512
 
 
 def FSRS_latest_train(revlogs):
-    model = FSRS(DEFAULT_WEIGHT)
+    model = FSRS(DEFAULT_PARAMETER)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     loss_fn = torch.nn.BCELoss(reduction="none")
 
     dataset = BatchDataset(revlogs, 1, False)
     dataloader = BatchLoader(dataset, shuffle=False)
-    clipper = WeightClipper()
+    clipper = ParameterClipper()
     d = []
     s = []
     r = []
@@ -149,7 +150,7 @@ def FSRS_latest_train(revlogs):
     for i, sample in enumerate(tqdm(dataloader)):
         model.train()
         optimizer.zero_grad()
-        sequence, delta_t, label, seq_len = sample
+        sequence, delta_t, label, seq_len, weights = sample
         output, _ = model(sequence)
         stability, difficulty = output[seq_len - 1, 0].transpose(0, 1)
         d.append(difficulty.detach().numpy()[0])
@@ -171,7 +172,7 @@ def FSRS_latest_train(revlogs):
             for j, batch in enumerate(replay_dataloader):
                 model.train()
                 optimizer.zero_grad()
-                sequences, delta_ts, labels, seq_lens = batch
+                sequences, delta_ts, labels, seq_lens, weights = batch
                 real_batch_size = seq_lens.shape[0]
                 outputs, _ = model(sequences)
                 stabilities = outputs[seq_lens - 1, torch.arange(real_batch_size), 0]
@@ -181,7 +182,7 @@ def FSRS_latest_train(revlogs):
                 optimizer.step()
                 model.apply(clipper)
 
-    revlogs["R (FSRS-4.5)"] = r
+    revlogs["R (FSRS-5)"] = r
 
     return revlogs
 
@@ -200,7 +201,7 @@ def FSRS_old_train(revlogs):
         for i, sample in enumerate(tqdm(dataloader)):
             model.train()
             optimizer.zero_grad()
-            sequence, delta_t, label, seq_len = sample
+            sequence, delta_t, label, seq_len, weights = sample
             output, _ = model(sequence)
             stability, difficulty = output[seq_len - 1, 0].transpose(0, 1)
             d.append(difficulty.detach().numpy()[0])
@@ -221,7 +222,7 @@ def FSRS_old_train(revlogs):
                 for j, batch in enumerate(replay_dataloader):
                     model.train()
                     optimizer.zero_grad()
-                    sequences, delta_ts, labels, seq_lens = batch
+                    sequences, delta_ts, labels, seq_lens, weights = batch
                     real_batch_size = seq_lens.shape[0]
                     outputs, _ = model(sequences)
                     stabilities = outputs[
@@ -240,39 +241,39 @@ def FSRS_old_train(revlogs):
 
 def evaluate(revlogs):
     sm16_rmse = rmse_matrix(
-        revlogs[["card_id", "r_history", "delta_t", "i", "y", "R (SM16)"]].rename(
-            columns={"R (SM16)": "p"}
-        )
+        revlogs[
+            ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (SM16)"]
+        ].rename(columns={"R (SM16)": "p"})
     )
     sm17_rmse = rmse_matrix(
-        revlogs[["card_id", "r_history", "delta_t", "i", "y", "R (SM17(exp))"]].rename(
-            columns={"R (SM17(exp))": "p"}
-        )
+        revlogs[
+            ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (SM17(exp))"]
+        ].rename(columns={"R (SM17(exp))": "p"})
     )
-    fsrs_v45_rmse = rmse_matrix(
-        revlogs[["card_id", "r_history", "delta_t", "i", "y", "R (FSRS-4.5)"]].rename(
-            columns={"R (FSRS-4.5)": "p"}
-        )
+    fsrs_v5_rmse = rmse_matrix(
+        revlogs[
+            ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (FSRS-5)"]
+        ].rename(columns={"R (FSRS-5)": "p"})
     )
     fsrs_v4_rmse = rmse_matrix(
-        revlogs[["card_id", "r_history", "delta_t", "i", "y", "R (FSRSv4)"]].rename(
-            columns={"R (FSRSv4)": "p"}
-        )
+        revlogs[
+            ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (FSRSv4)"]
+        ].rename(columns={"R (FSRSv4)": "p"})
     )
     fsrs_v3_rmse = rmse_matrix(
-        revlogs[["card_id", "r_history", "delta_t", "i", "y", "R (FSRSv3)"]].rename(
-            columns={"R (FSRSv3)": "p"}
-        )
+        revlogs[
+            ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (FSRSv3)"]
+        ].rename(columns={"R (FSRSv3)": "p"})
     )
     sm16_logloss = log_loss(revlogs["y"], revlogs["R (SM16)"])
     sm17_logloss = log_loss(revlogs["y"], revlogs["R (SM17(exp))"])
-    fsrs_v45_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-4.5)"])
+    fsrs_v5_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-5)"])
     fsrs_v4_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv4)"])
     fsrs_v3_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv3)"])
     return {
-        "FSRS-4.5": {
-            "RMSE(bins)": fsrs_v45_rmse,
-            "LogLoss": fsrs_v45_logloss,
+        "FSRS-5": {
+            "RMSE(bins)": fsrs_v5_rmse,
+            "LogLoss": fsrs_v5_logloss,
         },
         "FSRSv4": {
             "RMSE(bins)": fsrs_v4_rmse,

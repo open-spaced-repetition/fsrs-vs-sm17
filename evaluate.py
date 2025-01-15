@@ -9,8 +9,9 @@ def cohen_d(group1, group2, size):
     # weighted mean
     mean1, mean2 = np.average(group1, weights=size), np.average(group2, weights=size)
     # weighted variance
-    var1, var2 = np.average((group1 - mean1) ** 2, weights=size), np.average(
-        (group2 - mean2) ** 2, weights=size
+    var1, var2 = (
+        np.average((group1 - mean1) ** 2, weights=size),
+        np.average((group2 - mean2) ** 2, weights=size),
     )
 
     d = (mean1 - mean2) / np.sqrt((var1 + var2) / 2)
@@ -73,7 +74,7 @@ def weighted_avg_and_std(values, weights):
 if __name__ == "__main__":
     FSRSv3 = ("FSRSv3", [])
     FSRSv4 = ("FSRSv4", [])
-    FSRSv45 = ("FSRS-4.5", [])
+    FSRS_5 = ("FSRS-5", [])
     SM17 = ("SM17", [])
     SM16 = ("SM16", [])
     sizes = []
@@ -84,7 +85,7 @@ if __name__ == "__main__":
             result = json.load(f)
             FSRSv3[1].append(result["FSRSv3"])
             FSRSv4[1].append(result["FSRSv4"])
-            FSRSv45[1].append(result["FSRS-4.5"])
+            FSRS_5[1].append(result["FSRS-5"])
             SM17[1].append(result["SM17"])
             SM16[1].append(result["SM16"])
             sizes.append(result["size"])
@@ -99,7 +100,7 @@ if __name__ == "__main__":
     ):
         print(f"Scale: {scale}")
         for metric in ("LogLoss", "RMSE(bins)"):
-            for model in (FSRSv45, FSRSv4, FSRSv3, SM17, SM16):
+            for model in (FSRS_5, FSRSv4, FSRSv3, SM17, SM16):
                 metrics = np.array([item[metric] for item in model[1]])
                 wmean, wstd = weighted_avg_and_std(metrics, size)
                 CI = confidence_interval(metrics, size)
