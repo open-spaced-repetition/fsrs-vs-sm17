@@ -91,16 +91,8 @@ def data_preprocessing(csv_file_path, save_csv=False):
     dataset["r_history"] = [
         ",".join(map(str, item[:-1])) for sublist in r_history for item in sublist
     ]
-    dataset = dataset[
-        (dataset["i"] > 1)
-        & (dataset["delta_t"] > 0)
-        & (dataset["t_history"].str.count(",0") == 0)
-    ].copy()
-    dataset = dataset[
-        (dataset["i"] > 1)
-        & (dataset["delta_t"] > 0)
-        & (dataset["t_history"].str.count(",0") == 0)
-    ].copy()
+    dataset = dataset[(dataset["i"] > 1) & (dataset["delta_t"] > 0)].copy()
+    dataset = dataset[(dataset["i"] > 1) & (dataset["delta_t"] > 0)].copy()
     dataset["tensor"] = dataset.progress_apply(
         lambda x: lineToTensor(list(zip([x["t_history"]], [x["r_history"]]))[0]), axis=1
     )
@@ -164,8 +156,11 @@ def FSRS_latest_train(revlogs):
 
         if enable_experience_replay and (i + 1) % replay_steps == 0:
             # experience replay
+            replay_buffer = revlogs[max(0, i + 1 - replay_size) : i + 1].copy()
+            x = np.linspace(0, 1, len(replay_buffer))
+            replay_buffer["weights"] = 0.25 + 0.75 * np.power(x, 3)
             replay_dataset = BatchDataset(
-                revlogs[max(0, i + 1 - replay_size) : i + 1],
+                replay_buffer,
                 batch_size,
             )  # avoid data leakage
             replay_dataloader = BatchLoader(replay_dataset, seed=42 + i)
@@ -177,7 +172,7 @@ def FSRS_latest_train(revlogs):
                 outputs, _ = model(sequences)
                 stabilities = outputs[seq_lens - 1, torch.arange(real_batch_size), 0]
                 retentions = power_forgetting_curve(delta_ts, stabilities)
-                loss = loss_fn(retentions, labels).sum()
+                loss = (loss_fn(retentions, labels) * weights).sum()
                 loss.backward()
                 optimizer.step()
                 model.apply(clipper)
@@ -294,26 +289,61 @@ def evaluate(revlogs):
     }
 
 
-if __name__ == "__main__":
-    Path("result").mkdir(parents=True, exist_ok=True)
-    for file in Path("dataset").iterdir():
-        plt.close("all")
-        if file.is_file() and file.suffix == ".csv":
-            if file.stem in map(lambda x: x.stem, Path("result").iterdir()):
-                print(f"{file.stem} already exists, skip")
-                continue
-            try:
-                _, user = file.stem.split("_")
-            except:
-                continue
-            revlogs = data_preprocessing(file)
-            revlogs = FSRS_old_train(revlogs)
-            revlogs = FSRS_latest_train(revlogs)
-            result = evaluate(revlogs)
+def process_single_file(file):
+    try:
+        if not file.is_file() or file.suffix != ".csv":
+            return None
 
-            result["user"] = user
-            result["size"] = revlogs.shape[0]
-            # save as json
-            Path("result").mkdir(parents=True, exist_ok=True)
-            with open(f"result/{file.stem}.json", "w") as f:
-                json.dump(result, f, indent=4)
+        if file.stem in map(lambda x: x.stem, Path("result").iterdir()):
+            print(f"{file.stem} already exists, skip")
+            return None
+
+        try:
+            _, user = file.stem.split("_")
+        except:
+            return None
+
+        plt.close("all")
+        revlogs = data_preprocessing(file)
+        revlogs = FSRS_old_train(revlogs)
+        revlogs = FSRS_latest_train(revlogs)
+        result = evaluate(revlogs)
+
+        result["user"] = user
+        result["size"] = revlogs.shape[0]
+
+        # save as json
+        with open(f"result/{file.stem}.json", "w") as f:
+            json.dump(result, f, indent=4)
+
+        return file.stem
+
+    except Exception as e:
+        print(f"Error processing {file}: {str(e)}")
+        return None
+
+
+if __name__ == "__main__":
+    import multiprocessing as mp
+    from multiprocessing import Pool
+
+    # Create result directory
+    Path("result").mkdir(parents=True, exist_ok=True)
+
+    # Get list of files to process
+    files = list(Path("dataset").iterdir())
+
+    # Create process pool
+    with Pool() as pool:
+        # Process files in parallel
+        results = list(
+            tqdm(
+                pool.imap_unordered(process_single_file, files),
+                total=len(files),
+                desc="Processing files",
+            )
+        )
+
+        # Print summary
+        processed = [r for r in results if r is not None]
+        print(f"\nProcessed {len(processed)} files successfully")

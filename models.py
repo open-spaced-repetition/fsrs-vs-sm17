@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from torch import nn, Tensor
 import torch
 
@@ -100,7 +100,7 @@ class FSRS3(nn.Module):
         new_s = new_s.clamp(0.1, 36500)
         return torch.stack([new_s, new_d], dim=1)
 
-    def forward(self, inputs: Tensor, state: Optional[Tensor] = None) -> Tensor:
+    def forward(self, inputs: Tensor, state: Optional[Tensor] = None) -> Tuple[Tensor, Tensor]:
         """
         :param inputs: shape[seq_len, batch_size, 2]
         """
@@ -223,7 +223,7 @@ class FSRS4(nn.Module):
         new_s = new_s.clamp(0.1, 36500)
         return torch.stack([new_s, new_d], dim=1)
 
-    def forward(self, inputs: Tensor, state: Optional[Tensor] = None) -> Tensor:
+    def forward(self, inputs: Tensor, state: Optional[Tensor] = None) -> Tuple[Tensor, Tensor]:
         """
         :param inputs: shape[seq_len, batch_size, 2]
         """
