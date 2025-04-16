@@ -108,6 +108,7 @@ def format(exponent, n):
 
 if __name__ == "__main__":
     models = (
+        "FSRS-6",
         "FSRS-4.5",
         "FSRS-5",
         "SM17",
@@ -157,8 +158,8 @@ if __name__ == "__main__":
             if i == j:
                 wilcox[i][j] = float("NaN")
             else:
-                df1 = df[f"{models2[i]}, RMSE (bins)"]
-                df2 = df[f"{models2[j]}, RMSE (bins)"]
+                df1 = df[f"{models2[i]}, LogLoss"]
+                df2 = df[f"{models2[j]}, LogLoss"]
                 if n_collections > 50:
                     result = logp_wilcox(df1[:n_collections], df2[:n_collections])[0]
                 else:
@@ -173,8 +174,8 @@ if __name__ == "__main__":
             if i == j:
                 color_wilcox[i][j] = float("NaN")
             else:
-                df1 = df[f"{models2[i]}, RMSE (bins)"]
-                df2 = df[f"{models2[j]}, RMSE (bins)"]
+                df1 = df[f"{models2[i]}, LogLoss"]
+                df2 = df[f"{models2[j]}, LogLoss"]
                 # we'll need the second value return by my function to determine the color
                 approx = logp_wilcox(df1[:n_collections], df2[:n_collections])
                 if n_collections > 50:
@@ -231,11 +232,11 @@ if __name__ == "__main__":
                     ha="center",
                     va="center",
                     color="white",
-                    fontsize=24,
+                    fontsize=20,
                 )
 
-    ax.set_xticks(np.arange(n), labels=models2, fontsize=18)
-    ax.set_yticks(np.arange(n), labels=models2, fontsize=18)
+    ax.set_xticks(np.arange(n), labels=models2, fontsize=16)
+    ax.set_yticks(np.arange(n), labels=models2, fontsize=16)
     ax.set_xticks(np.arange(n) - 0.5, minor=True)
     ax.set_yticks(np.arange(n) - 0.5, minor=True)
     plt.grid(True, alpha=1, color="black", linewidth=2, which="minor")

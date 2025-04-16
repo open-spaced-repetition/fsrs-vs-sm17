@@ -15,7 +15,7 @@ from fsrs_optimizer import (
     ParameterClipper,
     DEFAULT_PARAMETER,
 )
-from models import FSRS3, FSRS4, FSRS4dot5
+from models import FSRS3, FSRS4, FSRS4dot5, FSRS5
 from tqdm.auto import tqdm
 from sklearn.metrics import log_loss
 from pathlib import Path
@@ -177,7 +177,7 @@ def FSRS_latest_train(revlogs):
                 optimizer.step()
                 model.apply(clipper)
 
-    revlogs["R (FSRS-5)"] = r
+    revlogs["R (FSRS-6)"] = r
 
     return revlogs
 
@@ -187,6 +187,7 @@ def FSRS_old_train(revlogs):
         (FSRS3(), "FSRSv3"),
         (FSRS4(), "FSRSv4"),
         (FSRS4dot5(), "FSRS-4.5"),
+        (FSRS5(), "FSRS-5"),
     ):
         optimizer = torch.optim.Adam(model.parameters(), lr=lr)
         loss_fn = torch.nn.BCELoss(reduction="none")
@@ -253,6 +254,11 @@ def evaluate(revlogs):
             ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (SM17(exp))"]
         ].rename(columns={"R (SM17(exp))": "p"})
     )
+    fsrs_v6_rmse = rmse_matrix(
+        revlogs[
+            ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (FSRS-6)"]
+        ].rename(columns={"R (FSRS-6)": "p"})
+    )
     fsrs_v5_rmse = rmse_matrix(
         revlogs[
             ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (FSRS-5)"]
@@ -275,11 +281,16 @@ def evaluate(revlogs):
     )
     sm16_logloss = log_loss(revlogs["y"], revlogs["R (SM16)"])
     sm17_logloss = log_loss(revlogs["y"], revlogs["R (SM17(exp))"])
+    fsrs_v6_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-6)"])
     fsrs_v5_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-5)"])
     fsrs_v4dot5_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-4.5)"])
     fsrs_v4_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv4)"])
     fsrs_v3_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv3)"])
     return {
+        "FSRS-6": {
+            "RMSE(bins)": fsrs_v6_rmse,
+            "LogLoss": fsrs_v6_logloss,
+        },
         "FSRS-5": {
             "RMSE(bins)": fsrs_v5_rmse,
             "LogLoss": fsrs_v5_logloss,

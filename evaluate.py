@@ -76,6 +76,7 @@ if __name__ == "__main__":
     FSRSv4 = ("FSRSv4", [])
     FSRS_4_5 = ("FSRS-4.5", [])
     FSRS_5 = ("FSRS-5", [])
+    FSRS_6 = ("FSRS-6", [])
     SM17 = ("SM17", [])
     SM16 = ("SM16", [])
     sizes = []
@@ -88,6 +89,7 @@ if __name__ == "__main__":
             FSRSv4[1].append(result["FSRSv4"])
             FSRS_4_5[1].append(result["FSRS-4.5"])
             FSRS_5[1].append(result["FSRS-5"])
+            FSRS_6[1].append(result["FSRS-6"])
             SM17[1].append(result["SM17"])
             SM16[1].append(result["SM16"])
             sizes.append(result["size"])
@@ -102,7 +104,7 @@ if __name__ == "__main__":
     ):
         print(f"Scale: {scale}")
         for metric in ("LogLoss", "RMSE(bins)"):
-            for model in (FSRS_5, FSRS_4_5, FSRSv4, FSRSv3, SM17, SM16):
+            for model in (FSRS_6, FSRS_5, FSRS_4_5, FSRSv4, FSRSv3, SM17, SM16):
                 metrics = np.array([item[metric] for item in model[1]])
                 wmean, wstd = weighted_avg_and_std(metrics, size)
                 CI = confidence_interval(metrics, size)
