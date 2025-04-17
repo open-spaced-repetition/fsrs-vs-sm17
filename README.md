@@ -41,17 +41,17 @@ The following tables represent the weighted means and the 99% confidence interva
 | SM-17 | 0.41±0.098 | 0.08±0.020 | 0.62±0.038 |
 | SM-16 | 0.42±0.087 | 0.11±0.026 | 0.60±0.020 |
 
-### Weighted by ln(number of repetitions)
+### Unweighted (per user)
 
 | Algorithm | Log Loss | RMSE(bins) | AUC |
 | --- | --- | --- | --- |
-| FSRS-6 | 0.40±0.068 | 0.07±0.023 | 0.65±0.047 |
-| FSRS-5 | 0.42±0.075 | 0.09±0.032 | 0.65±0.048 |
-| FSRS-4.5 | 0.42±0.091 | 0.09±0.033 | 0.65±0.048 |
-| FSRSv4 | 0.44±0.082 | 0.10±0.042 | 0.64±0.049 |
-| FSRSv3 | 0.45±0.097 | 0.11±0.033 | 0.63±0.043 |
-| SM-17 | 0.5±0.10 | 0.10±0.029 | 0.62±0.035 |
-| SM-16 | 0.5±0.11 | 0.12±0.033 | 0.61±0.024 |
+| FSRS-6 | 0.41±0.069 | 0.08±0.027 | 0.65±0.047 |
+| FSRS-5 | 0.43±0.076 | 0.10±0.037 | 0.64±0.048 |
+| FSRS-4.5 | 0.43±0.091 | 0.10±0.036 | 0.64±0.047 |
+| FSRSv4 | 0.45±0.086 | 0.11±0.049 | 0.63±0.049 |
+| FSRSv3 | 0.5±0.11 | 0.12±0.039 | 0.62±0.043 |
+| SM-17 | 0.5±0.11 | 0.10±0.033 | 0.63±0.035 |
+| SM-16 | 0.5±0.11 | 0.12±0.034 | 0.61±0.024 |
 
 The image below shows the p-values obtained by running the Wilcoxon signed-rank test on the RMSE (bins) of all pairs of algorithms. Red means that the row algorithm performs worse than the corresponding column algorithm, and green means that the row algorithm performs better than the corresponding column algorithm. Grey means that the p-value is >0.05, and we cannot conclude that one algorithm performs better than the other.
 
