@@ -59,6 +59,8 @@ It's worth mentioning that this test is not weighted, and therefore doesn't take
 
 ![Wilcoxon-16-collections](./plots/Wilcoxon-16-collections.png)
 
+![Superiority-16-collections](./plots/Superiority-16-collections.png)
+
 ## Share your data
 
 If you would like to support this project, please consider sharing your data with us. The shared data will be stored in [./dataset/](./dataset/) folder. 
