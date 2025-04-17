@@ -60,11 +60,11 @@ Unweighted averages are more representative of "average case" performance. In re
 
 ### Superiority
 
-The metrics presented above can be difficult to interpret. In order to make it easier to understand how algorithms perform relative to each other, the image below shows the percentage of users for whom algorithm A (row) has a lower Log Loss than algorithm B (column). For example, FSRS-6 has a ___ superiority over SM-17, meaning that for ___ of all collections in this benchmark, FSRS-6 can estimate the probability of recall more accurately.
+The metrics presented above can be difficult to interpret. In order to make it easier to understand how algorithms perform relative to each other, the image below shows the percentage of users for whom algorithm A (row) has a lower Log Loss than algorithm B (column). For example, FSRS-6 has a 75% superiority over SM-17, meaning that for 75% of all collections in this benchmark, FSRS-6 can estimate the probability of recall more accurately.
 
 This table is based on 16 collections.
 
-(image goes here)
+![Superiority-16-collections](./plots/Superiority-16-collections.png)
 
 ### Statistical significance
 
@@ -86,7 +86,7 @@ The colors indicate:
 
 The Wilcoxon test considers both the sign and rank of differences between pairs, but it does not account for the varying number of reviews across collections. Therefore, while the test results are reliable for qualitative analysis, caution should be exercised when interpreting the specific magnitude of effects.
 
-(image goes here)
+![Wilcoxon-16-collections](./plots/Wilcoxon-16-collections.png)
 
 ## Share your data
 
