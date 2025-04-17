@@ -5,6 +5,12 @@ import torch
 import json
 from datetime import datetime
 from itertools import accumulate
+
+import sys
+import os
+
+sys.path.insert(0, os.path.abspath("../fsrs-optimizer/src/fsrs_optimizer/"))
+
 from fsrs_optimizer import (
     lineToTensor,
     power_forgetting_curve,
@@ -15,9 +21,9 @@ from fsrs_optimizer import (
     ParameterClipper,
     DEFAULT_PARAMETER,
 )
-from models import FSRS3, FSRS4, FSRS4dot5
+from models import FSRS3, FSRS4, FSRS4dot5, FSRS5
 from tqdm.auto import tqdm
-from sklearn.metrics import log_loss
+from sklearn.metrics import log_loss, roc_auc_score
 from pathlib import Path
 
 tqdm.pandas()
@@ -177,7 +183,7 @@ def FSRS_latest_train(revlogs):
                 optimizer.step()
                 model.apply(clipper)
 
-    revlogs["R (FSRS-5)"] = r
+    revlogs["R (FSRS-6)"] = r
 
     return revlogs
 
@@ -187,6 +193,7 @@ def FSRS_old_train(revlogs):
         (FSRS3(), "FSRSv3"),
         (FSRS4(), "FSRSv4"),
         (FSRS4dot5(), "FSRS-4.5"),
+        (FSRS5(), "FSRS-5"),
     ):
         optimizer = torch.optim.Adam(model.parameters(), lr=lr)
         loss_fn = torch.nn.BCELoss(reduction="none")
@@ -253,6 +260,11 @@ def evaluate(revlogs):
             ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (SM17(exp))"]
         ].rename(columns={"R (SM17(exp))": "p"})
     )
+    fsrs_v6_rmse = rmse_matrix(
+        revlogs[
+            ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (FSRS-6)"]
+        ].rename(columns={"R (FSRS-6)": "p"})
+    )
     fsrs_v5_rmse = rmse_matrix(
         revlogs[
             ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (FSRS-5)"]
@@ -275,34 +287,54 @@ def evaluate(revlogs):
     )
     sm16_logloss = log_loss(revlogs["y"], revlogs["R (SM16)"])
     sm17_logloss = log_loss(revlogs["y"], revlogs["R (SM17(exp))"])
+    fsrs_v6_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-6)"])
     fsrs_v5_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-5)"])
     fsrs_v4dot5_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-4.5)"])
     fsrs_v4_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv4)"])
     fsrs_v3_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv3)"])
+    sm16_auc = roc_auc_score(revlogs["y"], revlogs["R (SM16)"])
+    sm17_auc = roc_auc_score(revlogs["y"], revlogs["R (SM17(exp))"])
+    fsrs_v6_auc = roc_auc_score(revlogs["y"], revlogs["R (FSRS-6)"])
+    fsrs_v5_auc = roc_auc_score(revlogs["y"], revlogs["R (FSRS-5)"])
+    fsrs_v4dot5_auc = roc_auc_score(revlogs["y"], revlogs["R (FSRS-4.5)"])
+    fsrs_v4_auc = roc_auc_score(revlogs["y"], revlogs["R (FSRSv4)"])
+    fsrs_v3_auc = roc_auc_score(revlogs["y"], revlogs["R (FSRSv3)"])
+
     return {
+        "FSRS-6": {
+            "RMSE(bins)": fsrs_v6_rmse,
+            "LogLoss": fsrs_v6_logloss,
+            "AUC": fsrs_v6_auc,
+        },
         "FSRS-5": {
             "RMSE(bins)": fsrs_v5_rmse,
             "LogLoss": fsrs_v5_logloss,
+            "AUC": fsrs_v5_auc,
         },
         "FSRS-4.5": {
             "RMSE(bins)": fsrs_v4dot5_rmse,
             "LogLoss": fsrs_v4dot5_logloss,
+            "AUC": fsrs_v4dot5_auc,
         },
         "FSRSv4": {
             "RMSE(bins)": fsrs_v4_rmse,
             "LogLoss": fsrs_v4_logloss,
+            "AUC": fsrs_v4_auc,
         },
         "FSRSv3": {
             "RMSE(bins)": fsrs_v3_rmse,
             "LogLoss": fsrs_v3_logloss,
+            "AUC": fsrs_v3_auc,
         },
         "SM16": {
             "RMSE(bins)": sm16_rmse,
             "LogLoss": sm16_logloss,
+            "AUC": sm16_auc,
         },
         "SM17": {
             "RMSE(bins)": sm17_rmse,
             "LogLoss": sm17_logloss,
+            "AUC": sm17_auc,
         },
     }
 
