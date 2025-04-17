@@ -28,7 +28,7 @@ Total users: 16
 
 Total repetitions: 194,281
 
-The following tables present the means and the 99% confidence intervals. The best result is highlighted in **bold**. The "Parameters" column shows the number of optimizable (trainable) parameters. If a parameter is a constant, it is not included. Arrows indicate whether lower (↓) or higher (↑) values are better.
+The following tables present the means and the 99% confidence intervals. The best result is highlighted in **bold**. Arrows indicate whether lower (↓) or higher (↑) values are better.
 
 ### Weighted by number of repetitions
 
