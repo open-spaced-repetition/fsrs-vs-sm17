@@ -32,7 +32,7 @@ The following tables present the means and the 99% confidence intervals. The bes
 
 ### Weighted by number of repetitions
 
-| Algorithm | Log Loss↓ | RMSE(bins)↓ | AUC↑ |
+| Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
 | --- | --- | --- | --- |
 | **FSRS-6** | **0.36±0.077** | **0.05±0.012** | 0.68±0.056 |
 | FSRS-5 | 0.37±0.084 | 0.06±0.022 | 0.68±0.061 |
@@ -44,7 +44,7 @@ The following tables present the means and the 99% confidence intervals. The bes
 
 ### Unweighted (per user)
 
-| Algorithm | Log Loss↓ | RMSE(bins)↓ | AUC↑ |
+| Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
 | --- | --- | --- | --- |
 | **FSRS-6** | **0.41±0.069** | **0.08±0.027** | **0.65±0.047** |
 | FSRS-5 | 0.43±0.076 | 0.10±0.037 | 0.64±0.048 |
