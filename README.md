@@ -14,12 +14,13 @@ Due to the difference between the workflow of SuperMemo and Anki, it is not easy
 
 ### Metrics
 
-We use two metrics in the FSRS benchmark to evaluate how well these algorithms work: log loss and a custom RMSE that we call RMSE (bins).
+We use three metrics in the SRS benchmark to evaluate how well these algorithms work: Log Loss, AUC, and a custom RMSE that we call RMSE (bins).
 
-- Log Loss (also known as Binary Cross Entropy): Utilized primarily for its applicability in binary classification problems, log loss serves as a measure of the discrepancies between predicted probabilities of recall and review outcomes (1 or 0). It quantifies how well the algorithm approximates the true recall probabilities, making it an important metric for model evaluation in spaced repetition systems.
-- Weighted Root Mean Square Error in Bins (RMSE (bins)): This is a metric engineered for the FSRS benchmark. In this approach, predictions and review outcomes are grouped into bins according to the predicted probabilities of recall. Within each bin, the squared difference between the average predicted probability of recall and the average recall rate is calculated. These values are then weighted according to the sample size in each bin, and then the final weighted root mean square error is calculated. This metric provides a nuanced understanding of model performance across different probability ranges.
+- Log Loss (also known as Binary Cross Entropy): used primarily in binary classification problems, Log Loss serves as a measure of the discrepancies between predicted probabilities of recall and review outcomes (1 or 0). It quantifies how well the algorithm approximates the true recall probabilities. Log Loss ranges from 0 to infinity, lower is better.
+- Root Mean Square Error in Bins (RMSE (bins)): this is a metric designed for use in the SRS benchmark. In this approach, predictions and review outcomes are grouped into bins based on three features: the interval length, the number of reviews, and the number of lapses. Within each bin, the squared difference between the average predicted probability of recall and the average recall rate is calculated. These values are then weighted according to the sample size in each bin, and then the final weighted root mean square error is calculated. This metric provides a nuanced understanding of algorithm performance across different probability ranges. For more details, you can read [The Metric](https://github.com/open-spaced-repetition/fsrs4anki/wiki/The-Metric). RMSE (bins) ranges from 0 to 1, lower is better.
+- AUC (Area under the ROC Curve): this metric tells us how much the algorithm is capable of distinguishing between classes. AUC ranges from 0 to 1, however, in practice it's almost always greater than 0.5; higher is better.
 
-Smaller is better. If you are unsure what metric to look at, look at RMSE (bins). That value can be interpreted as "the average difference between the predicted probability of recalling a card and the measured probability". For example, if RMSE (bins)=0.05, it means that that algorithm is, on average, wrong by 5% when predicting the probability of recall.
+Log Loss and RMSE (bins) measure calibration: how well predicted probabilities of recall match the real data. AUC measures discrimination: how well the algorithm can tell two (or more, generally speaking) classes apart. AUC can be good (high) even if Log Loss and RMSE are poor.
 
 ## Result
 
@@ -27,13 +28,13 @@ Total users: 16
 
 Total repetitions: 194,281
 
-The following tables represent the weighted means and the 99% confidence intervals.
+The following tables present the means and the 99% confidence intervals. The best result is highlighted in **bold**. Arrows indicate whether lower (↓) or higher (↑) values are better.
 
 ### Weighted by number of repetitions
 
-| Algorithm | Log Loss | RMSE(bins) | AUC |
+| Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
 | --- | --- | --- | --- |
-| FSRS-6 | 0.36±0.077 | 0.05±0.012 | 0.68±0.056 |
+| **FSRS-6** | **0.36±0.077** | **0.05±0.012** | 0.68±0.056 |
 | FSRS-5 | 0.37±0.084 | 0.06±0.022 | 0.68±0.061 |
 | FSRS-4.5 | 0.37±0.088 | 0.06±0.023 | 0.68±0.060 |
 | FSRSv4 | 0.38±0.088 | 0.06±0.024 | 0.67±0.060 |
@@ -43,9 +44,9 @@ The following tables represent the weighted means and the 99% confidence interva
 
 ### Unweighted (per user)
 
-| Algorithm | Log Loss | RMSE(bins) | AUC |
+| Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
 | --- | --- | --- | --- |
-| FSRS-6 | 0.41±0.069 | 0.08±0.027 | 0.65±0.047 |
+| **FSRS-6** | **0.41±0.069** | **0.08±0.027** | **0.65±0.047** |
 | FSRS-5 | 0.43±0.076 | 0.10±0.037 | 0.64±0.048 |
 | FSRS-4.5 | 0.43±0.091 | 0.10±0.036 | 0.64±0.047 |
 | FSRSv4 | 0.45±0.086 | 0.11±0.049 | 0.63±0.049 |
@@ -53,13 +54,39 @@ The following tables represent the weighted means and the 99% confidence interva
 | SM-17 | 0.5±0.11 | 0.10±0.033 | 0.63±0.035 |
 | SM-16 | 0.5±0.11 | 0.12±0.034 | 0.61±0.024 |
 
-The image below shows the p-values obtained by running the Wilcoxon signed-rank test on the RMSE (bins) of all pairs of algorithms. Red means that the row algorithm performs worse than the corresponding column algorithm, and green means that the row algorithm performs better than the corresponding column algorithm. Grey means that the p-value is >0.05, and we cannot conclude that one algorithm performs better than the other.
+Averages weighted by the number of reviews are more representative of "best case" performance when plenty of data is available. Since almost all algorithms perform better when there's a lot of data to learn from, weighting by n(reviews) biases the average towards lower values.
 
-It's worth mentioning that this test is not weighted, and therefore doesn't take into account that RMSE (bins) depends on the number of reviews.
+Unweighted averages are more representative of "average case" performance. In reality, not every user will have hundreds of thousands of reviews, so the algorithm won't always be able to reach its full potential.
 
-![Wilcoxon-16-collections](./plots/Wilcoxon-16-collections.png)
+### Superiority
+
+The metrics presented above can be difficult to interpret. In order to make it easier to understand how algorithms perform relative to each other, the image below shows the percentage of users for whom algorithm A (row) has a lower Log Loss than algorithm B (column). For example, FSRS-6 has a 75% superiority over SM-17, meaning that for 75% of all collections in this benchmark, FSRS-6 can estimate the probability of recall more accurately.
+
+This table is based on 16 collections.
 
 ![Superiority-16-collections](./plots/Superiority-16-collections.png)
+
+### Statistical significance
+
+The figures below show effect sizes comparing the Log Loss between all pairs of algorithms using the Wilcoxon signed-rank test r-values:
+
+The colors indicate:
+
+- Red shades indicate the row algorithm performs worse than the column algorithm:
+  - Dark red: large effect (r > 0.5)
+  - Red: medium effect (0.5 ≥ r > 0.2) 
+  - Light red: small effect (r ≤ 0.2)
+
+- Green shades indicate the row algorithm performs better than the column algorithm:
+  - Dark green: large effect (r > 0.5)
+  - Green: medium effect (0.5 ≥ r > 0.2) 
+  - Light green: small effect (r ≤ 0.2)
+
+- Grey indicates that the p-value is greater than 0.01, meaning we cannot conclude which algorithm performs better.
+
+The Wilcoxon test considers both the sign and rank of differences between pairs, but it does not account for the varying number of reviews across collections. Therefore, while the test results are reliable for qualitative analysis, caution should be exercised when interpreting the specific magnitude of effects.
+
+![Wilcoxon-16-collections](./plots/Wilcoxon-16-collections.png)
 
 ## Share your data
 
