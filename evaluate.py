@@ -103,7 +103,7 @@ if __name__ == "__main__":
         ("users", np.ones_like(sizes)),
     ):
         print(f"Scale: {scale}")
-        for metric in ("LogLoss", "RMSE(bins)"):
+        for metric in ("LogLoss", "RMSE(bins)", "AUC"):
             for model in (FSRS_6, FSRS_5, FSRS_4_5, FSRSv4, FSRSv3, SM17, SM16):
                 metrics = np.array([item[metric] for item in model[1]])
                 wmean, wstd = weighted_avg_and_std(metrics, size)
