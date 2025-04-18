@@ -82,7 +82,7 @@ The colors indicate:
   - Green: medium effect (0.5 ≥ r > 0.2) 
   - Light green: small effect (r ≤ 0.2)
 
-- Grey indicates that the p-value is greater than 0.01, meaning we cannot conclude which algorithm performs better.
+- Grey indicates that the p-value is greater than 0.05, meaning we cannot conclude which algorithm performs better.
 
 The Wilcoxon test considers both the sign and rank of differences between pairs, but it does not account for the varying number of reviews across collections. Therefore, while the test results are reliable for qualitative analysis, caution should be exercised when interpreting the specific magnitude of effects.
 

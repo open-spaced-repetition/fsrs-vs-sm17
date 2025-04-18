@@ -12,6 +12,48 @@ from scipy import stats
 warnings.filterwarnings("ignore")
 
 
+def wilcoxon_effect_size(x, y):
+    """
+    Calculate the effect size r for Wilcoxon signed-rank test
+    """
+    wilcoxon_result = stats.wilcoxon(x, y, zero_method="wilcox", correction=False)
+
+    W = wilcoxon_result.statistic
+    p_value = wilcoxon_result.pvalue
+
+    differences = np.array(x) - np.array(y)
+    differences = differences[differences != 0]
+    n = len(differences)
+
+    mu = n * (n + 1) / 4
+    sigma = np.sqrt(n * (n + 1) * (2 * n + 1) / 24)
+
+    z = (W - mu) / sigma
+
+    r = z / np.sqrt(n)
+
+    return {
+        "W": W,
+        "p_value": p_value,
+        "z": z,
+        "r": abs(r),
+        "mid": np.median(differences),
+    }
+
+
+def ttest_effect_size(x, y):
+    ttest_result = stats.ttest_rel(x, y)
+    cohen_d = (np.mean(x) - np.mean(y)) / np.sqrt(
+        (np.std(x, ddof=1) ** 2 + np.std(y, ddof=1) ** 2) / 2
+    )
+    return {
+        "t": ttest_result.statistic,
+        "p_value": ttest_result.pvalue,
+        "cohen_d": abs(cohen_d),
+        "mean_diff": np.mean(x) - np.mean(y),
+    }
+
+
 def logp_wilcox(x, y, correction=False):
     # method='wilcox'
     # mode='approx'
@@ -150,48 +192,63 @@ if __name__ == "__main__":
     models_name = list(models)
 
     n = len(models_name)
-    wilcox = [[-1 for i in range(n)] for j in range(n)]
+    wilcox = np.full((n, n), -1.0)
+    color_wilcox = np.full((n, n), -1.0)
+    ttest = np.full((n, n), -1.0)
+    color_ttest = np.full((n, n), -1.0)
     for i in range(n):
         for j in range(n):
             if i == j:
-                wilcox[i][j] = float("NaN")
+                wilcox[i, j] = np.nan
+                color_wilcox[i, j] = np.nan
+                ttest[i, j] = np.nan
+                color_ttest[i, j] = np.nan
             else:
                 df1 = df[f"{models_name[i]}, LogLoss"]
                 df2 = df[f"{models_name[j]}, LogLoss"]
-                if n_collections > 50:
-                    result = logp_wilcox(df1[:n_collections], df2[:n_collections])[0]
-                else:
-                    result = np.log10(
-                        stats.wilcoxon(df1[:n_collections], df2[:n_collections]).pvalue
-                    )
-                wilcox[i][j] = result
+                result = wilcoxon_effect_size(df1[:n_collections], df2[:n_collections])
+                p_value = result["p_value"]
+                wilcox[i, j] = result["r"]
 
-    color_wilcox = [[-1 for i in range(n)] for j in range(n)]
-    for i in range(n):
-        for j in range(n):
-            if i == j:
-                color_wilcox[i][j] = float("NaN")
-            else:
-                df1 = df[f"{models_name[i]}, LogLoss"]
-                df2 = df[f"{models_name[j]}, LogLoss"]
-                # we'll need the second value return by my function to determine the color
-                approx = logp_wilcox(df1[:n_collections], df2[:n_collections])
-                if n_collections > 50:
-                    result = approx[0]
-                else:
-                    # use the exact result for small n
-                    result = np.log10(
-                        stats.wilcoxon(df1[:n_collections], df2[:n_collections]).pvalue
-                    )
-
-                if np.power(10, result) > 0.05:
+                if p_value > 0.05:
                     # color for insignificant p-values
-                    color_wilcox[i][j] = 0.5
+                    color_wilcox[i, j] = 3
                 else:
-                    if approx[1] == 0:
-                        color_wilcox[i][j] = 0
+                    if result["mid"] > 0:
+                        if result["r"] > 0.5:
+                            color_wilcox[i, j] = 0
+                        elif result["r"] > 0.2:
+                            color_wilcox[i, j] = 1
+                        else:
+                            color_wilcox[i, j] = 2
                     else:
-                        color_wilcox[i][j] = 1
+                        if result["r"] > 0.5:
+                            color_wilcox[i, j] = 6
+                        elif result["r"] > 0.2:
+                            color_wilcox[i, j] = 5
+                        else:
+                            color_wilcox[i, j] = 4
+
+                result = ttest_effect_size(df1[:n_collections], df2[:n_collections])
+                ttest[i, j] = result["cohen_d"]
+                if result["p_value"] > 0.05:
+                    # color for insignificant p-values
+                    color_ttest[i, j] = 3
+                else:
+                    if result["mean_diff"] > 0:
+                        if result["cohen_d"] > 0.5:
+                            color_ttest[i, j] = 0
+                        elif result["cohen_d"] > 0.2:
+                            color_ttest[i, j] = 1
+                        else:
+                            color_ttest[i, j] = 2
+                    else:
+                        if result["cohen_d"] > 0.5:
+                            color_ttest[i, j] = 6
+                        elif result["cohen_d"] > 0.2:
+                            color_ttest[i, j] = 5
+                        else:
+                            color_ttest[i, j] = 4
 
     # small changes to labels
     index_v3 = models_name.index("FSRSv3")
@@ -205,28 +262,29 @@ if __name__ == "__main__":
 
     fig, ax = plt.subplots(figsize=(10, 9), dpi=150)
     ax.set_title(
-        f"Wilcoxon signed-rank test, p-values ({n_collections} collections)",
+        f"Wilcoxon signed-rank test, r-values ({n_collections} collections)",
         fontsize=24,
         pad=30,
     )
-    cmap = matplotlib.colors.ListedColormap(["red", "#989a98", "#2db300"])
-    plt.imshow(color_wilcox, interpolation="none", vmin=0, cmap=cmap)
+    cmap = matplotlib.colors.ListedColormap(
+        ["darkred", "red", "coral", "silver", "limegreen", "#199819", "darkgreen"]
+    )
+    plt.imshow(
+        color_wilcox,
+        interpolation="none",
+        vmin=color_wilcox[~np.isnan(color_wilcox)].min(),
+        cmap=cmap,
+    )
 
     for i in range(n):
         for j in range(n):
             if math.isnan(wilcox[i][j]):
                 pass
             else:
-                if 10 ** wilcox[i][j] > 0.1:
-                    string = f"{10 ** wilcox[i][j]:.2f}"
-                elif 10 ** wilcox[i][j] > 0.01:
-                    string = f"{10 ** wilcox[i][j]:.3f}"
-                else:
-                    string = format(wilcox[i][j], 1)
                 text = ax.text(
                     j,
                     i,
-                    string,
+                    f"{wilcox[i][j]:.2f}",
                     ha="center",
                     va="center",
                     color="white",
@@ -242,6 +300,43 @@ if __name__ == "__main__":
         ax.spines[location].set_linewidth(2)
     pathlib.Path("./plots").mkdir(parents=True, exist_ok=True)
     title = f"Wilcoxon-{n_collections}-collections"
+    plt.savefig(f"./plots/{title}.png", bbox_inches="tight")
+
+    fig, ax = plt.subplots(figsize=(10, 9), dpi=150)
+    ax.set_title(
+        f"T-test, Cohen's d ({n_collections} collections)",
+        fontsize=24,
+        pad=30,
+    )
+    plt.imshow(
+        color_ttest,
+        interpolation="none",
+        vmin=color_ttest[~np.isnan(color_ttest)].min(),
+        cmap=cmap,
+    )
+    for i in range(n):
+        for j in range(n):
+            if math.isnan(ttest[i][j]):
+                pass
+            else:
+                text = ax.text(
+                    j,
+                    i,
+                    f"{ttest[i][j]:.2f}",
+                    ha="center",
+                    va="center",
+                    color="white",
+                    fontsize=20,
+                )
+
+    ax.set_xticks(np.arange(n), labels=models_name, fontsize=16)
+    ax.set_yticks(np.arange(n), labels=models_name, fontsize=16)
+    ax.set_xticks(np.arange(n) - 0.5, minor=True)
+    ax.set_yticks(np.arange(n) - 0.5, minor=True)
+    plt.grid(True, alpha=1, color="black", linewidth=2, which="minor")
+    for location in ["left", "right", "top", "bottom"]:
+        ax.spines[location].set_linewidth(2)
+    title = f"T-test-{n_collections}-collections"
     plt.savefig(f"./plots/{title}.png", bbox_inches="tight")
 
     percentages = np.full((n, n), -1.0)
