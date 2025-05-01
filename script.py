@@ -361,7 +361,7 @@ def evaluate(revlogs):
         "AVG": {
             "RMSE(bins)": avg_rmse,
             "LogLoss": avg_logloss,
-            "AUC": avg_rmse,
+            "AUC": avg_auc,
         },
     }
 
