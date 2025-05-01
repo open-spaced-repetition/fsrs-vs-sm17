@@ -79,6 +79,7 @@ if __name__ == "__main__":
     FSRS_6 = ("FSRS-6", [])
     SM17 = ("SM17", [])
     SM16 = ("SM16", [])
+    AVG = ("AVG", [])
     sizes = []
     result_dir = pathlib.Path("./result")
     result_files = result_dir.glob("*.json")
@@ -92,6 +93,7 @@ if __name__ == "__main__":
             FSRS_6[1].append(result["FSRS-6"])
             SM17[1].append(result["SM17"])
             SM16[1].append(result["SM16"])
+            AVG[1].append(result["AVG"])
             sizes.append(result["size"])
 
     print(f"Total number of users: {len(sizes)}")
@@ -104,7 +106,7 @@ if __name__ == "__main__":
     ):
         print(f"Scale: {scale}")
         for metric in ("LogLoss", "RMSE(bins)", "AUC"):
-            for model in (FSRS_6, FSRS_5, FSRS_4_5, FSRSv4, FSRSv3, SM17, SM16):
+            for model in (FSRS_6, FSRS_5, FSRS_4_5, FSRSv4, FSRSv3, SM17, SM16, AVG):
                 metrics = np.array([item[metric] for item in model[1]])
                 wmean, wstd = weighted_avg_and_std(metrics, size)
                 CI = confidence_interval(metrics, size)

@@ -208,7 +208,7 @@ def FSRS_old_train(revlogs):
             d.append(difficulty.detach().numpy()[0])
             s.append(stability.detach().numpy()[0])
             retention = model.forgetting_curve(delta_t, stability)
-            r.append(retention.detach().numpy()[0])
+            r.append(retention.detach().numpy().round(3)[0])
             loss = loss_fn(retention, label).sum()
             loss.backward()
             optimizer.step()
@@ -244,7 +244,32 @@ def FSRS_old_train(revlogs):
     return revlogs
 
 
+def baseline(revlogs):
+    dataset = BatchDataset(revlogs, 1, False)
+    dataloader = BatchLoader(dataset, shuffle=False)
+    r = []
+    average_retention = 0.9
+    sample_size = 1
+
+    for i, sample in enumerate(tqdm(dataloader)):
+        sequence, delta_t, label, seq_len, weights = sample
+        r.append(round(average_retention, 3))
+        average_retention = (
+            average_retention * sample_size + label.detach().numpy()[0]
+        ) / (sample_size + 1)
+        sample_size += 1
+
+    revlogs["R (AVG)"] = r
+
+    return revlogs
+
+
 def evaluate(revlogs):
+    avg_rmse = rmse_matrix(
+        revlogs[
+            ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (AVG)"]
+        ].rename(columns={"R (AVG)": "p"})
+    )
     sm16_rmse = rmse_matrix(
         revlogs[
             ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (SM16)"]
@@ -280,6 +305,7 @@ def evaluate(revlogs):
             ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (FSRSv3)"]
         ].rename(columns={"R (FSRSv3)": "p"})
     )
+    avg_logloss = log_loss(revlogs["y"], revlogs["R (AVG)"])
     sm16_logloss = log_loss(revlogs["y"], revlogs["R (SM16)"])
     sm17_logloss = log_loss(revlogs["y"], revlogs["R (SM17(exp))"])
     fsrs_v6_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-6)"])
@@ -287,6 +313,7 @@ def evaluate(revlogs):
     fsrs_v4dot5_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-4.5)"])
     fsrs_v4_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv4)"])
     fsrs_v3_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv3)"])
+    avg_auc = roc_auc_score(revlogs["y"], revlogs["R (AVG)"])
     sm16_auc = roc_auc_score(revlogs["y"], revlogs["R (SM16)"])
     sm17_auc = roc_auc_score(revlogs["y"], revlogs["R (SM17(exp))"])
     fsrs_v6_auc = roc_auc_score(revlogs["y"], revlogs["R (FSRS-6)"])
@@ -331,6 +358,11 @@ def evaluate(revlogs):
             "LogLoss": sm17_logloss,
             "AUC": sm17_auc,
         },
+        "AVG": {
+            "RMSE(bins)": avg_rmse,
+            "LogLoss": avg_logloss,
+            "AUC": avg_auc,
+        },
     }
 
 
@@ -350,6 +382,7 @@ def process_single_file(file):
 
         plt.close("all")
         revlogs = data_preprocessing(file)
+        revlogs = baseline(revlogs)
         revlogs = FSRS_old_train(revlogs)
         revlogs = FSRS_latest_train(revlogs)
         result = evaluate(revlogs)
