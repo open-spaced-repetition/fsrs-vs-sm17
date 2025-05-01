@@ -6,11 +6,6 @@ import json
 from datetime import datetime
 from itertools import accumulate
 
-import sys
-import os
-
-sys.path.insert(0, os.path.abspath("../fsrs-optimizer/src/fsrs_optimizer/"))
-
 from fsrs_optimizer import (
     lineToTensor,
     power_forgetting_curve,
@@ -153,8 +148,8 @@ def FSRS_latest_train(revlogs):
         stability, difficulty = output[seq_len - 1, 0].transpose(0, 1)
         d.append(difficulty.detach().numpy()[0])
         s.append(stability.detach().numpy()[0])
-        retention = power_forgetting_curve(delta_t, stability)
-        r.append(retention.detach().numpy()[0])
+        retention = power_forgetting_curve(delta_t, stability, -model.w[20])
+        r.append(retention.detach().numpy().round(3)[0])
         loss = loss_fn(retention, label).sum()
         loss.backward()
         optimizer.step()
@@ -177,7 +172,7 @@ def FSRS_latest_train(revlogs):
                 real_batch_size = seq_lens.shape[0]
                 outputs, _ = model(sequences)
                 stabilities = outputs[seq_lens - 1, torch.arange(real_batch_size), 0]
-                retentions = power_forgetting_curve(delta_ts, stabilities)
+                retentions = power_forgetting_curve(delta_ts, stabilities, -model.w[20])
                 loss = (loss_fn(retentions, labels) * weights).sum()
                 loss.backward()
                 optimizer.step()
@@ -358,6 +353,10 @@ def process_single_file(file):
         revlogs = FSRS_old_train(revlogs)
         revlogs = FSRS_latest_train(revlogs)
         result = evaluate(revlogs)
+
+        revlogs[["y"] + [col for col in revlogs.columns if col.startswith("R")]].to_csv(
+            f"./raw/{file.stem}.csv", index=False
+        )
 
         result["user"] = user
         result["size"] = revlogs.shape[0]

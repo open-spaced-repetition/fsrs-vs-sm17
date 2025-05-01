@@ -110,5 +110,5 @@ if __name__ == "__main__":
                 CI = confidence_interval(metrics, size)
                 rounded_mean, rounded_CI = sigdig(wmean, CI)
                 print(f"{model[0]} {metric}: {rounded_mean}±{rounded_CI}")
-                print(f"{model[0]} {metric} (mean±std): {wmean:.3f}±{wstd:.3f}")
+                # print(f"{model[0]} {metric} (mean±std): {wmean:.3f}±{wstd:.3f}")
             print()
