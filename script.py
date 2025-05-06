@@ -415,7 +415,7 @@ def process_single_file(file):
 
     except Exception as e:
         print(f"Error processing {file}: {str(e)}")
-        raise None
+        return None
 
 
 if __name__ == "__main__":
