@@ -1,3 +1,4 @@
+import collections
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -72,6 +73,8 @@ def data_preprocessing(csv_file_path, save_csv=False):
         },
         inplace=True,
     )
+    dataset = dataset[dataset["delta_t"] > 0].copy()
+    dataset.reset_index(drop=True, inplace=True)
     dataset["i"] = dataset.groupby("card_id").cumcount() + 1
     dataset["review_rating"] = dataset["Grade"].map(
         {0: 1, 1: 1, 2: 1, 3: 2, 4: 3, 5: 4}
@@ -92,13 +95,20 @@ def data_preprocessing(csv_file_path, save_csv=False):
     dataset["r_history"] = [
         ",".join(map(str, item[:-1])) for sublist in r_history for item in sublist
     ]
-    dataset = dataset[(dataset["i"] > 1) & (dataset["delta_t"] > 0)].copy()
-    dataset = dataset[(dataset["i"] > 1) & (dataset["delta_t"] > 0)].copy()
-    dataset["tensor"] = dataset.progress_apply(
-        lambda x: lineToTensor(list(zip([x["t_history"]], [x["r_history"]]))[0]), axis=1
-    )
-    dataset.sort_values(by=["review_date"], inplace=True)
+
+    def get_tensor(row):
+        if row["i"] > 1:
+            return lineToTensor(list(zip([row["t_history"]], [row["r_history"]]))[0])
+        else:
+            return np.nan
+
+    dataset["tensor"] = dataset.progress_apply(get_tensor, axis=1)
+    dataset.sort_values(by=["review_date", "i"], inplace=True)
     dataset.reset_index(drop=True, inplace=True)
+    dataset["index"] = range(0, dataset.shape[0])
+    dataset[["next_index", "next_tensor", "next_delta_t", "next_y"]] = dataset.groupby(
+        "card_id"
+    )[["index", "tensor", "delta_t", "y"]].shift(-1)
     if save_csv:
         Path("converted").mkdir(parents=True, exist_ok=True)
         save = dataset[
@@ -132,32 +142,30 @@ def FSRS_latest_train(revlogs):
     model = FSRS(DEFAULT_PARAMETER)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     loss_fn = torch.nn.BCELoss(reduction="none")
-
-    dataset = BatchDataset(revlogs, 1, False)
-    dataloader = BatchLoader(dataset, shuffle=False)
     clipper = ParameterClipper()
-    d = []
-    s = []
-    r = []
+    r = [np.nan for _ in range(len(revlogs))]
+    queue = collections.deque(maxlen=replay_size)
 
-    for i, sample in enumerate(tqdm(dataloader)):
-        model.train()
-        optimizer.zero_grad()
-        sequence, delta_t, label, seq_len, weights = sample
-        output, _ = model(sequence)
-        stability, difficulty = output[seq_len - 1, 0].transpose(0, 1)
-        d.append(difficulty.detach().numpy()[0])
-        s.append(stability.detach().numpy()[0])
-        retention = power_forgetting_curve(delta_t, stability, -model.w[20])
-        r.append(retention.detach().numpy().round(3)[0])
-        loss = loss_fn(retention, label).sum()
-        loss.backward()
-        optimizer.step()
-        model.apply(clipper)
+    for i in tqdm(range(len(revlogs))):
+        row = revlogs.iloc[i]
+        if row["i"] > 1:
+            queue.append(row.to_dict())
 
-        if enable_experience_replay and (i + 1) % replay_steps == 0:
+        if not np.isnan(row["next_index"]):
+            sequence = (
+                torch.tensor(row["next_tensor"].tolist()).unsqueeze(0).transpose(0, 1)
+            )
+            seq_len = torch.tensor(row["next_tensor"].size(0), dtype=torch.long)
+            delta_t = torch.tensor(row["next_delta_t"], dtype=torch.float).unsqueeze(0)
+            with torch.no_grad():
+                output, _ = model(sequence)
+            stability = output[seq_len - 1, torch.arange(1), 0]
+            retention = power_forgetting_curve(delta_t, stability, -model.w[20])
+            r[int(row["next_index"])] = retention.detach().numpy().round(3)[0]
+
+        if enable_experience_replay and len(queue) > 0 and (i + 1) % replay_steps == 0:
             # experience replay
-            replay_buffer = revlogs[max(0, i + 1 - replay_size) : i + 1].copy()
+            replay_buffer = pd.DataFrame(queue, columns=revlogs.columns)
             x = np.linspace(0, 1, len(replay_buffer))
             replay_buffer["weights"] = 0.25 + 0.75 * np.power(x, 3)
             replay_dataset = BatchDataset(
@@ -192,31 +200,37 @@ def FSRS_old_train(revlogs):
     ):
         optimizer = torch.optim.Adam(model.parameters(), lr=lr)
         loss_fn = torch.nn.BCELoss(reduction="none")
+        r = [np.nan for _ in range(len(revlogs))]
+        queue = collections.deque(maxlen=replay_size)
 
-        dataset = BatchDataset(revlogs, 1, False)
-        dataloader = BatchLoader(dataset, shuffle=False)
-        d = []
-        s = []
-        r = []
+        for i in tqdm(range(len(revlogs))):
+            row = revlogs.iloc[i]
+            if row["i"] > 1:
+                queue.append(row.to_dict())
 
-        for i, sample in enumerate(tqdm(dataloader)):
-            model.train()
-            optimizer.zero_grad()
-            sequence, delta_t, label, seq_len, weights = sample
-            output, _ = model(sequence)
-            stability, difficulty = output[seq_len - 1, 0].transpose(0, 1)
-            d.append(difficulty.detach().numpy()[0])
-            s.append(stability.detach().numpy()[0])
-            retention = model.forgetting_curve(delta_t, stability)
-            r.append(retention.detach().numpy().round(3)[0])
-            loss = loss_fn(retention, label).sum()
-            loss.backward()
-            optimizer.step()
-            model.apply(model.clipper)
+            if not np.isnan(row["next_index"]):
+                sequence = (
+                    torch.tensor(row["next_tensor"].tolist())
+                    .unsqueeze(0)
+                    .transpose(0, 1)
+                )
+                seq_len = torch.tensor(row["next_tensor"].size(0), dtype=torch.long)
+                delta_t = torch.tensor(
+                    row["next_delta_t"], dtype=torch.float
+                ).unsqueeze(0)
+                with torch.no_grad():
+                    output, _ = model(sequence)
+                stability = output[seq_len - 1, torch.arange(1), 0]
+                retention = model.forgetting_curve(delta_t, stability)
+                r[int(row["next_index"])] = retention.detach().numpy().round(3)[0]
 
-            if enable_experience_replay and (i + 1) % replay_steps == 0:
+            if (
+                enable_experience_replay
+                and len(queue) > 0
+                and (i + 1) % replay_steps == 0
+            ):
                 # experience replay
-                replay_buffer = revlogs[max(0, i + 1 - replay_size) : i + 1].copy()
+                replay_buffer = pd.DataFrame(queue, columns=revlogs.columns)
                 x = np.linspace(0, 1, len(replay_buffer))
                 replay_buffer["weights"] = 0.25 + 0.75 * np.power(x, 3)
                 replay_dataset = BatchDataset(
@@ -245,22 +259,18 @@ def FSRS_old_train(revlogs):
 
 
 def baseline(revlogs):
-    dataset = BatchDataset(revlogs, 1, False)
-    dataloader = BatchLoader(dataset, shuffle=False)
-    r = []
-    average_retention = 0.9
-    sample_size = 1
+    tot_y = 0.9
+    tot_n = 1
+    predictions = [np.nan for _ in range(len(revlogs))]
+    for i in range(len(revlogs)):
+        row = revlogs.iloc[i]
+        assert i == row["index"]
+        if not np.isnan(row["next_index"]):
+            predictions[int(row["next_index"])] = tot_y / tot_n
+        tot_y += row["y"]
+        tot_n += 1.0
 
-    for i, sample in enumerate(tqdm(dataloader)):
-        sequence, delta_t, label, seq_len, weights = sample
-        r.append(round(average_retention, 3))
-        average_retention = (
-            average_retention * sample_size + label.detach().numpy()[0]
-        ) / (sample_size + 1)
-        sample_size += 1
-
-    revlogs["R (AVG)"] = r
-
+    revlogs["R (AVG)"] = predictions
     return revlogs
 
 
@@ -385,6 +395,9 @@ def process_single_file(file):
         revlogs = baseline(revlogs)
         revlogs = FSRS_old_train(revlogs)
         revlogs = FSRS_latest_train(revlogs)
+
+        revlogs = revlogs[revlogs["i"] > 1].copy()
+        revlogs.reset_index(drop=True, inplace=True)
         result = evaluate(revlogs)
 
         revlogs[["y"] + [col for col in revlogs.columns if col.startswith("R")]].to_csv(
@@ -402,7 +415,7 @@ def process_single_file(file):
 
     except Exception as e:
         print(f"Error processing {file}: {str(e)}")
-        return None
+        raise None
 
 
 if __name__ == "__main__":
