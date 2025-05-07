@@ -152,6 +152,7 @@ def FSRS_latest_train(revlogs):
             queue.append(row.to_dict())
 
         if not np.isnan(row["next_index"]):
+            # predict the retention of the next review of the same card
             sequence = (
                 torch.tensor(row["next_tensor"].tolist()).unsqueeze(0).transpose(0, 1)
             )
@@ -209,6 +210,7 @@ def FSRS_old_train(revlogs):
                 queue.append(row.to_dict())
 
             if not np.isnan(row["next_index"]):
+                # predict the retention of the next review of the same card
                 sequence = (
                     torch.tensor(row["next_tensor"].tolist())
                     .unsqueeze(0)
@@ -396,6 +398,7 @@ def process_single_file(file):
         revlogs = FSRS_old_train(revlogs)
         revlogs = FSRS_latest_train(revlogs)
 
+        # exclude the first learning entry for each card
         revlogs = revlogs[revlogs["i"] > 1].copy()
         revlogs.reset_index(drop=True, inplace=True)
         result = evaluate(revlogs)
