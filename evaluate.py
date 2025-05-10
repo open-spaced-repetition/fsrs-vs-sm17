@@ -28,7 +28,14 @@ def sigdig(value, CI):
     decimals = n_lead_zeros_CI + CI_sigdigs
     rounded_CI = round(CI, decimals)
     rounded_value = round(value, decimals)
-    return str(f"{rounded_value:.{decimals}f}"), str(f"{rounded_CI:.{decimals}f}")
+    if n_lead_zeros_CI > num_lead_zeros(rounded_CI):
+        return str(f"{round(value, decimals - 1):.{decimals - 1}f}"), str(
+            f"{round(CI, decimals):.{decimals}f}"
+        )
+    else:
+        return str(f"{rounded_value:.{decimals}f}"), str(
+            f"{rounded_CI:.{decimals}f}"
+        )
 
 
 def confidence_interval(values, sizes):
