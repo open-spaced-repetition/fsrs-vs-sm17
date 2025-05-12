@@ -56,7 +56,6 @@ The following tables present the means and the 99% confidence intervals. The bes
 | FSRSv4 | 0.478±0.084 | 0.145±0.052 | 0.623±0.044 |
 | FSRSv3 | 0.53±0.13 | 0.144±0.045 | 0.611±0.041 |
 
-
 Averages weighted by the number of reviews are more representative of "best case" performance when plenty of data is available. Since almost all algorithms perform better when there's a lot of data to learn from, weighting by n(reviews) biases the average towards lower values.
 
 Unweighted averages are more representative of "average case" performance. In reality, not every user will have hundreds of thousands of reviews, so the algorithm won't always be able to reach its full potential.
