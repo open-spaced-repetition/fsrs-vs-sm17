@@ -33,9 +33,7 @@ def sigdig(value, CI):
             f"{round(CI, decimals - 1):.{decimals - 1}f}"
         )
     else:
-        return str(f"{rounded_value:.{decimals}f}"), str(
-            f"{rounded_CI:.{decimals}f}"
-        )
+        return str(f"{rounded_value:.{decimals}f}"), str(f"{rounded_CI:.{decimals}f}")
 
 
 # tests to ensure that sigdigs is working as intended

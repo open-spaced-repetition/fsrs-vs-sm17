@@ -189,10 +189,11 @@ def FSRS_latest_train(revlogs):
 
     revlogs["R (FSRS-6)"] = r
 
-    return revlogs
+    return revlogs, model
 
 
 def FSRS_old_train(revlogs):
+    trained_models = {}
     for model, name in (
         (FSRS3(), "FSRSv3"),
         (FSRS4(), "FSRSv4"),
@@ -256,8 +257,9 @@ def FSRS_old_train(revlogs):
                     model.apply(model.clipper)
 
         revlogs[f"R ({name})"] = r
+        trained_models[name] = model
 
-    return revlogs
+    return revlogs, trained_models
 
 
 def baseline(revlogs):
@@ -395,8 +397,8 @@ def process_single_file(file):
         plt.close("all")
         revlogs = data_preprocessing(file)
         revlogs = baseline(revlogs)
-        revlogs = FSRS_old_train(revlogs)
-        revlogs = FSRS_latest_train(revlogs)
+        revlogs, trained_models = FSRS_old_train(revlogs)
+        revlogs, model = FSRS_latest_train(revlogs)
 
         # exclude the first learning entry for each card
         revlogs = revlogs[revlogs["i"] > 1].copy()
@@ -409,6 +411,23 @@ def process_single_file(file):
 
         result["user"] = user
         result["size"] = revlogs.shape[0]
+
+        # Add model parameters to result
+        result["parameters"] = {}
+
+        # Add FSRS-6 parameters
+        result["parameters"]["FSRS-6"] = list(
+            map(lambda x: round(x, 4), model.w.detach().numpy().tolist())
+        )
+
+        # Add other FSRS model parameters
+        for model_name, trained_model in trained_models.items():
+            if hasattr(trained_model, "w"):
+                result["parameters"][model_name] = list(
+                    map(
+                        lambda x: round(x, 4), trained_model.w.detach().numpy().tolist()
+                    )
+                )
 
         # save as json
         with open(f"result/{file.stem}.json", "w") as f:
