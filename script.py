@@ -47,10 +47,7 @@ def data_preprocessing(csv_file_path, save_csv=False):
     df["Date"] = df["Date"].apply(convert_to_datetime)
     df.dropna(subset=["Date"], inplace=True)
     df = df[df["Success"].isin([0, 1]) & df["Grade"].isin([0, 1, 2, 3, 4, 5])].copy()
-    df = df[
-        (df["R (SM16)"] <= 1) & (df["R (SM17)"] <= 1) & (df["R (SM17)(exp)"] <= 1)
-    ].copy()
-    df["R (SM17)(exp)"] = df["R (SM17)(exp)"].map(lambda x: np.clip(x, 0.001, 0.999))
+    df = df[(df["R (SM16)"] <= 1) & (df["R (SM17)"] <= 1)].copy()
     dataset = df[
         [
             "Date",
@@ -58,7 +55,6 @@ def data_preprocessing(csv_file_path, save_csv=False):
             "Used interval",
             "R (SM16)",
             "R (SM17)",
-            "R (SM17)(exp)",
             "Grade",
             "Success",
         ]
@@ -68,7 +64,6 @@ def data_preprocessing(csv_file_path, save_csv=False):
             "Element No": "card_id",
             "Date": "review_date",
             "Used interval": "delta_t",
-            "R (SM17)(exp)": "R (SM17(exp))",
             "Success": "y",
         },
         inplace=True,
@@ -118,7 +113,7 @@ def data_preprocessing(csv_file_path, save_csv=False):
                 "delta_t",
                 "review_rating",
                 "R (SM16)",
-                "R (SM17(exp))",
+                "R (SM17)",
             ]
         ].copy()
         save["review_date"] = save["review_date"].rank(method="dense").astype("int64")
@@ -291,8 +286,8 @@ def evaluate(revlogs):
     )
     sm17_rmse = rmse_matrix(
         revlogs[
-            ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (SM17(exp))"]
-        ].rename(columns={"R (SM17(exp))": "p"})
+            ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (SM17)"]
+        ].rename(columns={"R (SM17)": "p"})
     )
     fsrs_v6_rmse = rmse_matrix(
         revlogs[
@@ -321,7 +316,7 @@ def evaluate(revlogs):
     )
     avg_logloss = log_loss(revlogs["y"], revlogs["R (AVG)"])
     sm16_logloss = log_loss(revlogs["y"], revlogs["R (SM16)"])
-    sm17_logloss = log_loss(revlogs["y"], revlogs["R (SM17(exp))"])
+    sm17_logloss = log_loss(revlogs["y"], revlogs["R (SM17)"])
     fsrs_v6_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-6)"])
     fsrs_v5_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-5)"])
     fsrs_v4dot5_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-4.5)"])
@@ -329,7 +324,7 @@ def evaluate(revlogs):
     fsrs_v3_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv3)"])
     avg_auc = roc_auc_score(revlogs["y"], revlogs["R (AVG)"])
     sm16_auc = roc_auc_score(revlogs["y"], revlogs["R (SM16)"])
-    sm17_auc = roc_auc_score(revlogs["y"], revlogs["R (SM17(exp))"])
+    sm17_auc = roc_auc_score(revlogs["y"], revlogs["R (SM17)"])
     fsrs_v6_auc = roc_auc_score(revlogs["y"], revlogs["R (FSRS-6)"])
     fsrs_v5_auc = roc_auc_score(revlogs["y"], revlogs["R (FSRS-5)"])
     fsrs_v4dot5_auc = roc_auc_score(revlogs["y"], revlogs["R (FSRS-4.5)"])
@@ -338,44 +333,44 @@ def evaluate(revlogs):
 
     return {
         "FSRS-6": {
-            "RMSE(bins)": fsrs_v6_rmse,
-            "LogLoss": fsrs_v6_logloss,
-            "AUC": fsrs_v6_auc,
+            "RMSE(bins)": round(fsrs_v6_rmse, 4),
+            "LogLoss": round(fsrs_v6_logloss, 4),
+            "AUC": round(fsrs_v6_auc, 4),
         },
         "FSRS-5": {
-            "RMSE(bins)": fsrs_v5_rmse,
-            "LogLoss": fsrs_v5_logloss,
-            "AUC": fsrs_v5_auc,
+            "RMSE(bins)": round(fsrs_v5_rmse, 4),
+            "LogLoss": round(fsrs_v5_logloss, 4),
+            "AUC": round(fsrs_v5_auc, 4),
         },
         "FSRS-4.5": {
-            "RMSE(bins)": fsrs_v4dot5_rmse,
-            "LogLoss": fsrs_v4dot5_logloss,
-            "AUC": fsrs_v4dot5_auc,
+            "RMSE(bins)": round(fsrs_v4dot5_rmse, 4),
+            "LogLoss": round(fsrs_v4dot5_logloss, 4),
+            "AUC": round(fsrs_v4dot5_auc, 4),
         },
         "FSRSv4": {
-            "RMSE(bins)": fsrs_v4_rmse,
-            "LogLoss": fsrs_v4_logloss,
-            "AUC": fsrs_v4_auc,
+            "RMSE(bins)": round(fsrs_v4_rmse, 4),
+            "LogLoss": round(fsrs_v4_logloss, 4),
+            "AUC": round(fsrs_v4_auc, 4),
         },
         "FSRSv3": {
-            "RMSE(bins)": fsrs_v3_rmse,
-            "LogLoss": fsrs_v3_logloss,
-            "AUC": fsrs_v3_auc,
+            "RMSE(bins)": round(fsrs_v3_rmse, 4),
+            "LogLoss": round(fsrs_v3_logloss, 4),
+            "AUC": round(fsrs_v3_auc, 4),
         },
         "SM16": {
-            "RMSE(bins)": sm16_rmse,
-            "LogLoss": sm16_logloss,
-            "AUC": sm16_auc,
+            "RMSE(bins)": round(sm16_rmse, 4),
+            "LogLoss": round(sm16_logloss, 4),
+            "AUC": round(sm16_auc, 4),
         },
         "SM17": {
-            "RMSE(bins)": sm17_rmse,
-            "LogLoss": sm17_logloss,
-            "AUC": sm17_auc,
+            "RMSE(bins)": round(sm17_rmse, 4),
+            "LogLoss": round(sm17_logloss, 4),
+            "AUC": round(sm17_auc, 4),
         },
         "AVG": {
-            "RMSE(bins)": avg_rmse,
-            "LogLoss": avg_logloss,
-            "AUC": avg_auc,
+            "RMSE(bins)": round(avg_rmse, 4),
+            "LogLoss": round(avg_logloss, 4),
+            "AUC": round(avg_auc, 4),
         },
     }
 

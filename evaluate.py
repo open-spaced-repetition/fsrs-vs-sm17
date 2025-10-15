@@ -111,21 +111,71 @@ if __name__ == "__main__":
             AVG[1].append(result["AVG"])
             sizes.append(result["size"])
 
-    print(f"Total number of users: {len(sizes)}")
+    print(f"Total users: {len(sizes)}")
     sizes = np.array(sizes)
-    print(f"Total size: {sizes.sum()}")
-    for scale, size in (
-        ("reviews", np.array(sizes)),
-        ("log(reviews)", np.log(sizes)),
-        ("users", np.ones_like(sizes)),
-    ):
-        print(f"Scale: {scale}")
-        for metric in ("LogLoss", "RMSE(bins)", "AUC"):
-            for model in (FSRS_6, FSRS_5, FSRS_4_5, FSRSv4, FSRSv3, SM17, SM16, AVG):
-                metrics = np.array([item[metric] for item in model[1]])
+    print(f"\nTotal repetitions: {sizes.sum():,}\n")
+
+    # Define metrics with their display names and sort order
+    metrics_config = [
+        ("LogLoss", "Log Loss↓", "lower"),
+        ("RMSE(bins)", "RMSE (bins)↓", "lower"),
+        ("AUC", "AUC↑", "higher"),
+    ]
+
+    # Define model order for display
+    models = [FSRS_6, FSRS_5, FSRS_4_5, AVG, FSRSv4, SM17, SM16, FSRSv3]
+
+    for scale_name, size in [
+        ("Weighted by number of repetitions", np.array(sizes)),
+        ("Unweighted (per user)", np.ones_like(sizes)),
+    ]:
+        print(f"### {scale_name}\n")
+
+        # Calculate all metrics for all models
+        results = {}
+        for model in models:
+            results[model[0]] = {}
+            for metric_key, _, _ in metrics_config:
+                metrics = np.array([item[metric_key] for item in model[1]])
                 wmean, wstd = weighted_avg_and_std(metrics, size)
                 CI = confidence_interval(metrics, size)
                 rounded_mean, rounded_CI = sigdig(wmean, CI)
-                print(f"{model[0]} {metric}: {rounded_mean}±{rounded_CI}")
-                # print(f"{model[0]} {metric} (mean±std): {wmean:.3f}±{wstd:.3f}")
-            print()
+                results[model[0]][metric_key] = (rounded_mean, rounded_CI, wmean)
+
+        # Find best value for each metric
+        best_values = {}
+        for metric_key, _, direction in metrics_config:
+            values = [(name, results[name][metric_key][2]) for name in results.keys()]
+            if direction == "lower":
+                best_name = min(values, key=lambda x: x[1])[0]
+            else:  # higher
+                best_name = max(values, key=lambda x: x[1])[0]
+            best_values[metric_key] = best_name
+
+        # Print table header
+        header = "| Algorithm |"
+        separator = "| --- |"
+        for _, display_name, _ in metrics_config:
+            header += f" {display_name} |"
+            separator += " --- |"
+        print(header)
+        print(separator)
+
+        # Sort models by Log Loss (ascending)
+        sorted_models = sorted(models, key=lambda m: results[m[0]]["LogLoss"][2])
+
+        # Print table rows
+        for model in sorted_models:
+            model_name = model[0]
+            row = f"| {model_name} |"
+            for metric_key, _, _ in metrics_config:
+                rounded_mean, rounded_CI, _ = results[model_name][metric_key]
+                value_str = f"{rounded_mean}±{rounded_CI}"
+                # Bold if best
+                if best_values[metric_key] == model_name:
+                    value_str = f"**{value_str}**"
+                    row = row.replace(f"| {model_name} |", f"| **{model_name}** |")
+                row += f" {value_str} |"
+            print(row)
+
+        print()

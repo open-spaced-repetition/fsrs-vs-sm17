@@ -154,9 +154,9 @@ if __name__ == "__main__":
         "FSRS-4.5",
         "FSRS-5",
         "FSRSv4",
-        "SM17",
         "SM16",
         "FSRSv3",
+        "SM17",
     )
     csv_name = f"{len(models)} models.csv"
     df = pd.DataFrame()
