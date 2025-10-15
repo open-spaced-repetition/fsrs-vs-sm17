@@ -35,12 +35,12 @@ The following tables present the means and the 99% confidence intervals. The bes
 | Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
 | --- | --- | --- | --- |
 | **FSRS-6** | **0.363±0.078** | **0.052±0.015** | **0.674±0.060** |
-| FSRS-4.5 | 0.381±0.085 | 0.074±0.023 | 0.666±0.060 |
-| FSRS-5 | 0.381±0.086 | 0.074±0.023 | 0.667±0.061 |
+| FSRS-4.5 | 0.381±0.086 | 0.074±0.023 | 0.666±0.060 |
+| FSRS-5 | 0.381±0.085 | 0.074±0.023 | 0.667±0.061 |
 | AVG | 0.387±0.072 | 0.086±0.017 | 0.531±0.026 |
 | FSRSv4 | 0.401±0.092 | 0.093±0.030 | 0.656±0.061 |
-| SM16 | 0.421±0.086 | 0.106±0.026 | 0.599±0.020 |
-| FSRSv3 | 0.44±0.12 | 0.109±0.029 | 0.635±0.051 |
+| SM16 | 0.421±0.087 | 0.106±0.026 | 0.599±0.020 |
+| FSRSv3 | 0.44±0.12 | 0.109±0.029 | 0.635±0.052 |
 | SM17 | 0.460±0.093 | 0.082±0.014 | 0.611±0.039 |
 
 ### Unweighted (per user)
@@ -50,11 +50,11 @@ The following tables present the means and the 99% confidence intervals. The bes
 | **FSRS-6** | **0.409±0.067** | **0.081±0.028** | **0.639±0.044** |
 | AVG | 0.423±0.080 | 0.099±0.023 | 0.506±0.032 |
 | FSRS-4.5 | 0.434±0.073 | 0.109±0.036 | 0.637±0.042 |
-| FSRS-5 | 0.438±0.073 | 0.113±0.039 | 0.636±0.043 |
+| FSRS-5 | 0.438±0.074 | 0.113±0.039 | 0.636±0.043 |
 | SM16 | 0.47±0.11 | 0.124±0.034 | 0.609±0.024 |
 | FSRSv4 | 0.478±0.084 | 0.145±0.051 | 0.623±0.044 |
-| SM17 | 0.497±0.097 | 0.097±0.027 | 0.610±0.034 |
-| FSRSv3 | 0.53±0.13 | 0.144±0.046 | 0.611±0.041 |
+| SM17 | 0.497±0.096 | 0.097±0.027 | 0.610±0.035 |
+| FSRSv3 | 0.53±0.13 | 0.144±0.045 | 0.611±0.041 |
 
 Averages weighted by the number of reviews are more representative of "best case" performance when plenty of data is available. Since almost all algorithms perform better when there's a lot of data to learn from, weighting by n(reviews) biases the average towards lower values.
 
@@ -68,7 +68,7 @@ The universal metric is proposed by SuperMemo. Reference: [Universal metric for 
 |-----------|------------------|
 | **FSRS-6** | **0.0262** |
 | SM16 | 0.0382 |
-| SM17 | 0.0400 |
+| SM17 | 0.0399 |
 | FSRS-4.5 | 0.0591 |
 | AVG | 0.0598 |
 | FSRS-5 | 0.0611 |

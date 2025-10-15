@@ -37,7 +37,7 @@ def cross_comparison(revlogs, algoA, algoB):
             cross_comparison_group[f"R ({player})", "mean"],
             sample_weight=cross_comparison_group[f"R ({player})", "count"],
         )
-        result[f"{player}_evaluated_by_{referee}"] = universal_metric
+        result[f"{player}_evaluated_by_{referee}"] = round(universal_metric, 4)
         cross_comparison_group[f"R ({player})", "percent"] = (
             cross_comparison_group[f"R ({player})", "count"]
             / cross_comparison_group[f"R ({player})", "count"].sum()
