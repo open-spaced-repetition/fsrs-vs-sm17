@@ -47,10 +47,7 @@ def data_preprocessing(csv_file_path, save_csv=False):
     df["Date"] = df["Date"].apply(convert_to_datetime)
     df.dropna(subset=["Date"], inplace=True)
     df = df[df["Success"].isin([0, 1]) & df["Grade"].isin([0, 1, 2, 3, 4, 5])].copy()
-    df = df[
-        (df["R (SM16)"] <= 1) & (df["R (SM17)"] <= 1) & (df["R (SM17)(exp)"] <= 1)
-    ].copy()
-    df["R (SM17)(exp)"] = df["R (SM17)(exp)"].map(lambda x: np.clip(x, 0.001, 0.999))
+    df = df[(df["R (SM16)"] <= 1) & (df["R (SM17)"] <= 1)].copy()
     dataset = df[
         [
             "Date",
@@ -58,7 +55,6 @@ def data_preprocessing(csv_file_path, save_csv=False):
             "Used interval",
             "R (SM16)",
             "R (SM17)",
-            "R (SM17)(exp)",
             "Grade",
             "Success",
         ]
@@ -68,7 +64,6 @@ def data_preprocessing(csv_file_path, save_csv=False):
             "Element No": "card_id",
             "Date": "review_date",
             "Used interval": "delta_t",
-            "R (SM17)(exp)": "R (SM17(exp))",
             "Success": "y",
         },
         inplace=True,
@@ -118,7 +113,7 @@ def data_preprocessing(csv_file_path, save_csv=False):
                 "delta_t",
                 "review_rating",
                 "R (SM16)",
-                "R (SM17(exp))",
+                "R (SM17)",
             ]
         ].copy()
         save["review_date"] = save["review_date"].rank(method="dense").astype("int64")
@@ -291,8 +286,8 @@ def evaluate(revlogs):
     )
     sm17_rmse = rmse_matrix(
         revlogs[
-            ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (SM17(exp))"]
-        ].rename(columns={"R (SM17(exp))": "p"})
+            ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (SM17)"]
+        ].rename(columns={"R (SM17)": "p"})
     )
     fsrs_v6_rmse = rmse_matrix(
         revlogs[
@@ -321,7 +316,7 @@ def evaluate(revlogs):
     )
     avg_logloss = log_loss(revlogs["y"], revlogs["R (AVG)"])
     sm16_logloss = log_loss(revlogs["y"], revlogs["R (SM16)"])
-    sm17_logloss = log_loss(revlogs["y"], revlogs["R (SM17(exp))"])
+    sm17_logloss = log_loss(revlogs["y"], revlogs["R (SM17)"])
     fsrs_v6_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-6)"])
     fsrs_v5_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-5)"])
     fsrs_v4dot5_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-4.5)"])
@@ -329,7 +324,7 @@ def evaluate(revlogs):
     fsrs_v3_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv3)"])
     avg_auc = roc_auc_score(revlogs["y"], revlogs["R (AVG)"])
     sm16_auc = roc_auc_score(revlogs["y"], revlogs["R (SM16)"])
-    sm17_auc = roc_auc_score(revlogs["y"], revlogs["R (SM17(exp))"])
+    sm17_auc = roc_auc_score(revlogs["y"], revlogs["R (SM17)"])
     fsrs_v6_auc = roc_auc_score(revlogs["y"], revlogs["R (FSRS-6)"])
     fsrs_v5_auc = roc_auc_score(revlogs["y"], revlogs["R (FSRS-5)"])
     fsrs_v4dot5_auc = roc_auc_score(revlogs["y"], revlogs["R (FSRS-4.5)"])
