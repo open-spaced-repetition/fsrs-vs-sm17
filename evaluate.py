@@ -92,8 +92,8 @@ if __name__ == "__main__":
     FSRS_4_5 = ("FSRS-4.5", [])
     FSRS_5 = ("FSRS-5", [])
     FSRS_6 = ("FSRS-6", [])
-    SM17 = ("SM17", [])
-    SM16 = ("SM16", [])
+    SM17 = ("SM-17", [])
+    SM16 = ("SM-16", [])
     AVG = ("AVG", [])
     sizes = []
     result_dir = pathlib.Path("./result")
