@@ -39,6 +39,11 @@
         "LogLoss": 0.3684,
         "AUC": 0.5441
     },
+    "MOVING-AVG": {
+        "RMSE(bins)": 0.0543,
+        "LogLoss": 0.3553,
+        "AUC": 0.6247
+    },
     "user": "nocturne2014",
     "size": 35557,
     "parameters": {

@@ -39,6 +39,11 @@
         "LogLoss": 0.3529,
         "AUC": 0.5187
     },
+    "MOVING-AVG": {
+        "RMSE(bins)": 0.0409,
+        "LogLoss": 0.3586,
+        "AUC": 0.529
+    },
     "user": "Hy-Fran",
     "size": 65134,
     "parameters": {

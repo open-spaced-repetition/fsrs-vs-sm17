@@ -39,6 +39,11 @@
         "LogLoss": 0.4258,
         "AUC": 0.5455
     },
+    "MOVING-AVG": {
+        "RMSE(bins)": 0.0657,
+        "LogLoss": 0.4206,
+        "AUC": 0.5622
+    },
     "user": "shisuu",
     "size": 21391,
     "parameters": {

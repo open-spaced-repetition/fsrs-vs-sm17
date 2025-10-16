@@ -151,6 +151,8 @@ def format(exponent, n):
 if __name__ == "__main__":
     models = (
         "FSRS-6",
+        "MOVING-AVG",
+        "AVG",
         "FSRS-4.5",
         "FSRS-5",
         "FSRSv4",
@@ -288,10 +290,10 @@ if __name__ == "__main__":
                     ha="center",
                     va="center",
                     color="white",
-                    fontsize=20,
+                    fontsize=16,
                 )
 
-    ax.set_xticks(np.arange(n), labels=models_name, fontsize=16)
+    ax.set_xticks(np.arange(n), labels=models_name, fontsize=16, rotation=45)
     ax.set_yticks(np.arange(n), labels=models_name, fontsize=16)
     ax.set_xticks(np.arange(n) - 0.5, minor=True)
     ax.set_yticks(np.arange(n) - 0.5, minor=True)
@@ -326,10 +328,10 @@ if __name__ == "__main__":
                     ha="center",
                     va="center",
                     color="white",
-                    fontsize=20,
+                    fontsize=16,
                 )
 
-    ax.set_xticks(np.arange(n), labels=models_name, fontsize=16)
+    ax.set_xticks(np.arange(n), labels=models_name, fontsize=16, rotation=45)
     ax.set_yticks(np.arange(n), labels=models_name, fontsize=16)
     ax.set_xticks(np.arange(n) - 0.5, minor=True)
     ax.set_yticks(np.arange(n) - 0.5, minor=True)
@@ -437,10 +439,10 @@ if __name__ == "__main__":
                     ha="center",
                     va="center",
                     color="white",
-                    fontsize=18,
+                    fontsize=15,
                 )
 
-    ax.set_xticks(np.arange(n), labels=models_name, fontsize=16)
+    ax.set_xticks(np.arange(n), labels=models_name, fontsize=16, rotation=45)
     ax.set_yticks(np.arange(n), labels=models_name, fontsize=16)
     ax.set_xticks(np.arange(n) - 0.5, minor=True)
     ax.set_yticks(np.arange(n) - 0.5, minor=True)

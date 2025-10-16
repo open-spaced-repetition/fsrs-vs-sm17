@@ -39,6 +39,11 @@
         "LogLoss": 0.4057,
         "AUC": 0.5604
     },
+    "MOVING-AVG": {
+        "RMSE(bins)": 0.0647,
+        "LogLoss": 0.3979,
+        "AUC": 0.6133
+    },
     "user": "Leee",
     "size": 206051,
     "parameters": {

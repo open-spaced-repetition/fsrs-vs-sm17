@@ -39,6 +39,11 @@
         "LogLoss": 0.2672,
         "AUC": 0.5549
     },
+    "MOVING-AVG": {
+        "RMSE(bins)": 0.0478,
+        "LogLoss": 0.2664,
+        "AUC": 0.5358
+    },
     "user": "hugomarins",
     "size": 3674,
     "parameters": {
