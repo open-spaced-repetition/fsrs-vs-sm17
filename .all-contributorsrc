@@ -132,6 +132,15 @@
       "contributions": [
         "data"
       ]
+    },
+    {
+      "login": "hugomarins",
+      "name": "Hugo Marins",
+      "avatar_url": "https://avatars.githubusercontent.com/u/54500828?v=4",
+      "profile": "https://github.com/hugomarins",
+      "contributions": [
+        "data"
+      ]
     }
   ],
   "contributorsPerLine": 7,
