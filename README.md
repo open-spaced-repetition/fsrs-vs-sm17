@@ -24,7 +24,7 @@ Log Loss and RMSE (bins) measure calibration: how well predicted probabilities o
 
 Total users: 17
 
-Total repetitions: 197,957
+Total repetitions: 358,733
 
 The following tables present the means and the 99% confidence intervals. The best result is highlighted in **bold**. Arrows indicate whether lower (↓) or higher (↑) values are better.
 
@@ -32,27 +32,27 @@ The following tables present the means and the 99% confidence intervals. The bes
 
 | Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
 | --- | --- | --- | --- |
-| **FSRS-6** | **0.362±0.076** | **0.053±0.015** | **0.672±0.059** |
-| FSRS-4.5 | 0.380±0.083 | 0.076±0.024 | 0.665±0.060 |
-| FSRS-5 | 0.381±0.084 | 0.077±0.025 | 0.666±0.061 |
-| AVG | 0.385±0.070 | 0.085±0.017 | 0.531±0.025 |
-| FSRSv4 | 0.403±0.091 | 0.097±0.032 | 0.655±0.060 |
-| SM-16 | 0.419±0.084 | 0.106±0.025 | 0.599±0.019 |
-| FSRSv3 | 0.44±0.12 | 0.111±0.030 | 0.634±0.051 |
-| SM-17 | 0.457±0.090 | 0.081±0.014 | 0.610±0.039 |
+| **FSRS-6** | **0.379±0.040** | **0.040±0.020** | **0.688±0.045** |
+| FSRS-4.5 | 0.393±0.041 | 0.056±0.030 | 0.677±0.043 |
+| FSRS-5 | 0.393±0.041 | 0.056±0.031 | 0.678±0.043 |
+| FSRSv4 | 0.408±0.047 | 0.068±0.042 | 0.669±0.044 |
+| AVG | 0.409±0.051 | 0.086±0.016 | 0.544±0.025 |
+| SM-16 | 0.432±0.058 | 0.101±0.021 | 0.615±0.026 |
+| FSRSv3 | 0.449±0.066 | 0.098±0.027 | 0.622±0.036 |
+| SM-17 | 0.471±0.055 | 0.076±0.012 | 0.615±0.037 |
 
 ### Unweighted (per user)
 
 | Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
 | --- | --- | --- | --- |
-| **FSRS-6** | **0.403±0.065** | **0.084±0.027** | **0.635±0.043** |
-| AVG | 0.413±0.079 | 0.096±0.022 | 0.509±0.031 |
-| FSRS-4.5 | 0.430±0.071 | 0.114±0.035 | 0.634±0.041 |
-| FSRS-5 | 0.435±0.070 | 0.119±0.038 | 0.633±0.041 |
-| SM-16 | 0.46±0.11 | 0.122±0.033 | 0.607±0.023 |
-| FSRSv4 | 0.477±0.079 | 0.152±0.051 | 0.620±0.042 |
-| SM-17 | 0.486±0.095 | 0.095±0.026 | 0.605±0.034 |
-| FSRSv3 | 0.52±0.13 | 0.149±0.043 | 0.609±0.039 |
+| **FSRS-6** | **0.410±0.062** | **0.084±0.027** | **0.633±0.040** |
+| AVG | 0.420±0.077 | 0.097±0.022 | 0.509±0.031 |
+| FSRS-4.5 | 0.437±0.067 | 0.113±0.035 | 0.631±0.038 |
+| FSRS-5 | 0.442±0.067 | 0.118±0.039 | 0.630±0.038 |
+| SM-16 | 0.46±0.11 | 0.121±0.033 | 0.609±0.023 |
+| FSRSv4 | 0.484±0.075 | 0.152±0.052 | 0.617±0.039 |
+| SM-17 | 0.494±0.092 | 0.095±0.026 | 0.603±0.033 |
+| FSRSv3 | 0.53±0.12 | 0.150±0.043 | 0.604±0.036 |
 
 Averages weighted by the number of reviews are more representative of "best case" performance when plenty of data is available. Since almost all algorithms perform better when there's a lot of data to learn from, weighting by n(reviews) biases the average towards lower values.
 
@@ -64,14 +64,14 @@ The universal metric is proposed by SuperMemo. Reference: [Universal metric for 
 
 | Algorithm | Universal Metric↓ |
 |-----------|------------------|
-| **FSRS-6** | **0.0280** |
-| SM-16 | 0.0384 |
-| SM-17 | 0.0398 |
-| AVG | 0.0592 |
-| FSRS-4.5 | 0.0617 |
-| FSRS-5 | 0.0640 |
-| FSRSv3 | 0.0765 |
-| FSRSv4 | 0.0831 |
+| **FSRS-6** | **0.0206** |
+| SM-16 | 0.0404 |
+| FSRS-4.5 | 0.0449 |
+| FSRS-5 | 0.0458 |
+| SM-17 | 0.0501 |
+| FSRSv3 | 0.0535 |
+| FSRSv4 | 0.0581 |
+| AVG | 0.0625 |
 
 ### Superiority
 
