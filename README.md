@@ -22,9 +22,9 @@ Log Loss and RMSE (bins) measure calibration: how well predicted probabilities o
 
 ## Result
 
-Total users: 17
+Total users: 18
 
-Total repetitions: 418,727
+Total repetitions: 496,336
 
 The following tables present the means and the 99% confidence intervals. The best result is highlighted in **bold**. Arrows indicate whether lower (↓) or higher (↑) values are better.
 
@@ -32,27 +32,27 @@ The following tables present the means and the 99% confidence intervals. The bes
 
 | Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
 | --- | --- | --- | --- |
-| **FSRS-6** | **0.376±0.035** | **0.040±0.017** | **0.676±0.052** |
-| FSRS-4.5 | 0.391±0.034 | 0.057±0.027 | 0.666±0.048 |
-| FSRS-5 | 0.391±0.034 | 0.057±0.028 | 0.666±0.048 |
-| AVG | 0.402±0.042 | 0.079±0.023 | 0.541±0.023 |
-| FSRSv4 | 0.405±0.040 | 0.069±0.037 | 0.658±0.048 |
-| SM-16 | 0.424±0.060 | 0.094±0.024 | 0.612±0.024 |
-| FSRSv3 | 0.443±0.058 | 0.097±0.024 | 0.614±0.034 |
-| SM-17 | 0.466±0.046 | 0.073±0.014 | 0.608±0.030 |
+| **FSRS-6** | **0.361±0.048** | **0.049±0.025** | **0.658±0.061** |
+| AVG | 0.377±0.070 | 0.075±0.021 | 0.537±0.022 |
+| FSRS-4.5 | 0.384±0.036 | 0.072±0.043 | 0.645±0.064 |
+| FSRS-5 | 0.385±0.035 | 0.073±0.045 | 0.645±0.066 |
+| FSRSv4 | 0.404±0.032 | 0.088±0.055 | 0.636±0.067 |
+| SM-16 | 0.416±0.048 | 0.103±0.033 | 0.590±0.054 |
+| SM-17 | 0.43±0.10 | 0.066±0.023 | 0.617±0.035 |
+| FSRSv3 | 0.469±0.080 | 0.125±0.069 | 0.589±0.065 |
 
 ### Unweighted (per user)
 
 | Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
 | --- | --- | --- | --- |
-| **FSRS-6** | **0.413±0.061** | **0.081±0.027** | **0.634±0.040** |
-| AVG | 0.425±0.074 | 0.096±0.023 | 0.511±0.030 |
-| FSRS-4.5 | 0.440±0.066 | 0.112±0.036 | 0.632±0.038 |
-| FSRS-5 | 0.445±0.065 | 0.116±0.040 | 0.632±0.038 |
-| SM-16 | 0.47±0.11 | 0.120±0.034 | 0.611±0.022 |
-| FSRSv4 | 0.487±0.074 | 0.148±0.053 | 0.619±0.038 |
-| SM-17 | 0.499±0.089 | 0.095±0.026 | 0.600±0.033 |
-| FSRSv3 | 0.53±0.12 | 0.150±0.043 | 0.603±0.037 |
+| **FSRS-6** | **0.406±0.059** | **0.082±0.026** | **0.630±0.039** |
+| AVG | 0.415±0.075 | 0.093±0.023 | 0.512±0.028 |
+| FSRS-4.5 | 0.435±0.064 | 0.114±0.034 | 0.626±0.038 |
+| FSRS-5 | 0.440±0.064 | 0.118±0.038 | 0.626±0.039 |
+| SM-16 | 0.46±0.10 | 0.122±0.032 | 0.603±0.029 |
+| FSRSv4 | 0.481±0.071 | 0.151±0.050 | 0.614±0.039 |
+| SM-17 | 0.486±0.091 | 0.091±0.025 | 0.604±0.033 |
+| FSRSv3 | 0.54±0.11 | 0.156±0.044 | 0.595±0.040 |
 
 Averages weighted by the number of reviews are more representative of "best case" performance when plenty of data is available. Since almost all algorithms perform better when there's a lot of data to learn from, weighting by n(reviews) biases the average towards lower values.
 
@@ -64,22 +64,22 @@ The universal metric is proposed by SuperMemo. Reference: [Universal metric for 
 
 | Algorithm | Universal Metric↓ |
 |-----------|------------------|
-| **FSRS-6** | **0.0213** |
-| SM-16 | 0.0337 |
-| FSRS-4.5 | 0.0452 |
-| FSRS-5 | 0.0461 |
-| SM-17 | 0.0474 |
-| FSRSv3 | 0.0537 |
-| FSRSv4 | 0.0580 |
-| AVG | 0.0588 |
+| **FSRS-6** | **0.0328** |
+| SM-17 | 0.0405 |
+| SM-16 | 0.0456 |
+| AVG | 0.0498 |
+| FSRS-4.5 | 0.0649 |
+| FSRS-5 | 0.0664 |
+| FSRSv4 | 0.0813 |
+| FSRSv3 | 0.0869 |
 
 ### Superiority
 
-The metrics presented above can be difficult to interpret. In order to make it easier to understand how algorithms perform relative to each other, the image below shows the percentage of users for whom algorithm A (row) has a lower Log Loss than algorithm B (column). For example, FSRS-6 has a 88.2% superiority over SM-17, meaning that for 88.2% of all collections in this benchmark, FSRS-6 can estimate the probability of recall more accurately.
+The metrics presented above can be difficult to interpret. In order to make it easier to understand how algorithms perform relative to each other, the image below shows the percentage of users for whom algorithm A (row) has a lower Log Loss than algorithm B (column). For example, FSRS-6 has a 83.3% superiority over SM-17, meaning that for 83.3% of all collections in this benchmark, FSRS-6 can estimate the probability of recall more accurately.
 
-This table is based on 17 collections.
+This table is based on 18 collections.
 
-![Superiority-17-collections](./plots/Superiority-17-collections.png)
+![Superiority-18-collections](./plots/Superiority-18-collections.png)
 
 ### Statistical significance
 
@@ -101,7 +101,7 @@ The colors indicate:
 
 The Wilcoxon test considers both the sign and rank of differences between pairs, but it does not account for the varying number of reviews across collections. Therefore, while the test results are reliable for qualitative analysis, caution should be exercised when interpreting the specific magnitude of effects.
 
-![Wilcoxon-17-collections](./plots/Wilcoxon-17-collections.png)
+![Wilcoxon-18-collections](./plots/Wilcoxon-18-collections.png)
 
 ## Share your data
 
