@@ -22,9 +22,9 @@ Log Loss and RMSE (bins) measure calibration: how well predicted probabilities o
 
 ## Result
 
-Total users: 16
+Total users: 17
 
-Total repetitions: 194,281
+Total repetitions: 197,957
 
 The following tables present the means and the 99% confidence intervals. The best result is highlighted in **bold**. Arrows indicate whether lower (↓) or higher (↑) values are better.
 
@@ -75,11 +75,11 @@ The universal metric is proposed by SuperMemo. Reference: [Universal metric for 
 
 ### Superiority
 
-The metrics presented above can be difficult to interpret. In order to make it easier to understand how algorithms perform relative to each other, the image below shows the percentage of users for whom algorithm A (row) has a lower Log Loss than algorithm B (column). For example, FSRS-6 has a 75% superiority over SM-17, meaning that for 75% of all collections in this benchmark, FSRS-6 can estimate the probability of recall more accurately.
+The metrics presented above can be difficult to interpret. In order to make it easier to understand how algorithms perform relative to each other, the image below shows the percentage of users for whom algorithm A (row) has a lower Log Loss than algorithm B (column). For example, FSRS-6 has a 88.2% superiority over SM-17, meaning that for 88.2% of all collections in this benchmark, FSRS-6 can estimate the probability of recall more accurately.
 
-This table is based on 16 collections.
+This table is based on 17 collections.
 
-![Superiority-16-collections](./plots/Superiority-16-collections.png)
+![Superiority-17-collections](./plots/Superiority-17-collections.png)
 
 ### Statistical significance
 
