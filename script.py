@@ -33,16 +33,35 @@ def data_preprocessing(csv_file_path, save_csv=False):
     df.columns = df.columns.str.strip()
 
     def convert_to_datetime(date_str):
-        try:
-            return datetime.strptime(date_str, "%b %d %Y %H:%M:%S")
-        except ValueError:
+        # 德语月份到英语月份的映射（包括多种变体）
+        german_months = {
+            'Jan': 'Jan', 'Feb': 'Feb', 'Mär': 'Mar', 'Mrz': 'Mar', 'Apr': 'Apr',
+            'Mai': 'May', 'Jun': 'Jun', 'Jul': 'Jul', 'Aug': 'Aug',
+            'Sep': 'Sep', 'Okt': 'Oct', 'Nov': 'Nov', 'Dez': 'Dec'
+        }
+        
+        # 将德语月份替换为英语月份
+        date_str_normalized = date_str
+        for de_month, en_month in german_months.items():
+            if de_month in date_str:
+                date_str_normalized = date_str.replace(de_month, en_month)
+                break
+        
+        date_formats = [
+            "%b %d %Y %H:%M:%S",
+            "%m月 %d %Y %H:%M:%S", 
+            "%d/%m/%Y %H:%M",
+            "%m/%d/%Y",
+            "%m-%d-%y"
+        ]
+        
+        for date_format in date_formats:
             try:
-                return datetime.strptime(date_str, "%m月 %d %Y %H:%M:%S")
+                return datetime.strptime(date_str_normalized, date_format)
             except ValueError:
-                try:
-                    return datetime.strptime(date_str, "%d/%m/%Y %H:%M")
-                except ValueError:
-                    return pd.NaT
+                continue
+        print(f"Failed to convert {date_str} to datetime")
+        return pd.NaT
 
     df["Date"] = df["Date"].apply(convert_to_datetime)
     df.dropna(subset=["Date"], inplace=True)
