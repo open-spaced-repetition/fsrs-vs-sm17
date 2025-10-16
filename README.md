@@ -101,7 +101,7 @@ The colors indicate:
 
 The Wilcoxon test considers both the sign and rank of differences between pairs, but it does not account for the varying number of reviews across collections. Therefore, while the test results are reliable for qualitative analysis, caution should be exercised when interpreting the specific magnitude of effects.
 
-![Wilcoxon-16-collections](./plots/Wilcoxon-16-collections.png)
+![Wilcoxon-17-collections](./plots/Wilcoxon-17-collections.png)
 
 ## Share your data
 
