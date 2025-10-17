@@ -33,22 +33,48 @@ def data_preprocessing(csv_file_path, save_csv=False):
     df.columns = df.columns.str.strip()
 
     def convert_to_datetime(date_str):
-        # 德语月份到英语月份的映射（包括多种变体）
+        # 德语月份到英语月份的映射
         german_months = {
             'Jan': 'Jan', 'Feb': 'Feb', 'Mär': 'Mar', 'Mrz': 'Mar', 'Apr': 'Apr',
             'Mai': 'May', 'Jun': 'Jun', 'Jul': 'Jul', 'Aug': 'Aug',
             'Sep': 'Sep', 'Okt': 'Oct', 'Nov': 'Nov', 'Dez': 'Dec'
         }
         
-        # 将德语月份替换为英语月份
+        portuguese_months = {
+            'jan': 'Jan', 'fev': 'Feb', 'mar': 'Mar', 'abr': 'Apr',
+            'mai': 'May', 'jun': 'Jun', 'jul': 'Jul', 'ago': 'Aug',
+            'set': 'Sep', 'out': 'Oct', 'nov': 'Nov', 'dez': 'Dec'
+        }
+        
         date_str_normalized = date_str
+
+        date_str_normalized = date_str_normalized.replace('jan.', 'jan').replace('feb.', 'feb').replace('mar.', 'mar')
+        date_str_normalized = date_str_normalized.replace('apr.', 'apr').replace('may.', 'may').replace('jun.', 'jun')
+        date_str_normalized = date_str_normalized.replace('jul.', 'jul').replace('aug.', 'aug').replace('sep.', 'sep')
+        date_str_normalized = date_str_normalized.replace('oct.', 'oct').replace('nov.', 'nov').replace('dec.', 'dec')
+        
+        month_abbrs = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 
+                       'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+        for month in month_abbrs:
+            if month in date_str_normalized.lower():
+                date_str_normalized = date_str_normalized.replace(month, month.capitalize())
+                break
+
+        # 将德语月份替换为英语月份
         for de_month, en_month in german_months.items():
-            if de_month in date_str:
-                date_str_normalized = date_str.replace(de_month, en_month)
+            if de_month in date_str_normalized:
+                date_str_normalized = date_str_normalized.replace(de_month, en_month)
+                break
+        
+        # 将葡萄牙语月份替换为英语月份
+        for pt_month, en_month in portuguese_months.items():
+            if pt_month in date_str_normalized.lower():
+                date_str_normalized = date_str_normalized.lower().replace(pt_month, en_month)
                 break
         
         date_formats = [
             "%b %d %Y %H:%M:%S",
+            "%m %d %Y %H:%M:%S",
             "%m月 %d %Y %H:%M:%S", 
             "%d/%m/%Y %H:%M",
             "%m/%d/%Y",
