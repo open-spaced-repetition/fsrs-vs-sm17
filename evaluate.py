@@ -95,6 +95,7 @@ if __name__ == "__main__":
     SM17 = ("SM-17", [])
     SM16 = ("SM-16", [])
     AVG = ("AVG", [])
+    MOVING_AVG = ("MOVING-AVG", [])
     sizes = []
     result_dir = pathlib.Path("./result")
     result_files = result_dir.glob("*.json")
@@ -109,6 +110,7 @@ if __name__ == "__main__":
             SM17[1].append(result["SM17"])
             SM16[1].append(result["SM16"])
             AVG[1].append(result["AVG"])
+            MOVING_AVG[1].append(result["MOVING-AVG"])
             sizes.append(result["size"])
 
     print(f"Total users: {len(sizes)}")
@@ -123,7 +125,7 @@ if __name__ == "__main__":
     ]
 
     # Define model order for display
-    models = [FSRS_6, FSRS_5, FSRS_4_5, AVG, FSRSv4, SM17, SM16, FSRSv3]
+    models = [FSRS_6, FSRS_5, FSRS_4_5, AVG, FSRSv4, SM17, SM16, FSRSv3, MOVING_AVG]
 
     for scale_name, size in [
         ("Weighted by number of repetitions", np.array(sizes)),

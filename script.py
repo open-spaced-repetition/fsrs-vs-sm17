@@ -302,7 +302,7 @@ def FSRS_old_train(revlogs):
     return revlogs, trained_models
 
 
-def baseline(revlogs):
+def average(revlogs):
     tot_y = 0.9
     tot_n = 1
     predictions = [np.nan for _ in range(len(revlogs))]
@@ -318,11 +318,34 @@ def baseline(revlogs):
     return revlogs
 
 
+def moving_average(revlogs):
+    x = 1.2
+    w = 0.3
+    predictions = [np.nan for _ in range(len(revlogs))]
+    for i in range(len(revlogs)):
+        row = revlogs.iloc[i]
+        assert i == row["index"]
+        y_pred = 1 / (np.exp(-x) + 1)
+        predictions[i] = y_pred
+        # gradient step
+        if row["y"] == 1:
+            x += w / (np.exp(x) + 1)
+        else:
+            x -= w * (np.exp(x)) / (np.exp(x) + 1)
+    revlogs["R (MOVING-AVG)"] = predictions
+    return revlogs
+
+
 def evaluate(revlogs):
     avg_rmse = rmse_matrix(
         revlogs[
             ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (AVG)"]
         ].rename(columns={"R (AVG)": "p"})
+    )
+    moving_avg_rmse = rmse_matrix(
+        revlogs[
+            ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (MOVING-AVG)"]
+        ].rename(columns={"R (MOVING-AVG)": "p"})
     )
     sm16_rmse = rmse_matrix(
         revlogs[
@@ -360,6 +383,7 @@ def evaluate(revlogs):
         ].rename(columns={"R (FSRSv3)": "p"})
     )
     avg_logloss = log_loss(revlogs["y"], revlogs["R (AVG)"])
+    moving_avg_logloss = log_loss(revlogs["y"], revlogs["R (MOVING-AVG)"])
     sm16_logloss = log_loss(revlogs["y"], revlogs["R (SM16)"])
     sm17_logloss = log_loss(revlogs["y"], revlogs["R (SM17)"])
     fsrs_v6_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-6)"])
@@ -368,6 +392,7 @@ def evaluate(revlogs):
     fsrs_v4_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv4)"])
     fsrs_v3_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv3)"])
     avg_auc = roc_auc_score(revlogs["y"], revlogs["R (AVG)"])
+    moving_avg_auc = roc_auc_score(revlogs["y"], revlogs["R (MOVING-AVG)"])
     sm16_auc = roc_auc_score(revlogs["y"], revlogs["R (SM16)"])
     sm17_auc = roc_auc_score(revlogs["y"], revlogs["R (SM17)"])
     fsrs_v6_auc = roc_auc_score(revlogs["y"], revlogs["R (FSRS-6)"])
@@ -417,6 +442,11 @@ def evaluate(revlogs):
             "LogLoss": round(avg_logloss, 4),
             "AUC": round(avg_auc, 4),
         },
+        "MOVING-AVG": {
+            "RMSE(bins)": round(moving_avg_rmse, 4),
+            "LogLoss": round(moving_avg_logloss, 4),
+            "AUC": round(moving_avg_auc, 4),
+        },
     }
 
 
@@ -436,7 +466,8 @@ def process_single_file(file):
 
         plt.close("all")
         revlogs = data_preprocessing(file)
-        revlogs = baseline(revlogs)
+        revlogs = average(revlogs)
+        revlogs = moving_average(revlogs)
         revlogs, trained_models = FSRS_old_train(revlogs)
         revlogs, model = FSRS_latest_train(revlogs)
 
@@ -488,7 +519,7 @@ if __name__ == "__main__":
     Path("result").mkdir(parents=True, exist_ok=True)
 
     # Get list of files to process
-    files = list(Path("dataset").iterdir())
+    files = list(Path("dataset").glob("*.csv"))
 
     # Create process pool
     with Pool() as pool:

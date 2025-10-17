@@ -39,6 +39,11 @@
         "LogLoss": 0.4669,
         "AUC": 0.4849
     },
+    "MOVING-AVG": {
+        "RMSE(bins)": 0.1156,
+        "LogLoss": 0.4578,
+        "AUC": 0.5833
+    },
     "user": "WolfSlytherin",
     "size": 8163,
     "parameters": {
