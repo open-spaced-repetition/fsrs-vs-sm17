@@ -1,6 +1,6 @@
 # FSRS vs SM-17
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-15-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-16-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 It is a simple comparison between FSRS and SM-17. Due to the difference between the workflow of SuperMemo and Anki, it is not easy to compare the two algorithms. I tried to make the comparison as fair as possible. Here is some notes:
@@ -22,9 +22,9 @@ Log Loss and RMSE (bins) measure calibration: how well predicted probabilities o
 
 ## Result
 
-Total users: 17
+Total users: 18
 
-Total repetitions: 418,727
+Total repetitions: 652,278
 
 The following tables present the means and the 99% confidence intervals. The best result is highlighted in **bold**. Arrows indicate whether lower (↓) or higher (↑) values are better.
 
@@ -32,29 +32,27 @@ The following tables present the means and the 99% confidence intervals. The bes
 
 | Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
 | --- | --- | --- | --- |
-| **FSRS-6** | **0.376±0.035** | **0.040±0.017** | **0.676±0.051** |
-| FSRS-4.5 | 0.391±0.034 | 0.057±0.027 | 0.666±0.048 |
-| FSRS-5 | 0.391±0.034 | 0.057±0.028 | 0.666±0.048 |
-| MOVING-AVG | 0.395±0.038 | 0.062±0.015 | 0.593±0.034 |
-| AVG | 0.402±0.042 | 0.079±0.023 | 0.541±0.023 |
-| FSRSv4 | 0.405±0.040 | 0.069±0.037 | 0.658±0.048 |
-| SM-16 | 0.424±0.061 | 0.094±0.024 | 0.612±0.024 |
-| FSRSv3 | 0.443±0.058 | 0.097±0.024 | 0.614±0.034 |
-| SM-17 | 0.466±0.046 | 0.073±0.014 | 0.608±0.031 |
+| **FSRS-6** | **0.368±0.044** | **0.047±0.023** | **0.660±0.057** |
+| FSRS-4.5 | 0.385±0.029 | 0.063±0.043 | 0.651±0.060 |
+| AVG | 0.385±0.067 | 0.074±0.019 | 0.527±0.026 |
+| FSRS-5 | 0.386±0.028 | 0.064±0.046 | 0.651±0.062 |
+| FSRSv4 | 0.400±0.026 | 0.075±0.055 | 0.644±0.063 |
+| SM-16 | 0.416±0.038 | 0.097±0.031 | 0.596±0.055 |
+| SM-17 | 0.432±0.090 | 0.066±0.019 | 0.603±0.038 |
+| FSRSv3 | 0.450±0.082 | 0.104±0.079 | 0.606±0.071 |
 
 ### Unweighted (per user)
 
 | Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
 | --- | --- | --- | --- |
-| **FSRS-6** | **0.413±0.060** | 0.081±0.028 | **0.634±0.040** |
-| **MOVING-AVG** | 0.414±0.066 | **0.080±0.022** | 0.575±0.039 |
-| AVG | 0.425±0.075 | 0.096±0.023 | 0.511±0.030 |
-| FSRS-4.5 | 0.440±0.066 | 0.112±0.036 | 0.632±0.038 |
-| FSRS-5 | 0.445±0.066 | 0.116±0.039 | 0.632±0.038 |
-| SM-16 | 0.47±0.11 | 0.120±0.034 | 0.611±0.022 |
-| FSRSv4 | 0.487±0.074 | 0.148±0.053 | 0.619±0.038 |
-| SM-17 | 0.499±0.089 | 0.095±0.026 | 0.600±0.033 |
-| FSRSv3 | 0.53±0.12 | 0.150±0.043 | 0.603±0.037 |
+| **FSRS-6** | **0.405±0.060** | **0.081±0.026** | **0.631±0.039** |
+| AVG | 0.414±0.074 | 0.093±0.023 | 0.508±0.028 |
+| FSRS-4.5 | 0.433±0.064 | 0.111±0.035 | 0.628±0.039 |
+| FSRS-5 | 0.438±0.064 | 0.116±0.038 | 0.628±0.039 |
+| SM-16 | 0.46±0.10 | 0.121±0.032 | 0.603±0.029 |
+| FSRSv4 | 0.478±0.072 | 0.147±0.050 | 0.616±0.039 |
+| SM-17 | 0.483±0.091 | 0.090±0.026 | 0.604±0.032 |
+| FSRSv3 | 0.53±0.11 | 0.152±0.045 | 0.598±0.041 |
 
 Averages weighted by the number of reviews are more representative of "best case" performance when plenty of data is available. Since almost all algorithms perform better when there's a lot of data to learn from, weighting by n(reviews) biases the average towards lower values.
 
@@ -66,23 +64,22 @@ The universal metric is proposed by SuperMemo. Reference: [Universal metric for 
 
 | Algorithm | Universal Metric↓ |
 |-----------|------------------|
-| **FSRS-6** | **0.0219** |
-| SM-16 | 0.0349 |
-| FSRS-4.5 | 0.0430 |
-| FSRS-5 | 0.0438 |
-| SM-17 | 0.0459 |
-| MOVING-AVG | 0.0465 |
-| FSRSv3 | 0.0517 |
-| FSRSv4 | 0.0547 |
-| AVG | 0.0553 |
+| **FSRS-6** | **0.0264** |
+| SM-16 | 0.0372 |
+| SM-17 | 0.0425 |
+| AVG | 0.0525 |
+| FSRS-4.5 | 0.0549 |
+| FSRS-5 | 0.0562 |
+| FSRSv4 | 0.0686 |
+| FSRSv3 | 0.0731 |
 
 ### Superiority
 
-The metrics presented above can be difficult to interpret. In order to make it easier to understand how algorithms perform relative to each other, the image below shows the percentage of users for whom algorithm A (row) has a lower Log Loss than algorithm B (column). For example, FSRS-6 has a 88.2% superiority over SM-17, meaning that for 88.2% of all collections in this benchmark, FSRS-6 can estimate the probability of recall more accurately.
+The metrics presented above can be difficult to interpret. In order to make it easier to understand how algorithms perform relative to each other, the image below shows the percentage of users for whom algorithm A (row) has a lower Log Loss than algorithm B (column). For example, FSRS-6 has a 83.3% superiority over SM-17, meaning that for 83.3% of all collections in this benchmark, FSRS-6 can estimate the probability of recall more accurately.
 
-This table is based on 17 collections.
+This table is based on 18 collections.
 
-![Superiority-17-collections](./plots/Superiority-17-collections.png)
+![Superiority-18-collections](./plots/Superiority-18-collections.png)
 
 ### Statistical significance
 
@@ -104,7 +101,7 @@ The colors indicate:
 
 The Wilcoxon test considers both the sign and rank of differences between pairs, but it does not account for the varying number of reviews across collections. Therefore, while the test results are reliable for qualitative analysis, caution should be exercised when interpreting the specific magnitude of effects.
 
-![Wilcoxon-17-collections](./plots/Wilcoxon-17-collections.png)
+![Wilcoxon-18-collections](./plots/Wilcoxon-18-collections.png)
 
 ## Share your data
 
@@ -139,6 +136,7 @@ You can open an issue to submit it: https://github.com/open-spaced-repetition/fs
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/hugomarins"><img src="https://avatars.githubusercontent.com/u/54500828?v=4?s=100" width="100px;" alt="Hugo Marins"/><br /><sub><b>Hugo Marins</b></sub></a><br /><a href="#data-hugomarins" title="Data">🔣</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://www.pleasurable-learning.com"><img src="https://avatars.githubusercontent.com/u/8341295?v=4?s=100" width="100px;" alt="Guillem Palau"/><br /><sub><b>Guillem Palau</b></sub></a><br /><a href="#data-guillempalau" title="Data">🔣</a></td>
     </tr>
   </tbody>
 </table>
