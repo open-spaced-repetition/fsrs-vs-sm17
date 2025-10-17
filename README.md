@@ -64,6 +64,8 @@ Unweighted averages are more representative of "average case" performance. In re
 
 The universal metric is proposed by SuperMemo. Reference: [Universal metric for cross-comparison of spaced repetition algorithms](https://supermemo.guru/wiki/Universal_metric_for_cross-comparison_of_spaced_repetition_algorithms).
 
+**Disclaimer**: I cannot guarantee that I have implemented the universal metric proposed by the SuperMemo team with 100% accuracy, as they have not released their evaluation code. My implementation is based solely on their documentation.
+
 | Algorithm | Universal Metric↓ |
 |-----------|------------------|
 | **FSRS-6** | **0.0272** |
