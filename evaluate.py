@@ -250,25 +250,5 @@ if __name__ == "__main__":
                 print(f"| {algo_name} | {formatted_um} |")
 
         print()
-
-        # Print detailed Universal Metrics table
-        print("### Detailed Universal Metrics\n")
-        print("| Algorithm A | Algorithm B | Universal Metric↓ |")
-        print("| --- | --- | --- |")
-
-        # Sort detailed metrics by the average UM score
-        detailed_metrics = []
-        for metric_name, (rounded_mean, rounded_CI, wmean) in um_results.items():
-            detailed_metrics.append((metric_name, rounded_mean, rounded_CI, wmean))
-
-        # Sort by Universal Metric value (lower is better)
-        detailed_metrics.sort(key=lambda x: x[3])
-
-        for metric_name, rounded_mean, rounded_CI, _ in detailed_metrics:
-            algo_a, algo_b = metric_name.split("_evaluated_by_")
-            value_str = f"{rounded_mean}±{rounded_CI}"
-            print(f"| {algo_a} | {algo_b} | {value_str} |")
-
-        print()
     else:
         print("No Universal Metrics data found in result files.\n")
