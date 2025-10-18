@@ -64,7 +64,15 @@ Unweighted averages are more representative of "average case" performance. In re
 
 ### Universal Metric
 
-The universal metric is proposed by SuperMemo. Reference: [Universal metric for cross-comparison of spaced repetition algorithms](https://supermemo.guru/wiki/Universal_metric_for_cross-comparison_of_spaced_repetition_algorithms).
+The Universal Metric is a mathematical tool proposed by SuperMemo for reliable comparison of different spaced repetition algorithm implementations. It measures the accuracy of retrievability predictions by comparing predicted probabilities with actual recall outcomes.
+
+**How it works:**
+- Predictions are grouped into bins based on predicted retrievability values
+- Within each bin, the root mean square error is calculated between predicted and actual recall rates
+- The metric is weighted by sample size in each bin
+- Lower values indicate better prediction accuracy
+
+Reference: [Universal metric for cross-comparison of spaced repetition algorithms](https://supermemo.guru/wiki/Universal_metric_for_cross-comparison_of_spaced_repetition_algorithms).
 
 **Disclaimer**: I cannot guarantee that I have implemented the universal metric proposed by the SuperMemo team with 100% accuracy, as they have not released their evaluation code. My implementation is based solely on their documentation.
 
@@ -80,6 +88,25 @@ The universal metric is proposed by SuperMemo. Reference: [Universal metric for 
 | FSRSv4 | 0.0623 |
 | FSRSv3 | 0.0691 |
 | FSRS-6-default | 0.0806 |
+
+### Universal Metrics Matrix
+
+The Universal Metrics matrix provides a comprehensive cross-comparison view of all algorithms. Each cell shows the Universal Metric for algorithm A (row) when using algorithm B's (column) predictions as the reference for binning. In other words, it measures how well algorithm A's predictions match actual recall outcomes when grouped by algorithm B's predicted retrievability values. The matrix is sorted by performance, with the best-performing algorithms in the top-left corner.
+
+**Why use different algorithms for binning?**
+
+Using different algorithms for binning (the "referee") is crucial to prevent gaming the metric. An algorithm could game the metric by always predicting values close to the dataset's average success rate (e.g., always predicting R=0.9). When binned by another algorithm's predictions, such a strategy would result in large errors across bins with different true recall rates.
+
+The average Universal Metric score across all reference algorithms (shown in the ranking table above) provides a robust measure of each algorithm's overall prediction accuracy.
+
+**Color interpretation:**
+- **Light colors**: Low Universal Metric (high prediction accuracy)
+- **Dark colors**: High Universal Metric (low prediction accuracy)
+- **Diagonal cells**: Show "-" (not applicable when binning by the same algorithm)
+
+This visualization helps identify which algorithms produce the most robust and accurate retrievability predictions across different evaluation perspectives.
+
+![Universal-Metrics-Matrix-18-collections](./plots/Universal-Metrics-Matrix-18-collections.png)
 
 ### Superiority
 
