@@ -10,57 +10,7 @@ It is a simple comparison between FSRS and SM-17. Due to the difference between 
 - To ensure FSRS has the same information as SM-17, I implement an [online learning](https://en.wikipedia.org/wiki/Online_machine_learning) version of FSRS, where FSRS has zero knowledge of the future reviews as SM-17 does.
 - The results are based on the data from a small group of people. It may be different from the result of other SuperMemo users.
 
-### Metrics
-
-We use three metrics in the SRS benchmark to evaluate how well these algorithms work: Log Loss, AUC, and a custom RMSE that we call RMSE (bins).
-
-- Log Loss (also known as Binary Cross Entropy): used primarily in binary classification problems, Log Loss serves as a measure of the discrepancies between predicted probabilities of recall and review outcomes (1 or 0). It quantifies how well the algorithm approximates the true recall probabilities. Log Loss ranges from 0 to infinity, lower is better.
-- Root Mean Square Error in Bins (RMSE (bins)): this is a metric designed for use in the SRS benchmark. In this approach, predictions and review outcomes are grouped into bins based on three features: the interval length, the number of reviews, and the number of lapses. Within each bin, the squared difference between the average predicted probability of recall and the average recall rate is calculated. These values are then weighted according to the sample size in each bin, and then the final weighted root mean square error is calculated. This metric provides a nuanced understanding of algorithm performance across different probability ranges. For more details, you can read [The Metric](https://github.com/open-spaced-repetition/fsrs4anki/wiki/The-Metric). RMSE (bins) ranges from 0 to 1, lower is better.
-- AUC (Area under the ROC Curve): this metric tells us how much the algorithm is capable of distinguishing between classes. AUC ranges from 0 to 1, however, in practice it's almost always greater than 0.5; higher is better.
-
-Log Loss and RMSE (bins) measure calibration: how well predicted probabilities of recall match the real data. AUC measures discrimination: how well the algorithm can tell two (or more, generally speaking) classes apart. AUC can be good (high) even if Log Loss and RMSE are poor.
-
-## Result
-
-Total users: 18
-
-Total repetitions: 652,278
-
-The following tables present the means and the 99% confidence intervals. The best result is highlighted in **bold**. Arrows indicate whether lower (↓) or higher (↑) values are better.
-
-### Weighted by number of repetitions
-
-| Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
-| --- | --- | --- | --- |
-| **FSRS-6** | **0.368±0.043** | **0.047±0.023** | **0.660±0.057** |
-| MOVING-AVG | 0.379±0.071 | 0.059±0.012 | 0.597±0.055 |
-| FSRS-4.5 | 0.385±0.029 | 0.063±0.043 | 0.651±0.060 |
-| AVG | 0.385±0.066 | 0.074±0.019 | 0.527±0.026 |
-| FSRS-5 | 0.386±0.029 | 0.064±0.046 | 0.651±0.062 |
-| FSRSv4 | 0.400±0.026 | 0.075±0.055 | 0.644±0.064 |
-| FSRS-6-default | 0.412±0.039 | 0.108±0.085 | 0.612±0.063 |
-| SM-16 | 0.416±0.038 | 0.097±0.031 | 0.596±0.055 |
-| SM-17 | 0.432±0.091 | 0.066±0.020 | 0.603±0.039 |
-| FSRSv3 | 0.450±0.083 | 0.104±0.079 | 0.606±0.071 |
-
-### Unweighted (per user)
-
-| Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
-| --- | --- | --- | --- |
-| **MOVING-AVG** | **0.403±0.068** | **0.077±0.022** | 0.582±0.041 |
-| **FSRS-6** | 0.405±0.060 | 0.081±0.026 | **0.631±0.039** |
-| AVG | 0.414±0.074 | 0.093±0.023 | 0.508±0.028 |
-| FSRS-6-default | 0.431±0.056 | 0.116±0.038 | 0.615±0.038 |
-| FSRS-4.5 | 0.433±0.064 | 0.111±0.035 | 0.628±0.039 |
-| FSRS-5 | 0.438±0.064 | 0.116±0.038 | 0.628±0.039 |
-| SM-16 | 0.46±0.10 | 0.121±0.032 | 0.603±0.029 |
-| FSRSv4 | 0.478±0.073 | 0.147±0.050 | 0.616±0.039 |
-| SM-17 | 0.483±0.091 | 0.090±0.026 | 0.604±0.032 |
-| FSRSv3 | 0.53±0.12 | 0.152±0.045 | 0.598±0.041 |
-
-Averages weighted by the number of reviews are more representative of "best case" performance when plenty of data is available. Since almost all algorithms perform better when there's a lot of data to learn from, weighting by n(reviews) biases the average towards lower values.
-
-Unweighted averages are more representative of "average case" performance. In reality, not every user will have hundreds of thousands of reviews, so the algorithm won't always be able to reach its full potential.
+## Metrics
 
 ### Universal Metric
 
@@ -75,6 +25,24 @@ The Universal Metric is a mathematical tool proposed by SuperMemo for reliable c
 Reference: [Universal metric for cross-comparison of spaced repetition algorithms](https://supermemo.guru/wiki/Universal_metric_for_cross-comparison_of_spaced_repetition_algorithms).
 
 **Disclaimer**: I cannot guarantee that I have implemented the universal metric proposed by the SuperMemo team with 100% accuracy, as they have not released their evaluation code. My implementation is based solely on their documentation.
+
+### Traditional Machine Learning Metrics
+
+We also use three traditional metrics in the SRS benchmark: Log Loss, AUC, and a custom RMSE that we call RMSE (bins).
+
+- Log Loss (also known as Binary Cross Entropy): used primarily in binary classification problems, Log Loss serves as a measure of the discrepancies between predicted probabilities of recall and review outcomes (1 or 0). It quantifies how well the algorithm approximates the true recall probabilities. Log Loss ranges from 0 to infinity, lower is better.
+- Root Mean Square Error in Bins (RMSE (bins)): this is a metric designed for use in the SRS benchmark. In this approach, predictions and review outcomes are grouped into bins based on three features: the interval length, the number of reviews, and the number of lapses. Within each bin, the squared difference between the average predicted probability of recall and the average recall rate is calculated. These values are then weighted according to the sample size in each bin, and then the final weighted root mean square error is calculated. This metric provides a nuanced understanding of algorithm performance across different probability ranges. For more details, you can read [The Metric](https://github.com/open-spaced-repetition/fsrs4anki/wiki/The-Metric). RMSE (bins) ranges from 0 to 1, lower is better.
+- AUC (Area under the ROC Curve): this metric tells us how much the algorithm is capable of distinguishing between classes. AUC ranges from 0 to 1, however, in practice it's almost always greater than 0.5; higher is better.
+
+Log Loss and RMSE (bins) measure calibration: how well predicted probabilities of recall match the real data. AUC measures discrimination: how well the algorithm can tell two (or more, generally speaking) classes apart. AUC can be good (high) even if Log Loss and RMSE are poor.
+
+## Result
+
+Total users: 18
+
+Total repetitions: 652,278
+
+### Universal Metric
 
 | Algorithm | Average Universal Metric↓ |
 | --- | --- |
@@ -107,6 +75,44 @@ The average Universal Metric score across all reference algorithms (shown in the
 This visualization helps identify which algorithms produce the most robust and accurate retrievability predictions across different evaluation perspectives.
 
 ![Universal-Metrics-Matrix-18-collections](./plots/Universal-Metrics-Matrix-18-collections.png)
+
+### Traditional Machine Learning Metrics
+
+The following tables present the means and the 99% confidence intervals for traditional machine learning metrics. The best result is highlighted in **bold**. Arrows indicate whether lower (↓) or higher (↑) values are better.
+
+#### Weighted by number of repetitions
+
+| Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
+| --- | --- | --- | --- |
+| **FSRS-6** | **0.368±0.043** | **0.047±0.023** | **0.660±0.057** |
+| MOVING-AVG | 0.379±0.071 | 0.059±0.012 | 0.597±0.055 |
+| FSRS-4.5 | 0.385±0.029 | 0.063±0.043 | 0.651±0.060 |
+| AVG | 0.385±0.066 | 0.074±0.019 | 0.527±0.026 |
+| FSRS-5 | 0.386±0.029 | 0.064±0.046 | 0.651±0.062 |
+| FSRSv4 | 0.400±0.026 | 0.075±0.055 | 0.644±0.064 |
+| FSRS-6-default | 0.412±0.039 | 0.108±0.085 | 0.612±0.063 |
+| SM-16 | 0.416±0.038 | 0.097±0.031 | 0.596±0.055 |
+| SM-17 | 0.432±0.091 | 0.066±0.020 | 0.603±0.039 |
+| FSRSv3 | 0.450±0.083 | 0.104±0.079 | 0.606±0.071 |
+
+#### Unweighted (per user)
+
+| Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
+| --- | --- | --- | --- |
+| **MOVING-AVG** | **0.403±0.068** | **0.077±0.022** | 0.582±0.041 |
+| **FSRS-6** | 0.405±0.060 | 0.081±0.026 | **0.631±0.039** |
+| AVG | 0.414±0.074 | 0.093±0.023 | 0.508±0.028 |
+| FSRS-6-default | 0.431±0.056 | 0.116±0.038 | 0.615±0.038 |
+| FSRS-4.5 | 0.433±0.064 | 0.111±0.035 | 0.628±0.039 |
+| FSRS-5 | 0.438±0.064 | 0.116±0.038 | 0.628±0.039 |
+| SM-16 | 0.46±0.10 | 0.121±0.032 | 0.603±0.029 |
+| FSRSv4 | 0.478±0.073 | 0.147±0.050 | 0.616±0.039 |
+| SM-17 | 0.483±0.091 | 0.090±0.026 | 0.604±0.032 |
+| FSRSv3 | 0.53±0.12 | 0.152±0.045 | 0.598±0.041 |
+
+Averages weighted by the number of reviews are more representative of "best case" performance when plenty of data is available. Since almost all algorithms perform better when there's a lot of data to learn from, weighting by n(reviews) biases the average towards lower values.
+
+Unweighted averages are more representative of "average case" performance. In reality, not every user will have hundreds of thousands of reviews, so the algorithm won't always be able to reach its full potential.
 
 ### Superiority
 
