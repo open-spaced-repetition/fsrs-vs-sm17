@@ -68,15 +68,15 @@ The universal metric is proposed by SuperMemo. Reference: [Universal metric for 
 
 | Algorithm | Universal Metric↓ |
 |-----------|------------------|
-| **FSRS-6** | **0.0272** |
-| SM-16 | 0.0386 |
-| MOVING-AVG | 0.0408 |
-| SM-17 | 0.0412 |
-| AVG | 0.0494 |
-| FSRS-4.5 | 0.0532 |
-| FSRS-5 | 0.0544 |
-| FSRSv4 | 0.0660 |
-| FSRSv3 | 0.0717 |
+| **FSRS-6** | **0.0253** |
+| SM-16 | 0.0356 |
+| MOVING-AVG | 0.0392 |
+| SM-17 | 0.0397 |
+| AVG | 0.0476 |
+| FSRS-4.5 | 0.0510 |
+| FSRS-5 | 0.0521 |
+| FSRSv4 | 0.0635 |
+| FSRSv3 | 0.0680 |
 
 ### Superiority
 
