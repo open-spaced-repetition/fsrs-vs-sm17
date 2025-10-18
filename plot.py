@@ -263,7 +263,7 @@ if __name__ == "__main__":
     models_name[index_v4] = "FSRS v4"
     models_name[index_sm16] = "SM-16"
     models_name[index_sm17] = "SM-17"
-    models_name[index_fsrs_6_default] = "FSRS-6\ndefault\nparameters"
+    models_name[index_fsrs_6_default] = "FSRS-6\ndefault params."
 
     fig, ax = plt.subplots(figsize=(10, 9), dpi=150)
     ax.set_title(
@@ -296,8 +296,8 @@ if __name__ == "__main__":
                     fontsize=14,
                 )
 
-    ax.set_xticks(np.arange(n), labels=models_name, fontsize=16, rotation=45)
-    ax.set_yticks(np.arange(n), labels=models_name, fontsize=16)
+    ax.set_xticks(np.arange(n), labels=models_name, fontsize=12, rotation=45)
+    ax.set_yticks(np.arange(n), labels=models_name, fontsize=12)
     ax.set_xticks(np.arange(n) - 0.5, minor=True)
     ax.set_yticks(np.arange(n) - 0.5, minor=True)
     plt.grid(True, alpha=1, color="black", linewidth=2, which="minor")
@@ -334,8 +334,8 @@ if __name__ == "__main__":
                     fontsize=14,
                 )
 
-    ax.set_xticks(np.arange(n), labels=models_name, fontsize=16, rotation=45)
-    ax.set_yticks(np.arange(n), labels=models_name, fontsize=16)
+    ax.set_xticks(np.arange(n), labels=models_name, fontsize=12, rotation=45)
+    ax.set_yticks(np.arange(n), labels=models_name, fontsize=12)
     ax.set_xticks(np.arange(n) - 0.5, minor=True)
     ax.set_yticks(np.arange(n) - 0.5, minor=True)
     plt.grid(True, alpha=1, color="black", linewidth=2, which="minor")
@@ -445,8 +445,8 @@ if __name__ == "__main__":
                     fontsize=12,
                 )
 
-    ax.set_xticks(np.arange(n), labels=models_name, fontsize=16, rotation=45)
-    ax.set_yticks(np.arange(n), labels=models_name, fontsize=16)
+    ax.set_xticks(np.arange(n), labels=models_name, fontsize=12, rotation=45)
+    ax.set_yticks(np.arange(n), labels=models_name, fontsize=12)
     ax.set_xticks(np.arange(n) - 0.5, minor=True)
     ax.set_yticks(np.arange(n) - 0.5, minor=True)
     plt.grid(True, alpha=1, color="black", linewidth=2, which="minor")
@@ -573,11 +573,25 @@ if __name__ == "__main__":
                         fontsize=14,
                     )
 
+        # Apply label corrections for consistency
+        display_labels = []
+        for algo in sorted_algorithms:
+            if algo == "FSRSv3":
+                display_labels.append("FSRS v3")
+            elif algo == "FSRSv4":
+                display_labels.append("FSRS v4")
+            elif algo == "SM16":
+                display_labels.append("SM-16")
+            elif algo == "SM17":
+                display_labels.append("SM-17")
+            elif algo == "FSRS-6-default":
+                display_labels.append("FSRS-6\ndefault params.")
+            else:
+                display_labels.append(algo)
+
         # Set labels
-        ax.set_xticks(
-            np.arange(n_um), labels=sorted_algorithms, fontsize=16, rotation=45
-        )
-        ax.set_yticks(np.arange(n_um), labels=sorted_algorithms, fontsize=16)
+        ax.set_xticks(np.arange(n_um), labels=display_labels, fontsize=12, rotation=45)
+        ax.set_yticks(np.arange(n_um), labels=display_labels, fontsize=12)
         ax.set_xticks(np.arange(n_um) - 0.5, minor=True)
         ax.set_yticks(np.arange(n_um) - 0.5, minor=True)
 
@@ -589,8 +603,8 @@ if __name__ == "__main__":
             ax.spines[location].set_linewidth(2)
 
         # Add axis labels
-        ax.set_xlabel("Evaluating Algorithm", fontsize=16)
-        ax.set_ylabel("Evaluated Algorithm", fontsize=16)
+        ax.set_xlabel("Evaluating Algorithm", fontsize=12)
+        ax.set_ylabel("Evaluated Algorithm", fontsize=12)
 
         # Save the plot
         title = f"Universal-Metrics-Matrix-{n_collections}-collections"
