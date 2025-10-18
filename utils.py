@@ -8,6 +8,7 @@ def get_bin(x, bins=10):
     # This matches the binning method shown in the graph
     return np.round(x * bins) / bins
 
+
 def cross_comparison(revlogs, algoA, algoB):
     cross_comparison_record = revlogs[[f"R ({algoA})", f"R ({algoB})", "y"]].copy()
 
@@ -66,6 +67,7 @@ def cross_comparison(revlogs, algoA, algoB):
     plt.show()
 
     return result
+
 
 if __name__ == "__main__":
     values = np.linspace(0, 1, 100)

@@ -32,23 +32,25 @@ The following tables present the means and the 99% confidence intervals. The bes
 
 | Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
 | --- | --- | --- | --- |
-| **FSRS-6** | **0.368±0.044** | **0.047±0.023** | **0.660±0.057** |
+| **FSRS-6** | **0.368±0.043** | **0.047±0.023** | **0.660±0.057** |
 | MOVING-AVG | 0.379±0.071 | 0.059±0.012 | 0.597±0.055 |
 | FSRS-4.5 | 0.385±0.029 | 0.063±0.043 | 0.651±0.060 |
-| AVG | 0.385±0.066 | 0.074±0.019 | 0.527±0.025 |
+| AVG | 0.385±0.066 | 0.074±0.019 | 0.527±0.026 |
 | FSRS-5 | 0.386±0.029 | 0.064±0.046 | 0.651±0.062 |
-| FSRSv4 | 0.400±0.027 | 0.075±0.055 | 0.644±0.064 |
+| FSRSv4 | 0.400±0.026 | 0.075±0.055 | 0.644±0.064 |
+| FSRS-6-default | 0.412±0.039 | 0.108±0.085 | 0.612±0.063 |
 | SM-16 | 0.416±0.038 | 0.097±0.031 | 0.596±0.055 |
-| SM-17 | 0.432±0.091 | 0.066±0.020 | 0.603±0.038 |
-| FSRSv3 | 0.450±0.083 | 0.104±0.079 | 0.606±0.072 |
+| SM-17 | 0.432±0.091 | 0.066±0.020 | 0.603±0.039 |
+| FSRSv3 | 0.450±0.083 | 0.104±0.079 | 0.606±0.071 |
 
 ### Unweighted (per user)
 
 | Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
 | --- | --- | --- | --- |
-| **MOVING-AVG** | **0.403±0.067** | **0.077±0.022** | 0.582±0.041 |
+| **MOVING-AVG** | **0.403±0.068** | **0.077±0.022** | 0.582±0.041 |
 | **FSRS-6** | 0.405±0.060 | 0.081±0.026 | **0.631±0.039** |
 | AVG | 0.414±0.074 | 0.093±0.023 | 0.508±0.028 |
+| FSRS-6-default | 0.431±0.056 | 0.116±0.038 | 0.615±0.038 |
 | FSRS-4.5 | 0.433±0.064 | 0.111±0.035 | 0.628±0.039 |
 | FSRS-5 | 0.438±0.064 | 0.116±0.038 | 0.628±0.039 |
 | SM-16 | 0.46±0.10 | 0.121±0.032 | 0.603±0.029 |
@@ -66,17 +68,18 @@ The universal metric is proposed by SuperMemo. Reference: [Universal metric for 
 
 **Disclaimer**: I cannot guarantee that I have implemented the universal metric proposed by the SuperMemo team with 100% accuracy, as they have not released their evaluation code. My implementation is based solely on their documentation.
 
-| Algorithm | Universal Metric↓ |
-|-----------|------------------|
-| **FSRS-6** | **0.0253** |
-| SM-16 | 0.0356 |
-| MOVING-AVG | 0.0392 |
-| SM-17 | 0.0397 |
-| AVG | 0.0476 |
-| FSRS-4.5 | 0.0510 |
-| FSRS-5 | 0.0521 |
-| FSRSv4 | 0.0635 |
-| FSRSv3 | 0.0680 |
+| Algorithm | Average Universal Metric↓ |
+| --- | --- |
+| **FSRS-6** | **0.0288** |
+| MOVING-AVG | 0.0438 |
+| SM17 | 0.0456 |
+| FSRS-4.5 | 0.0503 |
+| FSRS-5 | 0.0513 |
+| SM16 | 0.0553 |
+| AVG | 0.0605 |
+| FSRSv4 | 0.0623 |
+| FSRSv3 | 0.0691 |
+| FSRS-6-default | 0.0806 |
 
 ### Superiority
 
