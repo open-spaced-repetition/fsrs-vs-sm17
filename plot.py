@@ -155,6 +155,7 @@ if __name__ == "__main__":
         "AVG",
         "FSRS-4.5",
         "FSRS-5",
+        "FSRS-6-default",
         "FSRSv4",
         "SM16",
         "FSRSv3",
@@ -257,10 +258,12 @@ if __name__ == "__main__":
     index_v4 = models_name.index("FSRSv4")
     index_sm16 = models_name.index("SM16")
     index_sm17 = models_name.index("SM17")
+    index_fsrs_6_default = models_name.index("FSRS-6-default")
     models_name[index_v3] = "FSRS v3"
     models_name[index_v4] = "FSRS v4"
     models_name[index_sm16] = "SM-16"
     models_name[index_sm17] = "SM-17"
+    models_name[index_fsrs_6_default] = "FSRS-6\ndefault\nparameters"
 
     fig, ax = plt.subplots(figsize=(10, 9), dpi=150)
     ax.set_title(
@@ -290,7 +293,7 @@ if __name__ == "__main__":
                     ha="center",
                     va="center",
                     color="white",
-                    fontsize=16,
+                    fontsize=14,
                 )
 
     ax.set_xticks(np.arange(n), labels=models_name, fontsize=16, rotation=45)
@@ -328,7 +331,7 @@ if __name__ == "__main__":
                     ha="center",
                     va="center",
                     color="white",
-                    fontsize=16,
+                    fontsize=14,
                 )
 
     ax.set_xticks(np.arange(n), labels=models_name, fontsize=16, rotation=45)
@@ -439,7 +442,7 @@ if __name__ == "__main__":
                     ha="center",
                     va="center",
                     color="white",
-                    fontsize=15,
+                    fontsize=12,
                 )
 
     ax.set_xticks(np.arange(n), labels=models_name, fontsize=16, rotation=45)
@@ -551,9 +554,11 @@ if __name__ == "__main__":
                         f"{um_matrix[i, j]:.3f}",
                         ha="center",
                         va="center",
-                        color="white"
-                        if um_matrix[i, j] > np.nanmean(um_matrix)
-                        else "black",
+                        color=(
+                            "white"
+                            if um_matrix[i, j] > np.nanmean(um_matrix)
+                            else "black"
+                        ),
                         fontsize=12,
                         weight="bold",
                     )
@@ -565,7 +570,7 @@ if __name__ == "__main__":
                         ha="center",
                         va="center",
                         color="gray",
-                        fontsize=16,
+                        fontsize=14,
                     )
 
         # Set labels
