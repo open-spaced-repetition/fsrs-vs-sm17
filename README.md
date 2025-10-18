@@ -10,9 +10,25 @@ It is a simple comparison between FSRS and SM-17. Due to the difference between 
 - To ensure FSRS has the same information as SM-17, I implement an [online learning](https://en.wikipedia.org/wiki/Online_machine_learning) version of FSRS, where FSRS has zero knowledge of the future reviews as SM-17 does.
 - The results are based on the data from a small group of people. It may be different from the result of other SuperMemo users.
 
-### Metrics
+## Metrics
 
-We use three metrics in the SRS benchmark to evaluate how well these algorithms work: Log Loss, AUC, and a custom RMSE that we call RMSE (bins).
+### Universal Metric
+
+The Universal Metric is a mathematical tool proposed by SuperMemo for reliable comparison of different spaced repetition algorithm implementations. It measures the accuracy of retrievability predictions by comparing predicted probabilities with actual recall outcomes.
+
+**How it works:**
+- Predictions are grouped into bins based on predicted retrievability values
+- Within each bin, the root mean square error is calculated between predicted and actual recall rates
+- The metric is weighted by sample size in each bin
+- Lower values indicate better prediction accuracy
+
+Reference: [Universal metric for cross-comparison of spaced repetition algorithms](https://supermemo.guru/wiki/Universal_metric_for_cross-comparison_of_spaced_repetition_algorithms).
+
+**Disclaimer**: I cannot guarantee that I have implemented the universal metric proposed by the SuperMemo team with 100% accuracy, as they have not released their evaluation code. My implementation is based solely on their documentation.
+
+### Traditional Machine Learning Metrics
+
+We also use three traditional metrics in the SRS benchmark: Log Loss, AUC, and a custom RMSE that we call RMSE (bins).
 
 - Log Loss (also known as Binary Cross Entropy): used primarily in binary classification problems, Log Loss serves as a measure of the discrepancies between predicted probabilities of recall and review outcomes (1 or 0). It quantifies how well the algorithm approximates the true recall probabilities. Log Loss ranges from 0 to infinity, lower is better.
 - Root Mean Square Error in Bins (RMSE (bins)): this is a metric designed for use in the SRS benchmark. In this approach, predictions and review outcomes are grouped into bins based on three features: the interval length, the number of reviews, and the number of lapses. Within each bin, the squared difference between the average predicted probability of recall and the average recall rate is calculated. These values are then weighted according to the sample size in each bin, and then the final weighted root mean square error is calculated. This metric provides a nuanced understanding of algorithm performance across different probability ranges. For more details, you can read [The Metric](https://github.com/open-spaced-repetition/fsrs4anki/wiki/The-Metric). RMSE (bins) ranges from 0 to 1, lower is better.
@@ -26,29 +42,67 @@ Total users: 18
 
 Total repetitions: 652,278
 
-The following tables present the means and the 99% confidence intervals. The best result is highlighted in **bold**. Arrows indicate whether lower (↓) or higher (↑) values are better.
+### Universal Metric
 
-### Weighted by number of repetitions
+| Algorithm | Average Universal Metric↓ |
+| --- | --- |
+| **FSRS-6** | **0.0288** |
+| MOVING-AVG | 0.0438 |
+| SM17 | 0.0456 |
+| FSRS-4.5 | 0.0503 |
+| FSRS-5 | 0.0513 |
+| SM16 | 0.0553 |
+| AVG | 0.0605 |
+| FSRSv4 | 0.0623 |
+| FSRSv3 | 0.0691 |
+| FSRS-6-default | 0.0806 |
+
+### Universal Metrics Matrix
+
+The Universal Metrics matrix provides a comprehensive cross-comparison view of all algorithms. Each cell shows the Universal Metric for algorithm A (row) when using algorithm B's (column) predictions as the reference for binning. In other words, it measures how well algorithm A's predictions match actual recall outcomes when grouped by algorithm B's predicted retrievability values. The matrix is sorted by performance, with the best-performing algorithms in the top-left corner.
+
+**Why use different algorithms for binning?**
+
+Using different algorithms for binning (the "referee") is crucial to prevent gaming the metric. An algorithm could game the metric by always predicting values close to the dataset's average success rate (e.g., always predicting R=0.9). When binned by another algorithm's predictions, such a strategy would result in large errors across bins with different true recall rates.
+
+The average Universal Metric score across all reference algorithms (shown in the ranking table above) provides a robust measure of each algorithm's overall prediction accuracy.
+
+**Color interpretation:**
+- **Light colors**: Low Universal Metric (high prediction accuracy)
+- **Dark colors**: High Universal Metric (low prediction accuracy)
+- **Diagonal cells**: Show "-" (not applicable when binning by the same algorithm)
+
+This visualization helps identify which algorithms produce the most robust and accurate retrievability predictions across different evaluation perspectives.
+
+![Universal-Metrics-Matrix-18-collections](./plots/Universal-Metrics-Matrix-18-collections.png)
+
+### Traditional Machine Learning Metrics
+
+The following tables present the means and the 99% confidence intervals for traditional machine learning metrics. The best result is highlighted in **bold**. Arrows indicate whether lower (↓) or higher (↑) values are better.
+
+#### Weighted by number of repetitions
 
 | Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
 | --- | --- | --- | --- |
-| **FSRS-6** | **0.368±0.044** | **0.047±0.023** | **0.660±0.057** |
+| **FSRS-6** | **0.368±0.043** | **0.047±0.023** | **0.660±0.057** |
 | MOVING-AVG | 0.379±0.071 | 0.059±0.012 | 0.597±0.055 |
 | FSRS-4.5 | 0.385±0.029 | 0.063±0.043 | 0.651±0.060 |
-| AVG | 0.385±0.066 | 0.074±0.019 | 0.527±0.025 |
+| AVG | 0.385±0.066 | 0.074±0.019 | 0.527±0.026 |
 | FSRS-5 | 0.386±0.029 | 0.064±0.046 | 0.651±0.062 |
-| FSRSv4 | 0.400±0.027 | 0.075±0.055 | 0.644±0.064 |
+| FSRSv4 | 0.400±0.026 | 0.075±0.055 | 0.644±0.064 |
+| FSRS-6-default | 0.412±0.039 | 0.108±0.085 | 0.612±0.063 |
 | SM-16 | 0.416±0.038 | 0.097±0.031 | 0.596±0.055 |
-| SM-17 | 0.432±0.091 | 0.066±0.020 | 0.603±0.038 |
-| FSRSv3 | 0.450±0.083 | 0.104±0.079 | 0.606±0.072 |
+| SM-17 | 0.432±0.091 | 0.066±0.020 | 0.603±0.039 |
+| FSRSv3 | 0.450±0.083 | 0.104±0.079 | 0.606±0.071 |
 
-### Unweighted (per user)
+#### Unweighted (per user)
 
 | Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
 | --- | --- | --- | --- |
-| **MOVING-AVG** | **0.403±0.067** | **0.077±0.022** | 0.582±0.041 |
+| **MOVING-AVG** | **0.403±0.068** | **0.077±0.022** | 0.582±0.041 |
 | **FSRS-6** | 0.405±0.060 | 0.081±0.026 | **0.631±0.039** |
 | AVG | 0.414±0.074 | 0.093±0.023 | 0.508±0.028 |
+| FSRS-6-default | 0.431±0.056 | 0.116±0.038 | 0.615±0.038 |
 | FSRS-4.5 | 0.433±0.064 | 0.111±0.035 | 0.628±0.039 |
 | FSRS-5 | 0.438±0.064 | 0.116±0.038 | 0.628±0.039 |
 | SM-16 | 0.46±0.10 | 0.121±0.032 | 0.603±0.029 |
@@ -59,24 +113,6 @@ The following tables present the means and the 99% confidence intervals. The bes
 Averages weighted by the number of reviews are more representative of "best case" performance when plenty of data is available. Since almost all algorithms perform better when there's a lot of data to learn from, weighting by n(reviews) biases the average towards lower values.
 
 Unweighted averages are more representative of "average case" performance. In reality, not every user will have hundreds of thousands of reviews, so the algorithm won't always be able to reach its full potential.
-
-### Universal Metric
-
-The universal metric is proposed by SuperMemo. Reference: [Universal metric for cross-comparison of spaced repetition algorithms](https://supermemo.guru/wiki/Universal_metric_for_cross-comparison_of_spaced_repetition_algorithms).
-
-**Disclaimer**: I cannot guarantee that I have implemented the universal metric proposed by the SuperMemo team with 100% accuracy, as they have not released their evaluation code. My implementation is based solely on their documentation.
-
-| Algorithm | Universal Metric↓ |
-|-----------|------------------|
-| **FSRS-6** | **0.0272** |
-| SM-16 | 0.0386 |
-| MOVING-AVG | 0.0408 |
-| SM-17 | 0.0412 |
-| AVG | 0.0494 |
-| FSRS-4.5 | 0.0532 |
-| FSRS-5 | 0.0544 |
-| FSRSv4 | 0.0660 |
-| FSRSv3 | 0.0717 |
 
 ### Superiority
 

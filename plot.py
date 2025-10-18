@@ -155,6 +155,7 @@ if __name__ == "__main__":
         "AVG",
         "FSRS-4.5",
         "FSRS-5",
+        "FSRS-6-default",
         "FSRSv4",
         "SM16",
         "FSRSv3",
@@ -257,10 +258,12 @@ if __name__ == "__main__":
     index_v4 = models_name.index("FSRSv4")
     index_sm16 = models_name.index("SM16")
     index_sm17 = models_name.index("SM17")
+    index_fsrs_6_default = models_name.index("FSRS-6-default")
     models_name[index_v3] = "FSRS v3"
     models_name[index_v4] = "FSRS v4"
     models_name[index_sm16] = "SM-16"
     models_name[index_sm17] = "SM-17"
+    models_name[index_fsrs_6_default] = "FSRS-6\ndefault params."
 
     fig, ax = plt.subplots(figsize=(10, 9), dpi=150)
     ax.set_title(
@@ -290,11 +293,11 @@ if __name__ == "__main__":
                     ha="center",
                     va="center",
                     color="white",
-                    fontsize=16,
+                    fontsize=14,
                 )
 
-    ax.set_xticks(np.arange(n), labels=models_name, fontsize=16, rotation=45)
-    ax.set_yticks(np.arange(n), labels=models_name, fontsize=16)
+    ax.set_xticks(np.arange(n), labels=models_name, fontsize=12, rotation=45)
+    ax.set_yticks(np.arange(n), labels=models_name, fontsize=12)
     ax.set_xticks(np.arange(n) - 0.5, minor=True)
     ax.set_yticks(np.arange(n) - 0.5, minor=True)
     plt.grid(True, alpha=1, color="black", linewidth=2, which="minor")
@@ -328,11 +331,11 @@ if __name__ == "__main__":
                     ha="center",
                     va="center",
                     color="white",
-                    fontsize=16,
+                    fontsize=14,
                 )
 
-    ax.set_xticks(np.arange(n), labels=models_name, fontsize=16, rotation=45)
-    ax.set_yticks(np.arange(n), labels=models_name, fontsize=16)
+    ax.set_xticks(np.arange(n), labels=models_name, fontsize=12, rotation=45)
+    ax.set_yticks(np.arange(n), labels=models_name, fontsize=12)
     ax.set_xticks(np.arange(n) - 0.5, minor=True)
     ax.set_yticks(np.arange(n) - 0.5, minor=True)
     plt.grid(True, alpha=1, color="black", linewidth=2, which="minor")
@@ -439,11 +442,11 @@ if __name__ == "__main__":
                     ha="center",
                     va="center",
                     color="white",
-                    fontsize=15,
+                    fontsize=12,
                 )
 
-    ax.set_xticks(np.arange(n), labels=models_name, fontsize=16, rotation=45)
-    ax.set_yticks(np.arange(n), labels=models_name, fontsize=16)
+    ax.set_xticks(np.arange(n), labels=models_name, fontsize=12, rotation=45)
+    ax.set_yticks(np.arange(n), labels=models_name, fontsize=12)
     ax.set_xticks(np.arange(n) - 0.5, minor=True)
     ax.set_yticks(np.arange(n) - 0.5, minor=True)
     plt.grid(True, alpha=1, color="black", linewidth=2, which="minor")
@@ -456,3 +459,158 @@ if __name__ == "__main__":
         f"./plots/{title}.png",
         bbox_inches="tight",
     )
+
+    # Universal Metrics Matrix Heatmap
+    print("Generating Universal Metrics heatmap...")
+
+    # Collect Universal Metrics data
+    universal_metrics_data = {}
+    result_files = pathlib.Path("./result").glob("*.json")
+
+    for result_file in result_files:
+        with open(result_file, "r") as f:
+            result = json.load(f)
+            if "Universal_Metrics" in result:
+                for metric_name, metric_value in result["Universal_Metrics"].items():
+                    if metric_name not in universal_metrics_data:
+                        universal_metrics_data[metric_name] = []
+                    universal_metrics_data[metric_name].append(metric_value)
+
+    if universal_metrics_data:
+        # Load user sizes for weighted average
+        sizes = []
+        result_files = pathlib.Path("./result").glob("*.json")
+        for result_file in result_files:
+            with open(result_file, "r") as f:
+                result = json.load(f)
+                sizes.append(result["size"])
+        sizes = np.array(sizes)
+
+        # Calculate weighted average Universal Metrics for each pair
+        um_matrix_data = {}
+        for metric_name, values in universal_metrics_data.items():
+            values_array = np.array(values)
+            um_matrix_data[metric_name] = np.average(values_array, weights=sizes)
+
+        # Get all unique algorithms
+        all_algorithms = set()
+        for metric_name in um_matrix_data.keys():
+            algo_a, algo_b = metric_name.split("_evaluated_by_")
+            all_algorithms.add(algo_a)
+            all_algorithms.add(algo_b)
+
+        # Calculate average Universal Metrics for each algorithm (as evaluated)
+        algo_avg_um = {}
+        for algo_name in all_algorithms:
+            scores = []
+            for metric_name, value in um_matrix_data.items():
+                if metric_name.startswith(f"{algo_name}_evaluated_by_"):
+                    scores.append(value)
+            if scores:
+                algo_avg_um[algo_name] = np.mean(scores)
+
+        # Sort algorithms by average Universal Metric (lower is better)
+        sorted_algorithms = sorted(algo_avg_um.items(), key=lambda x: x[1])
+        sorted_algorithms = [algo for algo, _ in sorted_algorithms]
+        n_um = len(sorted_algorithms)
+
+        # Create Universal Metrics matrix
+        um_matrix = np.full((n_um, n_um), np.nan)
+
+        for i, algo_a in enumerate(sorted_algorithms):
+            for j, algo_b in enumerate(sorted_algorithms):
+                if i != j:  # Skip diagonal
+                    metric_name = f"{algo_a}_evaluated_by_{algo_b}"
+                    if metric_name in um_matrix_data:
+                        um_matrix[i, j] = um_matrix_data[metric_name]
+
+        # Create heatmap
+        fig, ax = plt.subplots(figsize=(10, 9), dpi=150)
+        ax.set_title(
+            f"Universal Metrics Matrix ({n_collections} collections)",
+            fontsize=24,
+            pad=30,
+        )
+
+        # Use a colormap that goes from low (good) to high (bad) values
+        cmap = (
+            plt.cm.viridis_r
+        )  # Reverse viridis: bright = low (good), dark = high (bad)
+
+        # Create the heatmap
+        im = ax.imshow(um_matrix, cmap=cmap, interpolation="none")
+
+        # Add colorbar
+        cbar = plt.colorbar(im, ax=ax)
+        cbar.set_label("Universal Metric (lower is better)", fontsize=14)
+
+        # Add text annotations
+        for i in range(n_um):
+            for j in range(n_um):
+                if not np.isnan(um_matrix[i, j]):
+                    text = ax.text(
+                        j,
+                        i,
+                        f"{um_matrix[i, j]:.3f}",
+                        ha="center",
+                        va="center",
+                        color=(
+                            "white"
+                            if um_matrix[i, j] > np.nanmean(um_matrix)
+                            else "black"
+                        ),
+                        fontsize=12,
+                        weight="bold",
+                    )
+                else:
+                    text = ax.text(
+                        j,
+                        i,
+                        "-",
+                        ha="center",
+                        va="center",
+                        color="gray",
+                        fontsize=14,
+                    )
+
+        # Apply label corrections for consistency
+        display_labels = []
+        for algo in sorted_algorithms:
+            if algo == "FSRSv3":
+                display_labels.append("FSRS v3")
+            elif algo == "FSRSv4":
+                display_labels.append("FSRS v4")
+            elif algo == "SM16":
+                display_labels.append("SM-16")
+            elif algo == "SM17":
+                display_labels.append("SM-17")
+            elif algo == "FSRS-6-default":
+                display_labels.append("FSRS-6\ndefault params.")
+            else:
+                display_labels.append(algo)
+
+        # Set labels
+        ax.set_xticks(np.arange(n_um), labels=display_labels, fontsize=12, rotation=45)
+        ax.set_yticks(np.arange(n_um), labels=display_labels, fontsize=12)
+        ax.set_xticks(np.arange(n_um) - 0.5, minor=True)
+        ax.set_yticks(np.arange(n_um) - 0.5, minor=True)
+
+        # Add grid
+        plt.grid(True, alpha=1, color="black", linewidth=2, which="minor")
+
+        # Enhance borders
+        for location in ["left", "right", "top", "bottom"]:
+            ax.spines[location].set_linewidth(2)
+
+        # Add axis labels
+        ax.set_xlabel("Evaluating Algorithm", fontsize=12)
+        ax.set_ylabel("Evaluated Algorithm", fontsize=12)
+
+        # Save the plot
+        title = f"Universal-Metrics-Matrix-{n_collections}-collections"
+        plt.savefig(f"./plots/{title}.png", bbox_inches="tight")
+        plt.close()
+
+        print(f"Universal Metrics heatmap saved as ./plots/{title}.png")
+    else:
+        print("No Universal Metrics data found for heatmap generation.")

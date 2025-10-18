@@ -3,11 +3,14 @@ import numpy as np
 from sklearn.metrics import root_mean_squared_error
 
 
+def get_bin(x, bins=10):
+    # Simple equal-width binning with 0.1 intervals from 0 to 1
+    # This matches the binning method shown in the graph
+    return np.round(x * bins) / bins
+
+
 def cross_comparison(revlogs, algoA, algoB):
     cross_comparison_record = revlogs[[f"R ({algoA})", f"R ({algoB})", "y"]].copy()
-
-    def get_bin(x, bins=20):
-        return (np.log(np.exp(np.log(bins) * x).round()) / np.log(bins)).round(3)
 
     for algo in (algoA, algoB):
         cross_comparison_record[f"{algo}_B-W"] = (
@@ -64,3 +67,14 @@ def cross_comparison(revlogs, algoA, algoB):
     plt.show()
 
     return result
+
+
+if __name__ == "__main__":
+    values = np.linspace(0, 1, 100)
+    bins = 10
+    plt.plot(values, [get_bin(value, bins) for value in values])
+    plt.grid(True)
+    plt.title(f"Equal-width binning with {bins} bins")
+    plt.xlabel("Value")
+    plt.ylabel("Bin")
+    plt.show()

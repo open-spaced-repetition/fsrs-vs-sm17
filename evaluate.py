@@ -92,6 +92,7 @@ if __name__ == "__main__":
     FSRS_4_5 = ("FSRS-4.5", [])
     FSRS_5 = ("FSRS-5", [])
     FSRS_6 = ("FSRS-6", [])
+    FSRS_6_default = ("FSRS-6-default", [])
     SM17 = ("SM-17", [])
     SM16 = ("SM-16", [])
     AVG = ("AVG", [])
@@ -107,6 +108,7 @@ if __name__ == "__main__":
             FSRS_4_5[1].append(result["FSRS-4.5"])
             FSRS_5[1].append(result["FSRS-5"])
             FSRS_6[1].append(result["FSRS-6"])
+            FSRS_6_default[1].append(result["FSRS-6-default"])
             SM17[1].append(result["SM17"])
             SM16[1].append(result["SM16"])
             AVG[1].append(result["AVG"])
@@ -125,7 +127,18 @@ if __name__ == "__main__":
     ]
 
     # Define model order for display
-    models = [FSRS_6, FSRS_5, FSRS_4_5, AVG, FSRSv4, SM17, SM16, FSRSv3, MOVING_AVG]
+    models = [
+        FSRS_6,
+        FSRS_5,
+        FSRS_4_5,
+        AVG,
+        FSRSv4,
+        SM17,
+        SM16,
+        FSRSv3,
+        MOVING_AVG,
+        FSRS_6_default,
+    ]
 
     for scale_name, size in [
         ("Weighted by number of repetitions", np.array(sizes)),
@@ -181,3 +194,61 @@ if __name__ == "__main__":
             print(row)
 
         print()
+
+    # Calculate Universal Metrics
+    print("### Universal Metrics (Cross Comparison)\n")
+
+    # Collect all Universal Metrics from all users
+    universal_metrics_data = {}
+    result_files = result_dir.glob("*.json")
+
+    for result_file in result_files:
+        with open(result_file, "r") as f:
+            result = json.load(f)
+            if "Universal_Metrics" in result:
+                for metric_name, metric_value in result["Universal_Metrics"].items():
+                    if metric_name not in universal_metrics_data:
+                        universal_metrics_data[metric_name] = []
+                    universal_metrics_data[metric_name].append(metric_value)
+
+    if universal_metrics_data:
+        # Calculate statistics for each Universal Metric
+        um_results = {}
+        for metric_name, values in universal_metrics_data.items():
+            values_array = np.array(values)
+            wmean, wstd = weighted_avg_and_std(values_array, sizes)
+            CI = confidence_interval(values_array, sizes)
+            rounded_mean, rounded_CI = sigdig(wmean, CI)
+            um_results[metric_name] = (rounded_mean, rounded_CI, wmean)
+
+        # Find best (lowest) Universal Metric for each algorithm
+        algorithm_um_scores = {}
+        for metric_name, (_, _, wmean) in um_results.items():
+            # Extract algorithm name from metric name (e.g., "FSRS-6_evaluated_by_SM16" -> "FSRS-6")
+            algo_name = metric_name.split("_evaluated_by_")[0]
+            if algo_name not in algorithm_um_scores:
+                algorithm_um_scores[algo_name] = []
+            algorithm_um_scores[algo_name].append(wmean)
+
+        # Calculate average UM score for each algorithm
+        algo_avg_um = {}
+        for algo_name, scores in algorithm_um_scores.items():
+            algo_avg_um[algo_name] = np.mean(scores)
+
+        # Sort algorithms by average Universal Metric (lower is better)
+        sorted_algorithms = sorted(algo_avg_um.items(), key=lambda x: x[1])
+
+        # Print Universal Metrics table
+        print("| Algorithm | Average Universal Metric↓ |")
+        print("| --- | --- |")
+        for i, (algo_name, avg_um) in enumerate(sorted_algorithms):
+            # Format the average UM value
+            formatted_um = f"{avg_um:.4f}"
+            if i == 0:  # Best algorithm
+                print(f"| **{algo_name}** | **{formatted_um}** |")
+            else:
+                print(f"| {algo_name} | {formatted_um} |")
+
+        print()
+    else:
+        print("No Universal Metrics data found in result files.\n")

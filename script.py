@@ -6,7 +6,6 @@ import torch
 import json
 from datetime import datetime
 from itertools import accumulate
-
 from fsrs_optimizer import (
     lineToTensor,
     power_forgetting_curve,
@@ -19,7 +18,7 @@ from fsrs_optimizer import (
 )
 from models import FSRS3, FSRS4, FSRS4dot5, FSRS5
 from tqdm.auto import tqdm
-from sklearn.metrics import log_loss, roc_auc_score
+from sklearn.metrics import log_loss, roc_auc_score, root_mean_squared_error
 from pathlib import Path
 
 tqdm.pandas()
@@ -35,29 +34,78 @@ def data_preprocessing(csv_file_path, save_csv=False):
     def convert_to_datetime(date_str):
         # 德语月份到英语月份的映射
         german_months = {
-            'Jan': 'Jan', 'Feb': 'Feb', 'Mär': 'Mar', 'Mrz': 'Mar', 'Apr': 'Apr',
-            'Mai': 'May', 'Jun': 'Jun', 'Jul': 'Jul', 'Aug': 'Aug',
-            'Sep': 'Sep', 'Okt': 'Oct', 'Nov': 'Nov', 'Dez': 'Dec'
+            "Jan": "Jan",
+            "Feb": "Feb",
+            "Mär": "Mar",
+            "Mrz": "Mar",
+            "Apr": "Apr",
+            "Mai": "May",
+            "Jun": "Jun",
+            "Jul": "Jul",
+            "Aug": "Aug",
+            "Sep": "Sep",
+            "Okt": "Oct",
+            "Nov": "Nov",
+            "Dez": "Dec",
         }
-        
+
         portuguese_months = {
-            'jan': 'Jan', 'fev': 'Feb', 'mar': 'Mar', 'abr': 'Apr',
-            'mai': 'May', 'jun': 'Jun', 'jul': 'Jul', 'ago': 'Aug',
-            'set': 'Sep', 'out': 'Oct', 'nov': 'Nov', 'dez': 'Dec'
+            "jan": "Jan",
+            "fev": "Feb",
+            "mar": "Mar",
+            "abr": "Apr",
+            "mai": "May",
+            "jun": "Jun",
+            "jul": "Jul",
+            "ago": "Aug",
+            "set": "Sep",
+            "out": "Oct",
+            "nov": "Nov",
+            "dez": "Dec",
         }
-        
+
         date_str_normalized = date_str
 
-        date_str_normalized = date_str_normalized.replace('jan.', 'jan').replace('feb.', 'feb').replace('mar.', 'mar')
-        date_str_normalized = date_str_normalized.replace('apr.', 'apr').replace('may.', 'may').replace('jun.', 'jun')
-        date_str_normalized = date_str_normalized.replace('jul.', 'jul').replace('aug.', 'aug').replace('sep.', 'sep')
-        date_str_normalized = date_str_normalized.replace('oct.', 'oct').replace('nov.', 'nov').replace('dec.', 'dec')
-        
-        month_abbrs = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 
-                       'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+        date_str_normalized = (
+            date_str_normalized.replace("jan.", "jan")
+            .replace("feb.", "feb")
+            .replace("mar.", "mar")
+        )
+        date_str_normalized = (
+            date_str_normalized.replace("apr.", "apr")
+            .replace("may.", "may")
+            .replace("jun.", "jun")
+        )
+        date_str_normalized = (
+            date_str_normalized.replace("jul.", "jul")
+            .replace("aug.", "aug")
+            .replace("sep.", "sep")
+        )
+        date_str_normalized = (
+            date_str_normalized.replace("oct.", "oct")
+            .replace("nov.", "nov")
+            .replace("dec.", "dec")
+        )
+
+        month_abbrs = [
+            "jan",
+            "feb",
+            "mar",
+            "apr",
+            "may",
+            "jun",
+            "jul",
+            "aug",
+            "sep",
+            "oct",
+            "nov",
+            "dec",
+        ]
         for month in month_abbrs:
             if month in date_str_normalized.lower():
-                date_str_normalized = date_str_normalized.replace(month, month.capitalize())
+                date_str_normalized = date_str_normalized.replace(
+                    month, month.capitalize()
+                )
                 break
 
         # 将德语月份替换为英语月份
@@ -65,22 +113,24 @@ def data_preprocessing(csv_file_path, save_csv=False):
             if de_month in date_str_normalized:
                 date_str_normalized = date_str_normalized.replace(de_month, en_month)
                 break
-        
+
         # 将葡萄牙语月份替换为英语月份
         for pt_month, en_month in portuguese_months.items():
             if pt_month in date_str_normalized.lower():
-                date_str_normalized = date_str_normalized.lower().replace(pt_month, en_month)
+                date_str_normalized = date_str_normalized.lower().replace(
+                    pt_month, en_month
+                )
                 break
-        
+
         date_formats = [
             "%b %d %Y %H:%M:%S",
             "%m %d %Y %H:%M:%S",
-            "%m月 %d %Y %H:%M:%S", 
+            "%m月 %d %Y %H:%M:%S",
             "%d/%m/%Y %H:%M",
             "%m/%d/%Y",
-            "%m-%d-%y"
+            "%m-%d-%y",
         ]
-        
+
         for date_format in date_formats:
             try:
                 return datetime.strptime(date_str_normalized, date_format)
@@ -318,6 +368,32 @@ def average(revlogs):
     return revlogs
 
 
+def FSRS6_default(revlogs):
+    model = FSRS(DEFAULT_PARAMETER)
+    predictions = [np.nan for _ in range(len(revlogs))]
+    with torch.no_grad():
+        for i in tqdm(range(len(revlogs))):
+            row = revlogs.iloc[i]
+            assert i == row["index"]
+            if not np.isnan(row["next_index"]):
+                sequence = (
+                    torch.tensor(row["next_tensor"].tolist())
+                    .unsqueeze(0)
+                    .transpose(0, 1)
+                )
+                seq_len = torch.tensor(row["next_tensor"].size(0), dtype=torch.long)
+                output, _ = model(sequence)
+                stability = output[seq_len - 1, torch.arange(1), 0]
+                retention = power_forgetting_curve(
+                    row["next_delta_t"], stability, -model.w[20]
+                )
+                predictions[int(row["next_index"])] = (
+                    retention.detach().numpy().round(3)[0]
+                )
+    revlogs["R (FSRS-6-default)"] = predictions
+    return revlogs
+
+
 def moving_average(revlogs):
     x = 1.2
     w = 0.3
@@ -337,6 +413,63 @@ def moving_average(revlogs):
 
 
 def evaluate(revlogs):
+    # Define binning function
+    def get_bin(x, bins=10):
+        return np.round(x * bins) / bins
+
+    # Calculate Universal Metrics for each algorithm pair
+    def calculate_universal_metric(algoA, algoB):
+        cross_comparison_record = revlogs[[f"R ({algoA})", f"R ({algoB})", "y"]].copy()
+
+        for algo in (algoA, algoB):
+            cross_comparison_record[f"{algo}_B-W"] = (
+                cross_comparison_record[f"R ({algo})"] - cross_comparison_record["y"]
+            )
+            cross_comparison_record[f"{algo}_bin"] = cross_comparison_record[
+                f"R ({algo})"
+            ].map(get_bin)
+
+        result = {}
+        for referee, player in [(algoA, algoB), (algoB, algoA)]:
+            cross_comparison_group = cross_comparison_record.groupby(
+                by=f"{referee}_bin"
+            ).agg(
+                {
+                    "y": ["mean"],
+                    f"{player}_B-W": ["mean"],
+                    f"R ({player})": ["mean", "count"],
+                }
+            )
+            universal_metric = root_mean_squared_error(
+                cross_comparison_group["y", "mean"],
+                cross_comparison_group[f"R ({player})", "mean"],
+                sample_weight=cross_comparison_group[f"R ({player})", "count"],
+            )
+            result[f"{player}_evaluated_by_{referee}"] = round(universal_metric, 4)
+
+        return result
+
+    # Calculate all Universal Metrics
+    universal_metrics = {}
+    algorithms = [
+        "FSRS-6",
+        "FSRS-5",
+        "FSRS-4.5",
+        "FSRSv4",
+        "FSRSv3",
+        "SM16",
+        "SM17",
+        "AVG",
+        "FSRS-6-default",
+        "MOVING-AVG",
+    ]
+
+    for i, algoA in enumerate(algorithms):
+        for algoB in algorithms[i + 1 :]:
+            um_result = calculate_universal_metric(algoA, algoB)
+            universal_metrics.update(um_result)
+
+    # Original metrics calculation
     avg_rmse = rmse_matrix(
         revlogs[
             ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (AVG)"]
@@ -382,6 +515,19 @@ def evaluate(revlogs):
             ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (FSRSv3)"]
         ].rename(columns={"R (FSRSv3)": "p"})
     )
+    fsrs_v6_default_rmse = rmse_matrix(
+        revlogs[
+            [
+                "card_id",
+                "r_history",
+                "t_history",
+                "delta_t",
+                "i",
+                "y",
+                "R (FSRS-6-default)",
+            ]
+        ].rename(columns={"R (FSRS-6-default)": "p"})
+    )
     avg_logloss = log_loss(revlogs["y"], revlogs["R (AVG)"])
     moving_avg_logloss = log_loss(revlogs["y"], revlogs["R (MOVING-AVG)"])
     sm16_logloss = log_loss(revlogs["y"], revlogs["R (SM16)"])
@@ -391,6 +537,8 @@ def evaluate(revlogs):
     fsrs_v4dot5_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-4.5)"])
     fsrs_v4_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv4)"])
     fsrs_v3_logloss = log_loss(revlogs["y"], revlogs["R (FSRSv3)"])
+    fsrs_v6_default_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-6-default)"])
+
     avg_auc = roc_auc_score(revlogs["y"], revlogs["R (AVG)"])
     moving_avg_auc = roc_auc_score(revlogs["y"], revlogs["R (MOVING-AVG)"])
     sm16_auc = roc_auc_score(revlogs["y"], revlogs["R (SM16)"])
@@ -400,8 +548,9 @@ def evaluate(revlogs):
     fsrs_v4dot5_auc = roc_auc_score(revlogs["y"], revlogs["R (FSRS-4.5)"])
     fsrs_v4_auc = roc_auc_score(revlogs["y"], revlogs["R (FSRSv4)"])
     fsrs_v3_auc = roc_auc_score(revlogs["y"], revlogs["R (FSRSv3)"])
+    fsrs_v6_default_auc = roc_auc_score(revlogs["y"], revlogs["R (FSRS-6-default)"])
 
-    return {
+    result = {
         "FSRS-6": {
             "RMSE(bins)": round(fsrs_v6_rmse, 4),
             "LogLoss": round(fsrs_v6_logloss, 4),
@@ -447,7 +596,17 @@ def evaluate(revlogs):
             "LogLoss": round(moving_avg_logloss, 4),
             "AUC": round(moving_avg_auc, 4),
         },
+        "FSRS-6-default": {
+            "RMSE(bins)": round(fsrs_v6_default_rmse, 4),
+            "LogLoss": round(fsrs_v6_default_logloss, 4),
+            "AUC": round(fsrs_v6_default_auc, 4),
+        },
     }
+
+    # Add Universal Metrics to result
+    result["Universal_Metrics"] = universal_metrics
+
+    return result
 
 
 def process_single_file(file):
@@ -468,6 +627,7 @@ def process_single_file(file):
         revlogs = data_preprocessing(file)
         revlogs = average(revlogs)
         revlogs = moving_average(revlogs)
+        revlogs = FSRS6_default(revlogs)
         revlogs, trained_models = FSRS_old_train(revlogs)
         revlogs, model = FSRS_latest_train(revlogs)
 
