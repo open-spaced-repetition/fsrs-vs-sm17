@@ -26,6 +26,11 @@ Reference: [Universal metric for cross-comparison of spaced repetition algorithm
 
 **Disclaimer**: I cannot guarantee that I have implemented the universal metric proposed by the SuperMemo team with 100% accuracy, as they have not released their evaluation code. My implementation is based solely on their documentation.
 
+**Note**: The Universal Metric in a cross-comparison setting has a theoretical vulnerability to gaming if a model has access to all other models' predictions. Since bins are constructed based on the referee algorithm's predictions, an adversarial model could track these bins and craft predictions to minimize its Universal Metric scores across all comparisons. This is similar to the RMSE (bins) exploit. However, this vulnerability is not a practical concern for this benchmark because:
+1. All code and data are open-source and transparent
+2. We use multiple complementary metrics (Log Loss, AUC, RMSE) to validate results
+3. Gaming attempts would be easily detectable in the community review process
+
 ### Traditional Machine Learning Metrics
 
 We also use three traditional metrics in the SRS benchmark: Log Loss, AUC, and a custom RMSE that we call RMSE (bins).
@@ -63,9 +68,9 @@ The Universal Metrics matrix provides a comprehensive cross-comparison view of a
 
 **Why use different algorithms for binning?**
 
-Using different algorithms for binning (the "referee") is crucial to prevent gaming the metric. An algorithm could game the metric by always predicting values close to the dataset's average success rate (e.g., always predicting R=0.9). When binned by another algorithm's predictions, such a strategy would result in large errors across bins with different true recall rates.
+Using different algorithms for binning (the "referee") helps mitigate simple gaming strategies. For example, an algorithm that always predicts values close to the dataset's average success rate (e.g., always predicting R=0.9) would show large errors when binned by another algorithm's predictions across bins with different true recall rates.
 
-The average Universal Metric score across all reference algorithms (shown in the ranking table above) provides a robust measure of each algorithm's overall prediction accuracy.
+However, this approach does not fully prevent gaming if an adversarial model has access to all other models' predictions in advance (see Security Note above). The average Universal Metric score across all reference algorithms (shown in the ranking table above) provides a measure of each algorithm's overall prediction accuracy under the assumption of honest participation.
 
 **Color interpretation:**
 - **Light colors**: Low Universal Metric (high prediction accuracy)
