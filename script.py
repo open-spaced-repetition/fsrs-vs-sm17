@@ -20,8 +20,47 @@ from models import FSRS3, FSRS4, FSRS4dot5, FSRS5
 from tqdm.auto import tqdm
 from sklearn.metrics import log_loss, roc_auc_score, root_mean_squared_error
 from pathlib import Path
+from utils import get_bin
 
 tqdm.pandas()
+
+
+def compute_adversarial_predictions(revlogs, algorithms, bins=10):
+    """Craft predictions that exploit referee bins by matching observed outcomes.
+
+    The attack groups each record by the tuple of bin assignments induced by the
+    provided algorithms and sets its prediction to the average success rate of
+    that tuple. This guarantees that, for every referee, the adversary is
+    perfectly calibrated at the bin level while still using the same prediction
+    column for binning and scoring.
+    """
+
+    if "R (ADVERSARIAL)" in revlogs.columns:
+        return revlogs
+
+    # Ensure we operate on probability columns
+    base_cols = [f"R ({algo})" for algo in algorithms]
+    missing_cols = [col for col in base_cols if col not in revlogs.columns]
+    if missing_cols:
+        raise KeyError(
+            "Missing prediction columns required for adversarial computation: "
+            + ", ".join(missing_cols)
+        )
+
+    # Bin identifiers mirror the cross-comparison binning scheme
+    bin_cols = []
+    for algo in algorithms:
+        col_name = f"_adv_bin_{algo}"
+        predictions = revlogs[f"R ({algo})"].clip(0, 1)
+        revlogs[col_name] = get_bin(predictions, bins)
+        bin_cols.append(col_name)
+
+    revlogs["R (ADVERSARIAL)"] = (
+        revlogs.groupby(bin_cols)["y"].transform("mean").astype(float)
+    )
+
+    revlogs.drop(columns=bin_cols, inplace=True)
+    return revlogs
 
 
 def data_preprocessing(csv_file_path, save_csv=False):
@@ -32,7 +71,6 @@ def data_preprocessing(csv_file_path, save_csv=False):
     df.columns = df.columns.str.strip()
 
     def convert_to_datetime(date_str):
-        # 德语月份到英语月份的映射
         german_months = {
             "Jan": "Jan",
             "Feb": "Feb",
@@ -108,13 +146,11 @@ def data_preprocessing(csv_file_path, save_csv=False):
                 )
                 break
 
-        # 将德语月份替换为英语月份
         for de_month, en_month in german_months.items():
             if de_month in date_str_normalized:
                 date_str_normalized = date_str_normalized.replace(de_month, en_month)
                 break
 
-        # 将葡萄牙语月份替换为英语月份
         for pt_month, en_month in portuguese_months.items():
             if pt_month in date_str_normalized.lower():
                 date_str_normalized = date_str_normalized.lower().replace(
@@ -414,9 +450,6 @@ def moving_average(revlogs):
 
 def evaluate(revlogs):
     # Define binning function
-    def get_bin(x, bins=10):
-        return np.round(x * bins) / bins
-
     # Calculate Universal Metrics for each algorithm pair
     def calculate_universal_metric(algoA, algoB):
         cross_comparison_record = revlogs[[f"R ({algoA})", f"R ({algoB})", "y"]].copy()
@@ -451,7 +484,7 @@ def evaluate(revlogs):
 
     # Calculate all Universal Metrics
     universal_metrics = {}
-    algorithms = [
+    base_algorithms = [
         "FSRS-6",
         "FSRS-5",
         "FSRS-4.5",
@@ -463,6 +496,10 @@ def evaluate(revlogs):
         "FSRS-6-default",
         "MOVING-AVG",
     ]
+
+    compute_adversarial_predictions(revlogs, base_algorithms)
+
+    algorithms = base_algorithms + ["ADVERSARIAL"]
 
     for i, algoA in enumerate(algorithms):
         for algoB in algorithms[i + 1 :]:
@@ -479,6 +516,19 @@ def evaluate(revlogs):
         revlogs[
             ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (MOVING-AVG)"]
         ].rename(columns={"R (MOVING-AVG)": "p"})
+    )
+    adversarial_rmse = rmse_matrix(
+        revlogs[
+            [
+                "card_id",
+                "r_history",
+                "t_history",
+                "delta_t",
+                "i",
+                "y",
+                "R (ADVERSARIAL)",
+            ]
+        ].rename(columns={"R (ADVERSARIAL)": "p"})
     )
     sm16_rmse = rmse_matrix(
         revlogs[
@@ -530,6 +580,7 @@ def evaluate(revlogs):
     )
     avg_logloss = log_loss(revlogs["y"], revlogs["R (AVG)"])
     moving_avg_logloss = log_loss(revlogs["y"], revlogs["R (MOVING-AVG)"])
+    adversarial_logloss = log_loss(revlogs["y"], revlogs["R (ADVERSARIAL)"])
     sm16_logloss = log_loss(revlogs["y"], revlogs["R (SM16)"])
     sm17_logloss = log_loss(revlogs["y"], revlogs["R (SM17)"])
     fsrs_v6_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-6)"])
@@ -541,6 +592,7 @@ def evaluate(revlogs):
 
     avg_auc = roc_auc_score(revlogs["y"], revlogs["R (AVG)"])
     moving_avg_auc = roc_auc_score(revlogs["y"], revlogs["R (MOVING-AVG)"])
+    adversarial_auc = roc_auc_score(revlogs["y"], revlogs["R (ADVERSARIAL)"])
     sm16_auc = roc_auc_score(revlogs["y"], revlogs["R (SM16)"])
     sm17_auc = roc_auc_score(revlogs["y"], revlogs["R (SM17)"])
     fsrs_v6_auc = roc_auc_score(revlogs["y"], revlogs["R (FSRS-6)"])
@@ -595,6 +647,11 @@ def evaluate(revlogs):
             "RMSE(bins)": round(moving_avg_rmse, 4),
             "LogLoss": round(moving_avg_logloss, 4),
             "AUC": round(moving_avg_auc, 4),
+        },
+        "ADVERSARIAL": {
+            "RMSE(bins)": round(adversarial_rmse, 4),
+            "LogLoss": round(adversarial_logloss, 4),
+            "AUC": round(adversarial_auc, 4),
         },
         "FSRS-6-default": {
             "RMSE(bins)": round(fsrs_v6_default_rmse, 4),
