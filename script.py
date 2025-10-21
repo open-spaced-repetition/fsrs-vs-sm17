@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import json
+import math
 from datetime import datetime
 from itertools import accumulate
 from fsrs_optimizer import (
@@ -20,8 +21,153 @@ from models import FSRS3, FSRS4, FSRS4dot5, FSRS5
 from tqdm.auto import tqdm
 from sklearn.metrics import log_loss, roc_auc_score, root_mean_squared_error
 from pathlib import Path
+from utils import get_bin
+
+
+def _initialize_referee_state():
+    return {
+        "bins": collections.defaultdict(
+            lambda: {"count": 0, "sum_y": 0.0, "sum_p": 0.0}
+        ),
+        "total_count": 0,
+        "numerator": 0.0,
+    }
+
 
 tqdm.pandas()
+
+
+def compute_adversarial_predictions(revlogs, algorithms, bins=10):
+    """Causal adversary that minimizes expected Universal Metric per prefix."""
+
+    if "R (ADVERSARIAL)" in revlogs.columns:
+        return revlogs
+
+    base_cols = [f"R ({algo})" for algo in algorithms]
+    missing_cols = [col for col in base_cols if col not in revlogs.columns]
+    if missing_cols:
+        raise KeyError(
+            "Missing prediction columns required for adversarial computation: "
+            + ", ".join(missing_cols)
+        )
+
+    if "R (AVG)" not in revlogs.columns:
+        raise KeyError("Expected column 'R (AVG)' to estimate label probabilities")
+
+    order_column = "index" if "index" in revlogs.columns else None
+    ordered_indices = (
+        revlogs.sort_values(order_column).index
+        if order_column is not None
+        else revlogs.index
+    )
+
+    referee_states = {algo: _initialize_referee_state() for algo in algorithms}
+    candidate_ps = np.linspace(0.0, 1.0, 11)
+    adversarial_series = pd.Series(index=revlogs.index, dtype=float)
+
+    def project_average_um(bin_cache, label, prediction):
+        total_um = 0.0
+        for algo, state in bin_cache.items():
+            count = state["count"]
+            sum_y = state["sum_y"]
+            sum_p = state["sum_p"]
+            old_contribution = state["old_contribution"]
+            numerator = state["numerator"]
+            total_count = state["total_count"]
+
+            new_count = count + 1
+            new_sum_y = sum_y + label
+            new_sum_p = sum_p + prediction
+            mean_delta = (new_sum_y / new_count) - (new_sum_p / new_count)
+            new_contribution = new_count * mean_delta**2
+            new_numerator = numerator - old_contribution + new_contribution
+            new_total_count = total_count + 1
+
+            if new_total_count == 0:
+                um = 0.0
+            else:
+                um = math.sqrt(max(new_numerator, 0.0) / new_total_count)
+            total_um += um
+
+        return total_um / max(len(bin_cache), 1)
+
+    for idx in ordered_indices:
+        row = revlogs.loc[idx]
+        raw_g = row.get("R (AVG)", 0.5)
+        g = float(np.clip(raw_g if np.isfinite(raw_g) else 0.5, 0.0, 1.0))
+
+        bin_cache = {}
+        for algo in algorithms:
+            value = row[f"R ({algo})"]
+            value = float(np.clip(value if np.isfinite(value) else 0.5, 0.0, 1.0))
+            bin_idx = int(round(get_bin(value, bins) * bins))
+
+            state = referee_states[algo]
+            stats = state["bins"].get(bin_idx)
+            if stats:
+                count = stats["count"]
+                sum_y = stats["sum_y"]
+                sum_p = stats["sum_p"]
+            else:
+                count = 0
+                sum_y = 0.0
+                sum_p = 0.0
+
+            if count:
+                mean_y = sum_y / count
+                mean_p = sum_p / count
+                old_contribution = count * (mean_y - mean_p) ** 2
+            else:
+                old_contribution = 0.0
+
+            bin_cache[algo] = {
+                "bin_idx": bin_idx,
+                "count": count,
+                "sum_y": sum_y,
+                "sum_p": sum_p,
+                "old_contribution": old_contribution,
+                "numerator": state["numerator"],
+                "total_count": state["total_count"],
+            }
+
+        best_p = 0.5
+        best_score = float("inf")
+        for p in candidate_ps:
+            um_one = project_average_um(bin_cache, 1.0, p)
+            um_zero = project_average_um(bin_cache, 0.0, p)
+            expected_um = g * um_one + (1 - g) * um_zero
+            if expected_um < best_score - 1e-12:
+                best_score = expected_um
+                best_p = float(p)
+
+        adversarial_series.at[idx] = best_p
+        actual_y = float(row["y"])
+
+        for algo, state_info in bin_cache.items():
+            state = referee_states[algo]
+            bin_idx = state_info["bin_idx"]
+            stats = state["bins"][bin_idx]
+
+            prev_count = state_info["count"]
+            prev_sum_y = state_info["sum_y"]
+            prev_sum_p = state_info["sum_p"]
+            old_contribution = state_info["old_contribution"]
+
+            stats["count"] = prev_count + 1
+            stats["sum_y"] = prev_sum_y + actual_y
+            stats["sum_p"] = prev_sum_p + best_p
+
+            new_count = stats["count"]
+            mean_delta = (stats["sum_y"] / new_count) - (stats["sum_p"] / new_count)
+            new_contribution = new_count * mean_delta**2
+
+            state["numerator"] = (
+                state["numerator"] - old_contribution + new_contribution
+            )
+            state["total_count"] += 1
+
+    revlogs["R (ADVERSARIAL)"] = adversarial_series.astype(float)
+    return revlogs
 
 
 def data_preprocessing(csv_file_path, save_csv=False):
@@ -32,7 +178,6 @@ def data_preprocessing(csv_file_path, save_csv=False):
     df.columns = df.columns.str.strip()
 
     def convert_to_datetime(date_str):
-        # 德语月份到英语月份的映射
         german_months = {
             "Jan": "Jan",
             "Feb": "Feb",
@@ -108,13 +253,11 @@ def data_preprocessing(csv_file_path, save_csv=False):
                 )
                 break
 
-        # 将德语月份替换为英语月份
         for de_month, en_month in german_months.items():
             if de_month in date_str_normalized:
                 date_str_normalized = date_str_normalized.replace(de_month, en_month)
                 break
 
-        # 将葡萄牙语月份替换为英语月份
         for pt_month, en_month in portuguese_months.items():
             if pt_month in date_str_normalized.lower():
                 date_str_normalized = date_str_normalized.lower().replace(
@@ -414,9 +557,6 @@ def moving_average(revlogs):
 
 def evaluate(revlogs):
     # Define binning function
-    def get_bin(x, bins=10):
-        return np.round(x * bins) / bins
-
     # Calculate Universal Metrics for each algorithm pair
     def calculate_universal_metric(algoA, algoB):
         cross_comparison_record = revlogs[[f"R ({algoA})", f"R ({algoB})", "y"]].copy()
@@ -451,7 +591,7 @@ def evaluate(revlogs):
 
     # Calculate all Universal Metrics
     universal_metrics = {}
-    algorithms = [
+    base_algorithms = [
         "FSRS-6",
         "FSRS-5",
         "FSRS-4.5",
@@ -463,6 +603,10 @@ def evaluate(revlogs):
         "FSRS-6-default",
         "MOVING-AVG",
     ]
+
+    compute_adversarial_predictions(revlogs, base_algorithms)
+
+    algorithms = base_algorithms + ["ADVERSARIAL"]
 
     for i, algoA in enumerate(algorithms):
         for algoB in algorithms[i + 1 :]:
@@ -479,6 +623,19 @@ def evaluate(revlogs):
         revlogs[
             ["card_id", "r_history", "t_history", "delta_t", "i", "y", "R (MOVING-AVG)"]
         ].rename(columns={"R (MOVING-AVG)": "p"})
+    )
+    adversarial_rmse = rmse_matrix(
+        revlogs[
+            [
+                "card_id",
+                "r_history",
+                "t_history",
+                "delta_t",
+                "i",
+                "y",
+                "R (ADVERSARIAL)",
+            ]
+        ].rename(columns={"R (ADVERSARIAL)": "p"})
     )
     sm16_rmse = rmse_matrix(
         revlogs[
@@ -530,6 +687,7 @@ def evaluate(revlogs):
     )
     avg_logloss = log_loss(revlogs["y"], revlogs["R (AVG)"])
     moving_avg_logloss = log_loss(revlogs["y"], revlogs["R (MOVING-AVG)"])
+    adversarial_logloss = log_loss(revlogs["y"], revlogs["R (ADVERSARIAL)"])
     sm16_logloss = log_loss(revlogs["y"], revlogs["R (SM16)"])
     sm17_logloss = log_loss(revlogs["y"], revlogs["R (SM17)"])
     fsrs_v6_logloss = log_loss(revlogs["y"], revlogs["R (FSRS-6)"])
@@ -541,6 +699,7 @@ def evaluate(revlogs):
 
     avg_auc = roc_auc_score(revlogs["y"], revlogs["R (AVG)"])
     moving_avg_auc = roc_auc_score(revlogs["y"], revlogs["R (MOVING-AVG)"])
+    adversarial_auc = roc_auc_score(revlogs["y"], revlogs["R (ADVERSARIAL)"])
     sm16_auc = roc_auc_score(revlogs["y"], revlogs["R (SM16)"])
     sm17_auc = roc_auc_score(revlogs["y"], revlogs["R (SM17)"])
     fsrs_v6_auc = roc_auc_score(revlogs["y"], revlogs["R (FSRS-6)"])
@@ -595,6 +754,11 @@ def evaluate(revlogs):
             "RMSE(bins)": round(moving_avg_rmse, 4),
             "LogLoss": round(moving_avg_logloss, 4),
             "AUC": round(moving_avg_auc, 4),
+        },
+        "ADVERSARIAL": {
+            "RMSE(bins)": round(adversarial_rmse, 4),
+            "LogLoss": round(adversarial_logloss, 4),
+            "AUC": round(adversarial_auc, 4),
         },
         "FSRS-6-default": {
             "RMSE(bins)": round(fsrs_v6_default_rmse, 4),

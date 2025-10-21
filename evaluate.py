@@ -97,6 +97,7 @@ if __name__ == "__main__":
     SM16 = ("SM-16", [])
     AVG = ("AVG", [])
     MOVING_AVG = ("MOVING-AVG", [])
+    ADVERSARIAL = ("ADVERSARIAL", [])
     sizes = []
     result_dir = pathlib.Path("./result")
     result_files = result_dir.glob("*.json")
@@ -114,6 +115,8 @@ if __name__ == "__main__":
             AVG[1].append(result["AVG"])
             MOVING_AVG[1].append(result["MOVING-AVG"])
             sizes.append(result["size"])
+            if "ADVERSARIAL" in result:
+                ADVERSARIAL[1].append(result["ADVERSARIAL"])
 
     print(f"Total users: {len(sizes)}")
     sizes = np.array(sizes)
@@ -139,6 +142,13 @@ if __name__ == "__main__":
         MOVING_AVG,
         FSRS_6_default,
     ]
+
+    if len(ADVERSARIAL[1]) == len(sizes):
+        models.append(ADVERSARIAL)
+    elif len(ADVERSARIAL[1]) != 0:
+        print(
+            "Skipping adversarial aggregate metrics: result count mismatch with sizes."
+        )
 
     for scale_name, size in [
         ("Weighted by number of repetitions", np.array(sizes)),
