@@ -26,19 +26,17 @@ tqdm.pandas()
 
 
 def compute_adversarial_predictions(revlogs, algorithms, bins=10):
-    """Craft predictions that exploit referee bins by matching observed outcomes.
+    """Offline attack that stays causal while matching referee bin averages.
 
-    The attack groups each record by the tuple of bin assignments induced by the
-    provided algorithms and sets its prediction to the average success rate of
-    that tuple. This guarantees that, for every referee, the adversary is
-    perfectly calibrated at the bin level while still using the same prediction
-    column for binning and scoring.
+    The adversary observes the competing predictions on each sample, notes the
+    bin each referee will assign, and emits the running average success rate
+    for that joint bin using only previously revealed outcomes. This removes
+    any look-ahead while still converging to perfect group-level calibration.
     """
 
     if "R (ADVERSARIAL)" in revlogs.columns:
         return revlogs
 
-    # Ensure we operate on probability columns
     base_cols = [f"R ({algo})" for algo in algorithms]
     missing_cols = [col for col in base_cols if col not in revlogs.columns]
     if missing_cols:
@@ -47,19 +45,54 @@ def compute_adversarial_predictions(revlogs, algorithms, bins=10):
             + ", ".join(missing_cols)
         )
 
-    # Bin identifiers mirror the cross-comparison binning scheme
-    bin_cols = []
-    for algo in algorithms:
-        col_name = f"_adv_bin_{algo}"
-        predictions = revlogs[f"R ({algo})"].clip(0, 1)
-        revlogs[col_name] = get_bin(predictions, bins)
-        bin_cols.append(col_name)
-
-    revlogs["R (ADVERSARIAL)"] = (
-        revlogs.groupby(bin_cols)["y"].transform("mean").astype(float)
+    # Work in chronological order so only past outcomes influence predictions
+    order_column = "index" if "index" in revlogs.columns else None
+    ordered_indices = (
+        revlogs.sort_values(order_column).index
+        if order_column is not None
+        else revlogs.index
     )
 
-    revlogs.drop(columns=bin_cols, inplace=True)
+    running_totals = collections.defaultdict(lambda: [0.0, 0])
+    prediction_totals = collections.defaultdict(lambda: [0.0, 0])
+    global_sum, global_count = 0.0, 0
+    adversarial_series = pd.Series(index=revlogs.index, dtype=float)
+
+    for idx in ordered_indices:
+        row = revlogs.loc[idx]
+        bin_key = []
+        for algo in algorithms:
+            value = row[f"R ({algo})"]
+            if not np.isfinite(value):
+                value = 0.5
+            else:
+                value = float(np.clip(value, 0.0, 1.0))
+            bin_key.append(int(round(get_bin(value, bins) * bins)))
+        bin_key = tuple(bin_key)
+        sum_y, count_y = running_totals[bin_key]
+        sum_p, count_p = prediction_totals[bin_key]
+
+        if count_y:
+            target_mean = sum_y / count_y
+            prediction = target_mean * (count_p + 1) - sum_p
+        elif global_count:
+            prediction = global_sum / global_count
+        else:
+            prediction = 0.5
+
+        prediction = float(np.clip(prediction, 0.0, 1.0))
+        adversarial_series.at[idx] = prediction
+
+        prediction_totals[bin_key][0] += prediction
+        prediction_totals[bin_key][1] += 1
+
+        y_value = row["y"]
+        running_totals[bin_key][0] += y_value
+        running_totals[bin_key][1] += 1
+        global_sum += y_value
+        global_count += 1
+
+    revlogs["R (ADVERSARIAL)"] = adversarial_series.astype(float)
     return revlogs
 
 
