@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import json
+import math
 from datetime import datetime
 from itertools import accumulate
 from fsrs_optimizer import (
@@ -22,17 +23,22 @@ from sklearn.metrics import log_loss, roc_auc_score, root_mean_squared_error
 from pathlib import Path
 from utils import get_bin
 
+
+def _initialize_referee_state():
+    return {
+        "bins": collections.defaultdict(
+            lambda: {"count": 0, "sum_y": 0.0, "sum_p": 0.0}
+        ),
+        "total_count": 0,
+        "numerator": 0.0,
+    }
+
+
 tqdm.pandas()
 
 
 def compute_adversarial_predictions(revlogs, algorithms, bins=10):
-    """Offline attack that stays causal while matching referee bin averages.
-
-    The adversary observes the competing predictions on each sample, notes the
-    bin each referee will assign, and emits the running average success rate
-    for that joint bin using only previously revealed outcomes. This removes
-    any look-ahead while still converging to perfect group-level calibration.
-    """
+    """Causal adversary that minimizes expected Universal Metric per prefix."""
 
     if "R (ADVERSARIAL)" in revlogs.columns:
         return revlogs
@@ -45,7 +51,9 @@ def compute_adversarial_predictions(revlogs, algorithms, bins=10):
             + ", ".join(missing_cols)
         )
 
-    # Work in chronological order so only past outcomes influence predictions
+    if "R (AVG)" not in revlogs.columns:
+        raise KeyError("Expected column 'R (AVG)' to estimate label probabilities")
+
     order_column = "index" if "index" in revlogs.columns else None
     ordered_indices = (
         revlogs.sort_values(order_column).index
@@ -53,44 +61,110 @@ def compute_adversarial_predictions(revlogs, algorithms, bins=10):
         else revlogs.index
     )
 
-    running_totals = collections.defaultdict(lambda: [0.0, 0])
-    prediction_totals = collections.defaultdict(lambda: [0.0, 0])
-    global_sum, global_count = 0.0, 0
+    referee_states = {algo: _initialize_referee_state() for algo in algorithms}
+    candidate_ps = np.linspace(0.0, 1.0, 11)
     adversarial_series = pd.Series(index=revlogs.index, dtype=float)
+
+    def project_average_um(bin_cache, label, prediction):
+        total_um = 0.0
+        for algo, state in bin_cache.items():
+            count = state["count"]
+            sum_y = state["sum_y"]
+            sum_p = state["sum_p"]
+            old_contribution = state["old_contribution"]
+            numerator = state["numerator"]
+            total_count = state["total_count"]
+
+            new_count = count + 1
+            new_sum_y = sum_y + label
+            new_sum_p = sum_p + prediction
+            mean_delta = (new_sum_y / new_count) - (new_sum_p / new_count)
+            new_contribution = new_count * mean_delta**2
+            new_numerator = numerator - old_contribution + new_contribution
+            new_total_count = total_count + 1
+
+            if new_total_count == 0:
+                um = 0.0
+            else:
+                um = math.sqrt(max(new_numerator, 0.0) / new_total_count)
+            total_um += um
+
+        return total_um / max(len(bin_cache), 1)
 
     for idx in ordered_indices:
         row = revlogs.loc[idx]
-        bin_key = []
+        raw_g = row.get("R (AVG)", 0.5)
+        g = float(np.clip(raw_g if np.isfinite(raw_g) else 0.5, 0.0, 1.0))
+
+        bin_cache = {}
         for algo in algorithms:
             value = row[f"R ({algo})"]
-            if not np.isfinite(value):
-                value = 0.5
+            value = float(np.clip(value if np.isfinite(value) else 0.5, 0.0, 1.0))
+            bin_idx = int(round(get_bin(value, bins) * bins))
+
+            state = referee_states[algo]
+            stats = state["bins"].get(bin_idx)
+            if stats:
+                count = stats["count"]
+                sum_y = stats["sum_y"]
+                sum_p = stats["sum_p"]
             else:
-                value = float(np.clip(value, 0.0, 1.0))
-            bin_key.append(int(round(get_bin(value, bins) * bins)))
-        bin_key = tuple(bin_key)
-        sum_y, count_y = running_totals[bin_key]
-        sum_p, count_p = prediction_totals[bin_key]
+                count = 0
+                sum_y = 0.0
+                sum_p = 0.0
 
-        if count_y:
-            target_mean = sum_y / count_y
-            prediction = target_mean * (count_p + 1) - sum_p
-        elif global_count:
-            prediction = global_sum / global_count
-        else:
-            prediction = 0.5
+            if count:
+                mean_y = sum_y / count
+                mean_p = sum_p / count
+                old_contribution = count * (mean_y - mean_p) ** 2
+            else:
+                old_contribution = 0.0
 
-        prediction = float(np.clip(prediction, 0.0, 1.0))
-        adversarial_series.at[idx] = prediction
+            bin_cache[algo] = {
+                "bin_idx": bin_idx,
+                "count": count,
+                "sum_y": sum_y,
+                "sum_p": sum_p,
+                "old_contribution": old_contribution,
+                "numerator": state["numerator"],
+                "total_count": state["total_count"],
+            }
 
-        prediction_totals[bin_key][0] += prediction
-        prediction_totals[bin_key][1] += 1
+        best_p = 0.5
+        best_score = float("inf")
+        for p in candidate_ps:
+            um_one = project_average_um(bin_cache, 1.0, p)
+            um_zero = project_average_um(bin_cache, 0.0, p)
+            expected_um = g * um_one + (1 - g) * um_zero
+            if expected_um < best_score - 1e-12:
+                best_score = expected_um
+                best_p = float(p)
 
-        y_value = row["y"]
-        running_totals[bin_key][0] += y_value
-        running_totals[bin_key][1] += 1
-        global_sum += y_value
-        global_count += 1
+        adversarial_series.at[idx] = best_p
+        actual_y = float(row["y"])
+
+        for algo, state_info in bin_cache.items():
+            state = referee_states[algo]
+            bin_idx = state_info["bin_idx"]
+            stats = state["bins"][bin_idx]
+
+            prev_count = state_info["count"]
+            prev_sum_y = state_info["sum_y"]
+            prev_sum_p = state_info["sum_p"]
+            old_contribution = state_info["old_contribution"]
+
+            stats["count"] = prev_count + 1
+            stats["sum_y"] = prev_sum_y + actual_y
+            stats["sum_p"] = prev_sum_p + best_p
+
+            new_count = stats["count"]
+            mean_delta = (stats["sum_y"] / new_count) - (stats["sum_p"] / new_count)
+            new_contribution = new_count * mean_delta**2
+
+            state["numerator"] = (
+                state["numerator"] - old_contribution + new_contribution
+            )
+            state["total_count"] += 1
 
     revlogs["R (ADVERSARIAL)"] = adversarial_series.astype(float)
     return revlogs
