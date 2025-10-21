@@ -33,7 +33,7 @@ Reference: [Universal metric for cross-comparison of spaced repetition algorithm
 
 #### Adversarial baseline
 
-To demonstrate the issue concretely we include an `ADVERSARIAL` model in the benchmark results. The attacker observes every referee's probability for the current review, uses the AVG model as an estimate of `P(y=1)`, and then evaluates 11 candidate predictions in `[0, 1]`. For each candidate it simulates how every referee's Universal Metric would change if the next outcome were 0 or 1, without mutating the running state, and chooses the probability that minimises the expected UM. Because the update is performed after the true label is revealed, the attacker remains causal (no future information is used) yet still drives its UM scores toward zero against every referee.
+To demonstrate the issue concretely we include an `ADVERSARIAL` model in the benchmark results. The attacker observes every referee's probability for the current review, uses the AVG model as an estimate of `P(y=1)`, and then evaluates 11 candidate predictions in `[0, 1]`. For each candidate it projects how every referee's Universal Metric would change if the next outcome were 0 or 1, and chooses the probability that minimises the expected UM. Because the prediction is made before the true label is revealed, the attacker remains causal (no future information is used) yet still drives its UM scores toward zero against every referee.
 
 ### Traditional Machine Learning Metrics
 
