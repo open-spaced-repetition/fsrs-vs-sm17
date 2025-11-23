@@ -316,7 +316,7 @@ if __name__ == "__main__":
         )
 
         # Print Universal Metrics+ table
-        print("| Algorithm | UM+↓ (Max) | UM+ (Avg) |")
+        print("| Algorithm | UM+↓ (Max) | UM+↓ (Avg) |")
         print("| --- | --- | --- |")
         for i, (algo_name, max_um_plus) in enumerate(sorted_algorithms_plus):
             avg_um_plus = algo_avg_um_plus[algo_name]

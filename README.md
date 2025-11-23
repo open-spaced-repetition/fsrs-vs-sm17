@@ -86,6 +86,28 @@ This visualization helps identify which algorithms produce the most robust and a
 
 ![Universal-Metrics-Matrix-18-collections](./plots/Universal-Metrics-Matrix-18-collections.png)
 
+### Universal Metric+
+
+| Algorithm | UM+↓ (Max) | UM+↓ (Avg) |
+| --- | --- | --- |
+| **FSRS-6** | **0.0343** | **0.0302** |
+| FSRS-4.5 | 0.0692 | 0.0572 |
+| FSRS-5 | 0.0701 | 0.0578 |
+| MOVING-AVG | 0.0731 | 0.0583 |
+| AVG | 0.0752 | 0.0610 |
+| FSRSv4 | 0.0890 | 0.0785 |
+| SM17 | 0.1003 | 0.0889 |
+| FSRS-6-default | 0.1072 | 0.0960 |
+| SM16 | 0.1158 | 0.1030 |
+| FSRSv3 | 0.1224 | 0.1077 |
+| ADVERSARIAL | 0.2195 | 0.2135 |
+
+Universal Metric+ (UM+) aims to improve the binning procedure. Rather than creating bins based on solely the opponent algorithm's predictions, in UM+ the binning is done by the difference in predictions, as in where the algorithms disagree. To illustrate the utility, consider the problem of predicting the result of a fair coin flip. Algorithm A predicts a random number in [0, 1]. Algorithm B has perfect predictions of 0.5. In UM, all the predictions of algorithm A would fall into the same bin since algorithm B only predicts 0.5. Thus the B-W value of this bin would be approximately 0.5 - 0.5 = 0 since the average value of [0, 1] is 0.5, and algorithm A would falsely achieve a UM of ~0. In UM+, the erroneous predictions of algorithm A would be properly distributed into different bins.
+
+In addition, UM+ calculates scores based on the strongest opponent for this algorithm rather than taking an average across all opponents. This is inspired by minimax, where the best move, or the best algorithm in our case, is contingent on the best response of an opponent.  For completeness a column for the average score is included.
+
+![Universal-Metrics-Plus-Matrix-18-collections](./plots/Universal-Metrics-Plus-Matrix-18-collections.png)
+
 ### Traditional Machine Learning Metrics
 
 The following tables present the means and the 99% confidence intervals for traditional machine learning metrics. The best result is highlighted in **bold**. Arrows indicate whether lower (↓) or higher (↑) values are better.
