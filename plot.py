@@ -682,7 +682,7 @@ if __name__ == "__main__":
                         um_plus_matrix[i, j] = um_plus_matrix_data[metric_name_plus]
 
         # Create heatmap
-        fig, ax = plt.subplots(figsize=(10, 9), dpi=150)
+        fig, ax = plt.subplots(figsize=(12, 10.8), dpi=150)
         ax.set_title(
             f"Universal Metrics+ Matrix ({n_collections} collections)",
             fontsize=24,
