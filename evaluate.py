@@ -115,8 +115,8 @@ if __name__ == "__main__":
             AVG[1].append(result["AVG"])
             MOVING_AVG[1].append(result["MOVING-AVG"])
             sizes.append(result["size"])
-            if "ADVERSARIAL-UM" in result:
-                ADVERSARIAL_UM[1].append(result["ADVERSARIAL-UM"])
+            if "ADVERSARIAL" in result:
+                ADVERSARIAL_UM[1].append(result["ADVERSARIAL"])
 
     print(f"Total users: {len(sizes)}")
     sizes = np.array(sizes)
