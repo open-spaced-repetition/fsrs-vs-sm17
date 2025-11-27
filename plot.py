@@ -682,18 +682,25 @@ if __name__ == "__main__":
                         um_plus_matrix[i, j] = um_plus_matrix_data[metric_name_plus]
 
         # Create heatmap
-        fig, ax = plt.subplots(figsize=(12, 10.8), dpi=150)
+        fig, ax = plt.subplots(figsize=(10, 9), dpi=150)
         ax.set_title(
             f"Universal Metrics+ Matrix ({n_collections} collections)",
             fontsize=24,
             pad=30,
         )
 
-        # Use colormap: low = good, high = bad
+        # # Plot the heatmap
+        p90 = np.nanpercentile(um_plus_matrix, 90)
+
+        # Only cap the upper values
+        capped = np.minimum(um_plus_matrix, p90)
+
+        # Use normal Normalize, with vmax = p90
+        norm = plt.Normalize(vmin=np.nanmin(um_plus_matrix), vmax=p90)
+
         cmap = plt.cm.viridis_r
 
-        # Plot the heatmap
-        im = ax.imshow(um_plus_matrix, cmap=cmap, interpolation="none")
+        im = ax.imshow(um_plus_matrix, cmap=cmap, norm=norm, interpolation="none")
 
         # Add colorbar
         cbar = plt.colorbar(im, ax=ax)

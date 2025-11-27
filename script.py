@@ -597,12 +597,9 @@ def evaluate(revlogs):
                 cross_comparison_record[f"R ({algo})"] - cross_comparison_record["y"]
             )
             cross_comparison_record["R_diff"] = cross_comparison_record[f"R ({algoA})"] - cross_comparison_record[f"R ({algoB})"]
-            cross_comparison_record[f"{algo}_bin"] = pd.qcut(
-                cross_comparison_record["R_diff"],
-                q=10,                # deciles
-                labels=False,        # gives bins 0–9
-                duplicates="drop"    # handles edge-case flat distributions
-            )
+            cross_comparison_record[f"{algo}_bin"] = cross_comparison_record[
+                f"R_diff"
+            ].map(lambda x: get_bin(x, bins=20))
 
         result = {}
         for referee, player in [(algoA, algoB), (algoB, algoA)]:
@@ -884,7 +881,12 @@ if __name__ == "__main__":
     Path("result").mkdir(parents=True, exist_ok=True)
 
     # Get list of files to process
-    files = list(Path("dataset").glob("*.csv"))
+    # files = list(Path("dataset").glob("*.csv"))
+    files = sorted(
+        Path("dataset").glob("*.csv"),
+        key=lambda p: p.stat().st_size,
+        reverse=True,
+    )
 
     # Create process pool
     with Pool() as pool:
