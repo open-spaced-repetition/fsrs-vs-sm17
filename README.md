@@ -106,7 +106,7 @@ Universal Metric+ (UM+) aims to improve the binning procedure. Rather than creat
 
 In addition, UM+ calculates scores based on the strongest opponent for this algorithm rather than taking an average across all opponents. This is inspired by minimax, where the best move, or the best algorithm in our case, is contingent on the best response of an opponent.  For completeness a column for the average score is included.
 
-UM+ also has the property that better algorithms tend to be better opponents. We propose an Opponent Score, corresponding to the average value of the corresponding column in the UM+ matrix. See how in the normal UM, the opposite is the true, where the worse algorithms tend to be better opponents.
+UM+ also has the property that better algorithms tend to be better opponents. We propose an Opponent Score, corresponding to the average value of the corresponding column in the UM+ matrix. See how in the normal UM, the opposite is true, where the worse algorithms tend to be better opponents.
 
 ![Universal-Metrics-Plus-Matrix-18-collections](./plots/Universal-Metrics-Plus-Matrix-18-collections.png)
 
