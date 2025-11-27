@@ -97,7 +97,7 @@ if __name__ == "__main__":
     SM16 = ("SM-16", [])
     AVG = ("AVG", [])
     MOVING_AVG = ("MOVING-AVG", [])
-    ADVERSARIAL = ("ADVERSARIAL", [])
+    ADVERSARIAL_UM = ("ADVERSARIAL-UM", [])
     sizes = []
     result_dir = pathlib.Path("./result")
     result_files = result_dir.glob("*.json")
@@ -116,7 +116,7 @@ if __name__ == "__main__":
             MOVING_AVG[1].append(result["MOVING-AVG"])
             sizes.append(result["size"])
             if "ADVERSARIAL" in result:
-                ADVERSARIAL[1].append(result["ADVERSARIAL"])
+                ADVERSARIAL_UM[1].append(result["ADVERSARIAL"])
 
     print(f"Total users: {len(sizes)}")
     sizes = np.array(sizes)
@@ -143,13 +143,12 @@ if __name__ == "__main__":
         FSRS_6_default,
     ]
 
-    if len(ADVERSARIAL[1]) == len(sizes):
-        models.append(ADVERSARIAL)
-    elif len(ADVERSARIAL[1]) != 0:
+    if len(ADVERSARIAL_UM[1]) == len(sizes):
+        models.append(ADVERSARIAL_UM)
+    elif len(ADVERSARIAL_UM[1]) != 0:
         print(
             "Skipping adversarial aggregate metrics: result count mismatch with sizes."
         )
-
     for scale_name, size in [
         ("Weighted by number of repetitions", np.array(sizes)),
         ("Unweighted (per user)", np.ones_like(sizes)),
@@ -262,3 +261,84 @@ if __name__ == "__main__":
         print()
     else:
         print("No Universal Metrics data found in result files.\n")
+
+        # Calculate Universal Metrics+
+    print("### Universal Metrics+ (Cross Comparison)\n")
+
+    # Collect all Universal Metrics+ from all users
+    universal_metrics_plus_data = {}
+    result_files = result_dir.glob("*.json")
+
+    for result_file in result_files:
+        with open(result_file, "r") as f:
+            result = json.load(f)
+            if "Universal_Metrics+" in result:
+                for metric_name_plus, metric_value_plus in result["Universal_Metrics+"].items():
+                    if metric_name_plus not in universal_metrics_plus_data:
+                        universal_metrics_plus_data[metric_name_plus] = []
+                    universal_metrics_plus_data[metric_name_plus].append(metric_value_plus)
+
+    if universal_metrics_plus_data:
+        # Calculate statistics for each Universal Metric+
+        um_plus_results = {}
+        for metric_name_plus, values_plus in universal_metrics_plus_data.items():
+            values_plus_array = np.array(values_plus)
+            wmean_plus, wstd_plus = weighted_avg_and_std(values_plus_array, sizes)
+            CI_plus = confidence_interval(values_plus_array, sizes)
+            rounded_mean_plus, rounded_CI_plus = sigdig(wmean_plus, CI_plus)
+            um_plus_results[metric_name_plus] = (
+                rounded_mean_plus,
+                rounded_CI_plus,
+                wmean_plus,
+            )
+
+        # Find best (lowest) Universal Metric+ per algorithm
+        algorithm_um_plus_scores = {}
+        algorithm_um_plus_opponent_scores = {}
+        for metric_name_plus, (_, _, wmean_plus) in um_plus_results.items():
+            # Extract algorithm name: "FSRS-6_evaluated_by_SM16" → "FSRS-6"
+            algo_name = metric_name_plus.split("_evaluated_by_")[0]
+            if algo_name not in algorithm_um_plus_scores:
+                algorithm_um_plus_scores[algo_name] = []
+            algorithm_um_plus_scores[algo_name].append(wmean_plus)
+            opp_algo_name = metric_name_plus.split("_evaluated_by_")[1]
+            if opp_algo_name not in algorithm_um_plus_opponent_scores:
+                algorithm_um_plus_opponent_scores[opp_algo_name] = []
+            algorithm_um_plus_opponent_scores[opp_algo_name].append(wmean_plus)
+
+        # Average and Max Universal Metric+ per algorithm
+        algo_avg_um_plus = {}
+        algo_max_um_plus = {}
+
+        for algo_name, scores_plus in algorithm_um_plus_scores.items():
+            algo_avg_um_plus[algo_name] = np.mean(scores_plus)
+            algo_max_um_plus[algo_name] = np.max(scores_plus)
+
+        # Sort algorithms by MAX Universal Metric+ (lower is better)
+        sorted_algorithms_plus = sorted(
+            algo_max_um_plus.items(), key=lambda x: x[1]
+        )
+
+        # Print Universal Metrics+ table
+        print("| Algorithm | UM+↓ (Max) | UM+↓ (Avg) | Opponent Score↑ |")
+        print("| --- | --- | --- | --- |")
+        for i, (algo_name, max_um_plus) in enumerate(sorted_algorithms_plus):
+            avg_um_plus = algo_avg_um_plus[algo_name]
+
+            formatted_avg = f"{avg_um_plus:.4f}"
+            formatted_max = f"{max_um_plus:.4f}"
+            formatted_opp_avg = f"{np.mean(algorithm_um_plus_opponent_scores[algo_name]):.4f}"
+
+            if i == 0:
+                print(
+                    f"| **{algo_name}** | **{formatted_max}** | **{formatted_avg}** | **{formatted_opp_avg}** |"
+                )
+            else:
+                print(
+                    f"| {algo_name} | {formatted_max} | {formatted_avg} | {formatted_opp_avg} |"
+                )
+
+        print()
+    else:
+        print("No Universal Metrics+ data found in result files.\n")
+

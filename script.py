@@ -589,8 +589,43 @@ def evaluate(revlogs):
 
         return result
 
+    def calculate_universal_metric_plus(algoA, algoB):
+        cross_comparison_record = revlogs[[f"R ({algoA})", f"R ({algoB})", "y"]].copy()
+        cross_comparison_record["R_diff"] = cross_comparison_record[f"R ({algoA})"] - cross_comparison_record[f"R ({algoB})"]
+
+        for algo in (algoA, algoB):
+            cross_comparison_record[f"{algo}_B-W"] = (
+                cross_comparison_record[f"R ({algo})"] - cross_comparison_record["y"]
+            )
+            cross_comparison_record[f"{algo}_bin"] = cross_comparison_record[
+                f"R_diff"
+            ].map(lambda x: get_bin(x, bins=20))
+
+        result = {}
+        for referee, player in [(algoA, algoB), (algoB, algoA)]:
+            cross_comparison_group = cross_comparison_record.groupby(
+                by=f"{referee}_bin"
+            ).agg(
+                {
+                    "R_diff": ["mean"],
+                    "y": ["mean"],
+                    f"{player}_B-W": ["mean"],
+                    f"R ({player})": ["mean", "count"],
+                }
+            )
+            universal_metric = root_mean_squared_error(
+                cross_comparison_group["y", "mean"],
+                cross_comparison_group[f"R ({player})", "mean"],
+                sample_weight=cross_comparison_group[f"R ({player})", "count"],
+            )
+            result[f"{player}_evaluated_by_{referee}"] = round(universal_metric, 4)
+
+        return result
+
+
     # Calculate all Universal Metrics
     universal_metrics = {}
+    universal_metric_plus = {}
     base_algorithms = [
         "FSRS-6",
         "FSRS-5",
@@ -611,7 +646,9 @@ def evaluate(revlogs):
     for i, algoA in enumerate(algorithms):
         for algoB in algorithms[i + 1 :]:
             um_result = calculate_universal_metric(algoA, algoB)
+            um_plus_result = calculate_universal_metric_plus(algoA, algoB)
             universal_metrics.update(um_result)
+            universal_metric_plus.update(um_plus_result)
 
     # Original metrics calculation
     avg_rmse = rmse_matrix(
@@ -769,6 +806,7 @@ def evaluate(revlogs):
 
     # Add Universal Metrics to result
     result["Universal_Metrics"] = universal_metrics
+    result["Universal_Metrics+"] = universal_metric_plus
 
     return result
 
@@ -843,7 +881,12 @@ if __name__ == "__main__":
     Path("result").mkdir(parents=True, exist_ok=True)
 
     # Get list of files to process
-    files = list(Path("dataset").glob("*.csv"))
+    # files = list(Path("dataset").glob("*.csv"))
+    files = sorted(
+        Path("dataset").glob("*.csv"),
+        key=lambda p: p.stat().st_size,
+        reverse=True,
+    )
 
     # Create process pool
     with Pool() as pool:

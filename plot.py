@@ -5,6 +5,7 @@ import warnings
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.lines import Line2D
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -614,3 +615,174 @@ if __name__ == "__main__":
         print(f"Universal Metrics heatmap saved as ./plots/{title}.png")
     else:
         print("No Universal Metrics data found for heatmap generation.")
+
+    # Universal Metrics+ Matrix Heatmap
+    print("Generating Universal Metrics+ heatmap...")
+
+    # Collect Universal Metrics+ data
+    universal_metrics_plus_data = {}
+    result_files = pathlib.Path("./result").glob("*.json")
+
+    for result_file in result_files:
+        with open(result_file, "r") as f:
+            result = json.load(f)
+            if "Universal_Metrics+" in result:
+                for metric_name_plus, metric_value_plus in result["Universal_Metrics+"].items():
+                    if metric_name_plus not in universal_metrics_plus_data:
+                        universal_metrics_plus_data[metric_name_plus] = []
+                    universal_metrics_plus_data[metric_name_plus].append(metric_value_plus)
+
+    if universal_metrics_plus_data:
+        # Load user sizes for weighted average
+        sizes = []
+        result_files = pathlib.Path("./result").glob("*.json")
+        for result_file in result_files:
+            with open(result_file, "r") as f:
+                result = json.load(f)
+                sizes.append(result["size"])
+        sizes = np.array(sizes)
+
+        # Calculate weighted average Universal Metrics+ for each pair
+        um_plus_matrix_data = {}
+        for metric_name_plus, values_plus in universal_metrics_plus_data.items():
+            values_array_plus = np.array(values_plus)
+            um_plus_matrix_data[metric_name_plus] = np.average(values_array_plus, weights=sizes)
+
+        # Get all unique algorithms
+        all_algorithms_plus = set()
+        for metric_name_plus in um_plus_matrix_data.keys():
+            algo_a, algo_b = metric_name_plus.split("_evaluated_by_")
+            all_algorithms_plus.add(algo_a)
+            all_algorithms_plus.add(algo_b)
+
+        # Calculate average and max Universal Metrics+ per algorithm (as evaluated)
+        algo_avg_um_plus = {}
+        algo_max_um_plus = {}
+        for algo_name in all_algorithms_plus:
+            scores_plus = []
+            for metric_name_plus, value_plus in um_plus_matrix_data.items():
+                if metric_name_plus.startswith(f"{algo_name}_evaluated_by_"):
+                    scores_plus.append(value_plus)
+            if scores_plus:
+                algo_avg_um_plus[algo_name] = np.mean(scores_plus)
+                algo_max_um_plus[algo_name] = np.max(scores_plus)
+
+        # Sort algorithms by max UM+ (lower is better)
+        sorted_algorithms_plus = sorted(algo_max_um_plus.items(), key=lambda x: x[1])
+        sorted_algorithms_plus_names = [algo for algo, _ in sorted_algorithms_plus]
+        n_um_plus = len(sorted_algorithms_plus_names)
+
+        # Create UM+ matrix
+        um_plus_matrix = np.full((n_um_plus, n_um_plus), np.nan)
+        for i, algo_a in enumerate(sorted_algorithms_plus_names):
+            for j, algo_b in enumerate(sorted_algorithms_plus_names):
+                if i != j:  # skip diagonal
+                    metric_name_plus = f"{algo_a}_evaluated_by_{algo_b}"
+                    if metric_name_plus in um_plus_matrix_data:
+                        um_plus_matrix[i, j] = um_plus_matrix_data[metric_name_plus]
+
+        # Create heatmap
+        fig, ax = plt.subplots(figsize=(12, 10.8), dpi=150)
+        ax.set_title(
+            f"Universal Metrics+ Matrix ({n_collections} collections)",
+            fontsize=24,
+            pad=30,
+        )
+
+        # # Plot the heatmap
+        p90 = np.nanpercentile(um_plus_matrix, 90)
+
+        # Only cap the upper values
+        capped = np.minimum(um_plus_matrix, p90)
+
+        # Use normal Normalize, with vmax = p90
+        norm = plt.Normalize(vmin=np.nanmin(um_plus_matrix), vmax=p90)
+
+        cmap = plt.cm.viridis_r
+
+        im = ax.imshow(um_plus_matrix, cmap=cmap, norm=norm, interpolation="none")
+
+        # Add colorbar
+        cbar = plt.colorbar(im, ax=ax)
+        cbar.set_label("Universal Metric+ (lower is better)", fontsize=14)
+
+        # Highlight max UM+ cell per row (corrected alignment)
+        highlight_offset = 0.04  # inset from cell edges, so red lines stay inside black grid
+
+        for i, algo_name in enumerate(sorted_algorithms_plus_names):
+            row = um_plus_matrix[i, :]
+            j_max = int(np.nanargmax(row))
+            
+            # Coordinates of the cell (i,j) in imshow
+            x0, y0 = j_max - 0.5 + highlight_offset, i - 0.5 + highlight_offset
+            x1, y1 = j_max + 0.5 - highlight_offset, i + 0.5 - highlight_offset
+
+            # Draw red border inside the black grid
+            lines = [
+                ((x0, y1), (x1, y1)),  # top
+                ((x0, y0), (x1, y0)),  # bottom
+                ((x0, y0), (x0, y1)),  # left
+                ((x1, y0), (x1, y1)),  # right
+            ]
+            for (x_start, y_start), (x_end, y_end) in lines:
+                ax.add_line(Line2D([x_start, x_end], [y_start, y_end], color="red", linewidth=2))
+
+        # Add text annotations
+        for i in range(n_um_plus):
+            for j in range(n_um_plus):
+                if not np.isnan(um_plus_matrix[i, j]):
+                    color = "white" if um_plus_matrix[i, j] > np.nanmean(um_plus_matrix) else "black"
+                    ax.text(
+                        j,
+                        i,
+                        f"{um_plus_matrix[i, j]:.3f}",
+                        ha="center",
+                        va="center",
+                        color=color,
+                        fontsize=12,
+                        weight="bold",
+                    )
+                else:
+                    ax.text(j, i, "-", ha="center", va="center", color="gray", fontsize=14)
+
+        # Apply label corrections for consistency
+        display_labels = []
+        for algo in sorted_algorithms_plus_names:
+            if algo == "FSRSv3":
+                display_labels.append("FSRS v3")
+            elif algo == "FSRSv4":
+                display_labels.append("FSRS v4")
+            elif algo == "SM16":
+                display_labels.append("SM-16")
+            elif algo == "SM17":
+                display_labels.append("SM-17")
+            elif algo == "FSRS-6-default":
+                display_labels.append("FSRS-6\ndefault params.")
+            else:
+                display_labels.append(algo)
+
+        # Set labels
+        ax.set_xticks(np.arange(n_um_plus), labels=display_labels, fontsize=12, rotation=45)
+        ax.set_yticks(np.arange(n_um_plus), labels=display_labels, fontsize=12)
+        ax.set_xticks(np.arange(n_um_plus) - 0.5, minor=True)
+        ax.set_yticks(np.arange(n_um_plus) - 0.5, minor=True)
+
+        # Add grid
+        plt.grid(True, alpha=1, color="black", linewidth=2, which="minor")
+
+        # Enhance borders
+        for location in ["left", "right", "top", "bottom"]:
+            ax.spines[location].set_linewidth(2)
+
+        # Add axis labels
+        ax.set_xlabel("Opponent Algorithm", fontsize=12)
+        ax.set_ylabel("Algorithm", fontsize=12)
+
+        # Save the plot
+        title_plus = f"Universal-Metrics-Plus-Matrix-{n_collections}-collections"
+        plt.savefig(f"./plots/{title_plus}.png", bbox_inches="tight")
+        plt.close()
+
+        print(f"Universal Metrics+ heatmap saved as ./plots/{title_plus}.png")
+    else:
+        print("No Universal Metrics+ data found for heatmap generation.")
