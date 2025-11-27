@@ -89,7 +89,7 @@ This visualization helps identify which algorithms produce the most robust and a
 ### Universal Metrics+ (Cross Comparison)
 
 | Algorithm | UM+↓ (Max) | UM+↓ (Avg) | Opponent Score↑ |
-| --- | --- | --- |
+| --- | --- | --- | --- |
 | **FSRS-6** | **0.0386** | **0.0326** | **0.1090** |
 | FSRS-4.5 | 0.0743 | 0.0612 | 0.0964 |
 | FSRS-5 | 0.0755 | 0.0621 | 0.0964 |
