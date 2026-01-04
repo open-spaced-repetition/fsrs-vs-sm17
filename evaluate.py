@@ -97,7 +97,7 @@ if __name__ == "__main__":
     SM16 = ("SM-16", [])
     AVG = ("AVG", [])
     MOVING_AVG = ("MOVING-AVG", [])
-    ADVERSARIAL_UM = ("ADVERSARIAL-UM", [])
+    ADVERSARIAL_UM = ("ADVERSARIAL", [])
     sizes = []
     result_dir = pathlib.Path("./result")
     result_files = result_dir.glob("*.json")
