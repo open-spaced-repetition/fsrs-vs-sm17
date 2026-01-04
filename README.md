@@ -130,7 +130,7 @@ The following tables present the means and the 99% confidence intervals for trad
 | FSRSv3 | 0.458±0.080 | 0.106±0.073 | 0.607±0.067 |
 | **ADVERSARIAL** | 3.66±0.72 | **0.0283±0.0078** | 0.580±0.024 |
 
-### Unweighted (per user)
+#### Unweighted (per user)
 
 | Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
 | --- | --- | --- | --- |
