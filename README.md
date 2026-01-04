@@ -47,9 +47,9 @@ Log Loss and RMSE (bins) measure calibration: how well predicted probabilities o
 
 ## Result
 
-Total users: 18
+Total users: 19
 
-Total repetitions: 652,278
+Total repetitions: 687,662
 
 ### Universal Metric
 
