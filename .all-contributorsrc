@@ -150,6 +150,15 @@
       "contributions": [
         "data"
       ]
+    },
+    {
+      "login": "Kubo2",
+      "name": "Kubis Fowler",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6882599?v=4",
+      "profile": "https://github.com/Kubo2",
+      "contributions": [
+        "data"
+      ]
     }
   ],
   "contributorsPerLine": 7,

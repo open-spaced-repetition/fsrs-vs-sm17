@@ -1,6 +1,6 @@
 # FSRS vs SM-17
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-16-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-17-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 It is a simple comparison between FSRS and SM-17. Due to the difference between the workflow of SuperMemo and Anki, it is not easy to compare the two algorithms. I tried to make the comparison as fair as possible. Here is some notes:
@@ -130,7 +130,7 @@ The following tables present the means and the 99% confidence intervals for trad
 | FSRSv3 | 0.458±0.080 | 0.106±0.073 | 0.607±0.067 |
 | **ADVERSARIAL** | 3.66±0.72 | **0.0283±0.0078** | 0.580±0.024 |
 
-### Unweighted (per user)
+#### Unweighted (per user)
 
 | Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
 | --- | --- | --- | --- |
@@ -214,6 +214,7 @@ You can open an issue to submit it: https://github.com/open-spaced-repetition/fs
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/hugomarins"><img src="https://avatars.githubusercontent.com/u/54500828?v=4?s=100" width="100px;" alt="Hugo Marins"/><br /><sub><b>Hugo Marins</b></sub></a><br /><a href="#data-hugomarins" title="Data">🔣</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://www.pleasurable-learning.com"><img src="https://avatars.githubusercontent.com/u/8341295?v=4?s=100" width="100px;" alt="Guillem Palau"/><br /><sub><b>Guillem Palau</b></sub></a><br /><a href="#data-guillempalau" title="Data">🔣</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Kubo2"><img src="https://avatars.githubusercontent.com/u/6882599?v=4?s=100" width="100px;" alt="Kubis Fowler"/><br /><sub><b>Kubis Fowler</b></sub></a><br /><a href="#data-Kubo2" title="Data">🔣</a></td>
     </tr>
   </tbody>
 </table>
