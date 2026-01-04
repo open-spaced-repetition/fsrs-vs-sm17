@@ -56,16 +56,16 @@ Total repetitions: 652,278
 | Algorithm | Average Universal Metric↓ |
 | --- | --- |
 | **ADVERSARIAL** | **0.0011** |
-| FSRS-6 | 0.0283 |
-| MOVING-AVG | 0.0420 |
-| SM17 | 0.0442 |
-| FSRS-4.5 | 0.0480 |
-| FSRS-5 | 0.0490 |
-| SM16 | 0.0543 |
-| AVG | 0.0593 |
-| FSRSv4 | 0.0594 |
-| FSRSv3 | 0.0666 |
-| FSRS-6-default | 0.0801 |
+| FSRS-6 | 0.0287 |
+| MOVING-AVG | 0.0426 |
+| SM17 | 0.0435 |
+| FSRS-4.5 | 0.0496 |
+| FSRS-5 | 0.0508 |
+| SM16 | 0.0547 |
+| AVG | 0.0598 |
+| FSRSv4 | 0.0617 |
+| FSRSv3 | 0.0681 |
+| FSRS-6-default | 0.0820 |
 
 ### Universal Metrics Matrix
 
@@ -90,17 +90,17 @@ This visualization helps identify which algorithms produce the most robust and a
 
 | Algorithm | UM+↓ (Max) | UM+↓ (Avg) | Opponent Score↑ |
 | --- | --- | --- | --- |
-| **FSRS-6** | **0.0386** | **0.0326** | **0.1090** |
-| FSRS-4.5 | 0.0743 | 0.0612 | 0.0964 |
-| FSRS-5 | 0.0755 | 0.0621 | 0.0964 |
-| MOVING-AVG | 0.0756 | 0.0609 | 0.0977 |
-| AVG | 0.0778 | 0.0628 | 0.0923 |
-| FSRSv4 | 0.0960 | 0.0857 | 0.0941 |
-| FSRS-6-default | 0.1066 | 0.0972 | 0.0892 |
-| SM17 | 0.1100 | 0.1005 | 0.0943 |
-| SM16 | 0.1223 | 0.1094 | 0.0864 |
-| FSRSv3 | 0.1315 | 0.1182 | 0.0818 |
-| ADVERSARIAL | 0.2278 | 0.2213 | 0.0744 |
+| **FSRS-6** | **0.0399** | **0.0331** | **0.1106** |
+| MOVING-AVG | 0.0760 | 0.0612 | 0.0993 |
+| FSRS-4.5 | 0.0766 | 0.0636 | 0.0976 |
+| FSRS-5 | 0.0779 | 0.0646 | 0.0976 |
+| AVG | 0.0784 | 0.0632 | 0.0939 |
+| FSRSv4 | 0.0997 | 0.0895 | 0.0954 |
+| FSRS-6-default | 0.1076 | 0.0987 | 0.0911 |
+| SM17 | 0.1113 | 0.1018 | 0.0963 |
+| SM16 | 0.1245 | 0.1117 | 0.0880 |
+| FSRSv3 | 0.1342 | 0.1209 | 0.0830 |
+| ADVERSARIAL | 0.2271 | 0.2205 | 0.0761 |
 
 Universal Metric+ (UM+) aims to improve the binning procedure. Rather than creating bins based on solely the opponent algorithm's predictions, in UM+ the binning is done by the difference in predictions, as in where the algorithms disagree. To illustrate the utility, consider the problem of predicting the result of a fair coin flip. Algorithm A predicts a random number in [0, 1]. Algorithm B has perfect predictions of 0.5. In UM, all the predictions of algorithm A would fall into the same bin since algorithm B only predicts 0.5. Thus the B-W value of this bin would be approximately 0.5 - 0.5 = 0 since the average value of [0, 1] is 0.5, and algorithm A would falsely achieve a UM of ~0. In UM+, the erroneous predictions of algorithm A would be properly distributed into different bins.
 
@@ -118,33 +118,33 @@ The following tables present the means and the 99% confidence intervals for trad
 
 | Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
 | --- | --- | --- | --- |
-| **FSRS-6** | **0.368±0.044** | 0.047±0.023 | **0.660±0.057** |
-| MOVING-AVG | 0.379±0.071 | 0.059±0.012 | 0.597±0.055 |
-| FSRS-4.5 | 0.385±0.029 | 0.063±0.043 | 0.651±0.061 |
-| AVG | 0.385±0.067 | 0.074±0.019 | 0.527±0.025 |
-| FSRS-5 | 0.386±0.028 | 0.064±0.046 | 0.651±0.062 |
-| FSRSv4 | 0.400±0.026 | 0.075±0.055 | 0.644±0.064 |
-| FSRS-6-default | 0.412±0.039 | 0.108±0.085 | 0.612±0.063 |
-| SM-16 | 0.416±0.038 | 0.097±0.031 | 0.596±0.055 |
-| SM-17 | 0.432±0.091 | 0.066±0.020 | 0.603±0.038 |
-| FSRSv3 | 0.450±0.083 | 0.104±0.079 | 0.606±0.071 |
-| **ADVERSARIAL** | 3.68±0.79 | **0.0275±0.0075** | 0.579±0.025 |
+| **FSRS-6** | **0.367±0.040** | 0.048±0.022 | **0.662±0.053** |
+| MOVING-AVG | 0.378±0.065 | 0.061±0.013 | 0.597±0.051 |
+| AVG | 0.385±0.061 | 0.075±0.018 | 0.526±0.025 |
+| FSRS-4.5 | 0.385±0.026 | 0.065±0.041 | 0.653±0.056 |
+| FSRS-5 | 0.385±0.026 | 0.066±0.043 | 0.653±0.058 |
+| FSRSv4 | 0.401±0.024 | 0.078±0.052 | 0.645±0.060 |
+| FSRS-6-default | 0.411±0.036 | 0.110±0.079 | 0.616±0.063 |
+| SM-16 | 0.417±0.034 | 0.098±0.028 | 0.598±0.053 |
+| SM-17 | 0.432±0.084 | 0.066±0.019 | 0.606±0.038 |
+| FSRSv3 | 0.458±0.080 | 0.106±0.073 | 0.607±0.067 |
+| **ADVERSARIAL** | 3.66±0.72 | **0.0283±0.0078** | 0.580±0.024 |
 
-#### Unweighted (per user)
+### Unweighted (per user)
 
 | Algorithm | Log Loss↓ | RMSE (bins)↓ | AUC↑ |
 | --- | --- | --- | --- |
-| **MOVING-AVG** | **0.403±0.068** | 0.077±0.022 | 0.582±0.041 |
-| **FSRS-6** | 0.405±0.060 | 0.081±0.026 | **0.631±0.039** |
-| AVG | 0.414±0.074 | 0.093±0.023 | 0.508±0.028 |
-| FSRS-6-default | 0.431±0.056 | 0.116±0.038 | 0.615±0.038 |
-| FSRS-4.5 | 0.433±0.064 | 0.111±0.035 | 0.628±0.039 |
-| FSRS-5 | 0.438±0.065 | 0.116±0.038 | 0.628±0.039 |
-| SM-16 | 0.46±0.10 | 0.121±0.033 | 0.603±0.029 |
-| FSRSv4 | 0.478±0.073 | 0.147±0.050 | 0.616±0.039 |
-| SM-17 | 0.483±0.091 | 0.090±0.026 | 0.604±0.032 |
-| FSRSv3 | 0.53±0.12 | 0.152±0.045 | 0.598±0.041 |
-| **ADVERSARIAL** | 3.80±0.73 | **0.050±0.021** | 0.571±0.023 |
+| **MOVING-AVG** | **0.401±0.064** | 0.078±0.021 | 0.583±0.039 |
+| **FSRS-6** | 0.401±0.058 | 0.081±0.025 | **0.635±0.038** |
+| AVG | 0.412±0.071 | 0.093±0.022 | 0.508±0.026 |
+| FSRS-6-default | 0.429±0.054 | 0.117±0.036 | 0.619±0.037 |
+| FSRS-4.5 | 0.430±0.061 | 0.111±0.033 | 0.632±0.037 |
+| FSRS-5 | 0.435±0.062 | 0.115±0.036 | 0.631±0.038 |
+| SM-16 | 0.460±0.096 | 0.121±0.031 | 0.605±0.028 |
+| FSRSv4 | 0.475±0.070 | 0.145±0.048 | 0.619±0.038 |
+| SM-17 | 0.480±0.087 | 0.089±0.025 | 0.607±0.032 |
+| FSRSv3 | 0.54±0.11 | 0.151±0.043 | 0.600±0.039 |
+| **ADVERSARIAL** | 3.77±0.69 | **0.050±0.020** | 0.573±0.022 |
 
 Averages weighted by the number of reviews are more representative of "best case" performance when plenty of data is available. Since almost all algorithms perform better when there's a lot of data to learn from, weighting by n(reviews) biases the average towards lower values.
 
