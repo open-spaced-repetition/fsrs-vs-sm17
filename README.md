@@ -84,7 +84,7 @@ However, this approach does not fully prevent gaming if an adversarial model has
 
 This visualization helps identify which algorithms produce the most robust and accurate retrievability predictions across different evaluation perspectives.
 
-![Universal-Metrics-Matrix-18-collections](./plots/Universal-Metrics-Matrix-18-collections.png)
+![Universal-Metrics-Matrix-19-collections](./plots/Universal-Metrics-Matrix-19-collections.png)
 
 ### Universal Metrics+ (Cross Comparison)
 
@@ -108,7 +108,7 @@ In addition, UM+ calculates scores based on the strongest opponent for this algo
 
 UM+ also has the property that better algorithms tend to be better opponents. We propose an Opponent Score, corresponding to the average value of the corresponding column in the UM+ matrix. See how in the normal UM, the opposite is true, where the worse algorithms tend to be better opponents.
 
-![Universal-Metrics-Plus-Matrix-18-collections](./plots/Universal-Metrics-Plus-Matrix-18-collections.png)
+![Universal-Metrics-Plus-Matrix-19-collections](./plots/Universal-Metrics-Plus-Matrix-19-collections.png)
 
 ### Traditional Machine Learning Metrics
 
@@ -154,9 +154,9 @@ Unweighted averages are more representative of "average case" performance. In re
 
 The metrics presented above can be difficult to interpret. In order to make it easier to understand how algorithms perform relative to each other, the image below shows the percentage of users for whom algorithm A (row) has a lower Log Loss than algorithm B (column). For example, FSRS-6 has a 83.3% superiority over SM-17, meaning that for 83.3% of all collections in this benchmark, FSRS-6 can estimate the probability of recall more accurately.
 
-This table is based on 18 collections.
+This table is based on 19 collections.
 
-![Superiority-18-collections](./plots/Superiority-18-collections.png)
+![Superiority-19-collections](./plots/Superiority-19-collections.png)
 
 ### Statistical significance
 
@@ -178,7 +178,7 @@ The colors indicate:
 
 The Wilcoxon test considers both the sign and rank of differences between pairs, but it does not account for the varying number of reviews across collections. Therefore, while the test results are reliable for qualitative analysis, caution should be exercised when interpreting the specific magnitude of effects.
 
-![Wilcoxon-18-collections](./plots/Wilcoxon-18-collections.png)
+![Wilcoxon-19-collections](./plots/Wilcoxon-19-collections.png)
 
 ## Share your data
 
