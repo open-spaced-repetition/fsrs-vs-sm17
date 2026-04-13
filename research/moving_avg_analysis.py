@@ -11,6 +11,18 @@ from sklearn.metrics import log_loss, roc_auc_score, root_mean_squared_error
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "raw"
 RESULT_DIR = ROOT / "result"
+RESULT_MODELS = [
+    "FSRS-6",
+    "FSRS-5",
+    "FSRS-4.5",
+    "FSRSv4",
+    "FSRSv3",
+    "SM16",
+    "SM17",
+    "AVG",
+    "MOVING-AVG",
+    "FSRS-6-default",
+]
 REFEREE_ALGOS = [
     "FSRS-6",
     "FSRS-5",
@@ -52,34 +64,12 @@ def load_result_rows() -> pd.DataFrame:
     for path in sorted(RESULT_DIR.glob("*.json")):
         result = json.loads(path.read_text())
         row = {"user": result["user"], "n": result["size"]}
-        for model in [
-            "FSRS-6",
-            "FSRS-5",
-            "FSRS-4.5",
-            "FSRSv4",
-            "FSRSv3",
-            "SM16",
-            "SM17",
-            "AVG",
-            "MOVING-AVG",
-            "FSRS-6-default",
-        ]:
+        for model in RESULT_MODELS:
             row[f"{model}_ll"] = result[model]["LogLoss"]
             row[f"{model}_auc"] = result[model]["AUC"]
             row[f"{model}_rmse"] = result[model]["RMSE(bins)"]
 
-        for model in [
-            "FSRS-6",
-            "FSRS-5",
-            "FSRS-4.5",
-            "FSRSv4",
-            "FSRSv3",
-            "SM16",
-            "SM17",
-            "AVG",
-            "MOVING-AVG",
-            "FSRS-6-default",
-        ]:
+        for model in RESULT_MODELS:
             um_scores = [
                 value
                 for key, value in result["Universal_Metrics"].items()
@@ -136,14 +126,13 @@ def weighted_mean(values: pd.Series, weights: pd.Series) -> float:
     return float(np.average(values, weights=weights))
 
 
-def moving_average_preds(y: np.ndarray, x0: float = 1.2, w: float = 0.3) -> np.ndarray:
-    x = x0
-    preds = np.empty_like(y, dtype=float)
-    for i, value in enumerate(y):
-        p = 1 / (1 + np.exp(-x))
-        preds[i] = p
-        x += w * (value - p)
-    return preds
+def safe_weighted_mean(values: list[float], weights: list[float]) -> float:
+    value_arr = np.asarray(values, dtype=float)
+    weight_arr = np.asarray(weights, dtype=float)
+    mask = ~np.isnan(value_arr)
+    if not np.any(mask):
+        return float("nan")
+    return float(np.average(value_arr[mask], weights=weight_arr[mask]))
 
 
 def online_average_preds(
@@ -168,46 +157,6 @@ def trailing_window_preds(
         preds[i] = prior_success if not history else float(np.mean(history[-window:]))
         history.append(value)
     return preds
-
-
-def average_um_against_referees(
-    frame: pd.DataFrame, pred: np.ndarray
-) -> tuple[float, float]:
-    y = frame["y"].to_numpy(dtype=float)
-    ums = []
-    um_plus = []
-    for referee in REFEREE_ALGOS:
-        referee_p = frame[f"R ({referee})"].to_numpy(dtype=float)
-        grouped = (
-            pd.DataFrame({"bin": get_bin(referee_p), "y": y, "p": pred})
-            .groupby("bin")
-            .agg(y=("y", "mean"), p=("p", "mean"), count=("p", "count"))
-        )
-        ums.append(
-            root_mean_squared_error(
-                grouped["y"], grouped["p"], sample_weight=grouped["count"]
-            )
-        )
-
-        grouped_plus = (
-            pd.DataFrame(
-                {
-                    "bin": np.round((pred - referee_p) * 20) / 20,
-                    "y": y,
-                    "p": pred,
-                }
-            )
-            .groupby("bin")
-            .agg(y=("y", "mean"), p=("p", "mean"), count=("p", "count"))
-        )
-        um_plus.append(
-            root_mean_squared_error(
-                grouped_plus["y"],
-                grouped_plus["p"],
-                sample_weight=grouped_plus["count"],
-            )
-        )
-    return float(np.mean(ums)), float(np.max(um_plus))
 
 
 def pair_metrics_against_referees(frame: pd.DataFrame, pred: np.ndarray) -> list[dict]:
@@ -332,17 +281,7 @@ def aggregate_model_table(
                 "unweighted": float(metric.mean()),
             }
         )
-    if metric_suffix in {"ll", "auc"}:
-        for model in ["CONST-0.87", "ONLINE-AVG", "WIN-50", "WIN-200"]:
-            sub = baselines[baselines["model"] == model]
-            rows.append(
-                {
-                    "model": model,
-                    "weighted": weighted_mean(sub[metric_suffix], sub["n"]),
-                    "unweighted": float(sub[metric_suffix].mean()),
-                }
-            )
-    elif metric_suffix in {"avg_um", "max_ump"}:
+    if metric_suffix in {"ll", "auc", "avg_um", "max_ump"}:
         for model in ["CONST-0.87", "ONLINE-AVG", "WIN-50", "WIN-200"]:
             sub = baselines[baselines["model"] == model]
             rows.append(
@@ -526,12 +465,10 @@ def lag_dependency_stats(streams: list[UserStream]) -> dict[str, float]:
     pooled["prev"] = pooled.groupby("user")["y"].shift(1)
 
     return {
-        "weighted_prev_success": float(
-            np.average(weighted_prev_success, weights=weights)
-        ),
-        "weighted_prev_fail": float(np.average(weighted_prev_fail, weights=weights)),
-        "weighted_acf_1": float(np.average(np.nan_to_num(acf_1), weights=weights)),
-        "weighted_acf_10": float(np.average(np.nan_to_num(acf_10), weights=weights)),
+        "weighted_prev_success": safe_weighted_mean(weighted_prev_success, weights),
+        "weighted_prev_fail": safe_weighted_mean(weighted_prev_fail, weights),
+        "weighted_acf_1": safe_weighted_mean(acf_1, weights),
+        "weighted_acf_10": safe_weighted_mean(acf_10, weights),
         "pooled_prev_success": float(pooled.loc[pooled["prev"] == 1, "y"].mean()),
         "pooled_prev_fail": float(pooled.loc[pooled["prev"] == 0, "y"].mean()),
     }
