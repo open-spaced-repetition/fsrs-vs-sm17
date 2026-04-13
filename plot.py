@@ -435,7 +435,7 @@ if __name__ == "__main__":
             if percentages[i, j] == -1:
                 pass
             else:
-                string = f"{100*percentages[i, j]:.1f}%"
+                string = f"{100 * percentages[i, j]:.1f}%"
                 text = ax.text(
                     j,
                     i,
@@ -627,10 +627,14 @@ if __name__ == "__main__":
         with open(result_file, "r") as f:
             result = json.load(f)
             if "Universal_Metrics+" in result:
-                for metric_name_plus, metric_value_plus in result["Universal_Metrics+"].items():
+                for metric_name_plus, metric_value_plus in result[
+                    "Universal_Metrics+"
+                ].items():
                     if metric_name_plus not in universal_metrics_plus_data:
                         universal_metrics_plus_data[metric_name_plus] = []
-                    universal_metrics_plus_data[metric_name_plus].append(metric_value_plus)
+                    universal_metrics_plus_data[metric_name_plus].append(
+                        metric_value_plus
+                    )
 
     if universal_metrics_plus_data:
         # Load user sizes for weighted average
@@ -646,7 +650,9 @@ if __name__ == "__main__":
         um_plus_matrix_data = {}
         for metric_name_plus, values_plus in universal_metrics_plus_data.items():
             values_array_plus = np.array(values_plus)
-            um_plus_matrix_data[metric_name_plus] = np.average(values_array_plus, weights=sizes)
+            um_plus_matrix_data[metric_name_plus] = np.average(
+                values_array_plus, weights=sizes
+            )
 
         # Get all unique algorithms
         all_algorithms_plus = set()
@@ -707,12 +713,14 @@ if __name__ == "__main__":
         cbar.set_label("Universal Metric+ (lower is better)", fontsize=14)
 
         # Highlight max UM+ cell per row (corrected alignment)
-        highlight_offset = 0.04  # inset from cell edges, so red lines stay inside black grid
+        highlight_offset = (
+            0.04  # inset from cell edges, so red lines stay inside black grid
+        )
 
         for i, algo_name in enumerate(sorted_algorithms_plus_names):
             row = um_plus_matrix[i, :]
             j_max = int(np.nanargmax(row))
-            
+
             # Coordinates of the cell (i,j) in imshow
             x0, y0 = j_max - 0.5 + highlight_offset, i - 0.5 + highlight_offset
             x1, y1 = j_max + 0.5 - highlight_offset, i + 0.5 - highlight_offset
@@ -725,13 +733,19 @@ if __name__ == "__main__":
                 ((x1, y0), (x1, y1)),  # right
             ]
             for (x_start, y_start), (x_end, y_end) in lines:
-                ax.add_line(Line2D([x_start, x_end], [y_start, y_end], color="red", linewidth=2))
+                ax.add_line(
+                    Line2D([x_start, x_end], [y_start, y_end], color="red", linewidth=2)
+                )
 
         # Add text annotations
         for i in range(n_um_plus):
             for j in range(n_um_plus):
                 if not np.isnan(um_plus_matrix[i, j]):
-                    color = "white" if um_plus_matrix[i, j] > np.nanmean(um_plus_matrix) else "black"
+                    color = (
+                        "white"
+                        if um_plus_matrix[i, j] > np.nanmean(um_plus_matrix)
+                        else "black"
+                    )
                     ax.text(
                         j,
                         i,
@@ -743,7 +757,9 @@ if __name__ == "__main__":
                         weight="bold",
                     )
                 else:
-                    ax.text(j, i, "-", ha="center", va="center", color="gray", fontsize=14)
+                    ax.text(
+                        j, i, "-", ha="center", va="center", color="gray", fontsize=14
+                    )
 
         # Apply label corrections for consistency
         display_labels = []
@@ -762,7 +778,9 @@ if __name__ == "__main__":
                 display_labels.append(algo)
 
         # Set labels
-        ax.set_xticks(np.arange(n_um_plus), labels=display_labels, fontsize=12, rotation=45)
+        ax.set_xticks(
+            np.arange(n_um_plus), labels=display_labels, fontsize=12, rotation=45
+        )
         ax.set_yticks(np.arange(n_um_plus), labels=display_labels, fontsize=12)
         ax.set_xticks(np.arange(n_um_plus) - 0.5, minor=True)
         ax.set_yticks(np.arange(n_um_plus) - 0.5, minor=True)

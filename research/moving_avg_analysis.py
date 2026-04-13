@@ -170,7 +170,9 @@ def trailing_window_preds(
     return preds
 
 
-def average_um_against_referees(frame: pd.DataFrame, pred: np.ndarray) -> tuple[float, float]:
+def average_um_against_referees(
+    frame: pd.DataFrame, pred: np.ndarray
+) -> tuple[float, float]:
     y = frame["y"].to_numpy(dtype=float)
     ums = []
     um_plus = []
@@ -438,7 +440,9 @@ def tune_hybrid(streams: list[UserStream]) -> dict[str, float]:
             y = frame["y"].to_numpy(dtype=float)[:split]
             fsrs = frame["R (FSRS-6)"].to_numpy(dtype=float)[:split]
             moving = frame["R (MOVING-AVG)"].to_numpy(dtype=float)[:split]
-            pred = expit(lam * logit(clip_probs(fsrs)) + (1 - lam) * logit(clip_probs(moving)))
+            pred = expit(
+                lam * logit(clip_probs(fsrs)) + (1 - lam) * logit(clip_probs(moving))
+            )
             losses.append(float(log_loss(y, clip_probs(pred))))
             weights.append(len(y))
         score = float(np.average(losses, weights=weights))
@@ -522,7 +526,9 @@ def lag_dependency_stats(streams: list[UserStream]) -> dict[str, float]:
     pooled["prev"] = pooled.groupby("user")["y"].shift(1)
 
     return {
-        "weighted_prev_success": float(np.average(weighted_prev_success, weights=weights)),
+        "weighted_prev_success": float(
+            np.average(weighted_prev_success, weights=weights)
+        ),
         "weighted_prev_fail": float(np.average(weighted_prev_fail, weights=weights)),
         "weighted_acf_1": float(np.average(np.nan_to_num(acf_1), weights=weights)),
         "weighted_acf_10": float(np.average(np.nan_to_num(acf_10), weights=weights)),
@@ -551,7 +557,9 @@ def bootstrap_logloss_differences(
         for _ in range(n_boot):
             idx = rng.integers(0, len(joined), len(joined))
             sample = joined.iloc[idx]
-            samples.append(float(np.average(sample[left] - sample[right], weights=sample["n"])))
+            samples.append(
+                float(np.average(sample[left] - sample[right], weights=sample["n"]))
+            )
         low, high = np.quantile(samples, [0.025, 0.975])
         rows.append(
             {

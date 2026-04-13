@@ -591,7 +591,10 @@ def evaluate(revlogs):
 
     def calculate_universal_metric_plus(algoA, algoB):
         cross_comparison_record = revlogs[[f"R ({algoA})", f"R ({algoB})", "y"]].copy()
-        cross_comparison_record["R_diff"] = cross_comparison_record[f"R ({algoA})"] - cross_comparison_record[f"R ({algoB})"]
+        cross_comparison_record["R_diff"] = (
+            cross_comparison_record[f"R ({algoA})"]
+            - cross_comparison_record[f"R ({algoB})"]
+        )
 
         for algo in (algoA, algoB):
             cross_comparison_record[f"{algo}_B-W"] = (
@@ -621,7 +624,6 @@ def evaluate(revlogs):
             result[f"{player}_evaluated_by_{referee}"] = round(universal_metric, 4)
 
         return result
-
 
     # Calculate all Universal Metrics
     universal_metrics = {}
