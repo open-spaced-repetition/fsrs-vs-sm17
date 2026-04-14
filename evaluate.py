@@ -273,10 +273,14 @@ if __name__ == "__main__":
         with open(result_file, "r") as f:
             result = json.load(f)
             if "Universal_Metrics+" in result:
-                for metric_name_plus, metric_value_plus in result["Universal_Metrics+"].items():
+                for metric_name_plus, metric_value_plus in result[
+                    "Universal_Metrics+"
+                ].items():
                     if metric_name_plus not in universal_metrics_plus_data:
                         universal_metrics_plus_data[metric_name_plus] = []
-                    universal_metrics_plus_data[metric_name_plus].append(metric_value_plus)
+                    universal_metrics_plus_data[metric_name_plus].append(
+                        metric_value_plus
+                    )
 
     if universal_metrics_plus_data:
         # Calculate statistics for each Universal Metric+
@@ -315,9 +319,7 @@ if __name__ == "__main__":
             algo_max_um_plus[algo_name] = np.max(scores_plus)
 
         # Sort algorithms by MAX Universal Metric+ (lower is better)
-        sorted_algorithms_plus = sorted(
-            algo_max_um_plus.items(), key=lambda x: x[1]
-        )
+        sorted_algorithms_plus = sorted(algo_max_um_plus.items(), key=lambda x: x[1])
 
         # Print Universal Metrics+ table
         print("| Algorithm | UM+↓ (Max) | UM+↓ (Avg) | Opponent Score↑ |")
@@ -327,7 +329,9 @@ if __name__ == "__main__":
 
             formatted_avg = f"{avg_um_plus:.4f}"
             formatted_max = f"{max_um_plus:.4f}"
-            formatted_opp_avg = f"{np.mean(algorithm_um_plus_opponent_scores[algo_name]):.4f}"
+            formatted_opp_avg = (
+                f"{np.mean(algorithm_um_plus_opponent_scores[algo_name]):.4f}"
+            )
 
             if i == 0:
                 print(
@@ -341,4 +345,3 @@ if __name__ == "__main__":
         print()
     else:
         print("No Universal Metrics+ data found in result files.\n")
-
