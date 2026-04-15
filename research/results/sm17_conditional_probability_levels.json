@@ -1,0 +1,2070 @@
+{
+  "metadata": {
+    "dataset": "fsrs-vs-sm17 SuperMemo collections",
+    "users": 19,
+    "sequence_notes": {
+      "raw_long_term": [
+        "load the SuperMemo CSV with the same row-level filters used by the benchmark preprocessing",
+        "drop the first record per card (i > 1) to match the benchmark evaluation subset",
+        "sort by parsed review_date, then i, then source order",
+        "form adjacent pairs in that full user sequence"
+      ],
+      "same_day_first_per_card": [
+        "start from the same benchmark subset (i > 1)",
+        "within each user-day-card keep the first parsed-order occurrence",
+        "form adjacent pairs only when both events are on the same day",
+        "no state == Review filter is available in the SuperMemo CSV, so this is only an analog of the Anki target"
+      ]
+    },
+    "caveats": [
+      "equal_user_day_mean weights every user-day equally after computing that user-day conditional probability",
+      "equal_user_day_mean does not give every user equal total weight; users with more retained days contribute more user-day units",
+      "common_support_gap averages the unit-level gap only over user-days where both conditionals are defined",
+      "some collections have weak or absent within-day time resolution, so parsed-order adjacency should not be overinterpreted as verified wall-clock adjacency"
+    ]
+  },
+  "aggregate": {
+    "raw_long_term": {
+      "pooled": {
+        "p_success_given_prev_success": 0.876065,
+        "p_success_given_prev_fail": 0.82777,
+        "gap": 0.048294,
+        "pair_count": 687643,
+        "user_count": 19,
+        "user_day_count": 9263
+      },
+      "equal_user_mean": {
+        "p_success_given_prev_success": 0.859239,
+        "p_success_given_prev_fail": 0.808034,
+        "gap": 0.051205,
+        "common_support_gap": 0.051205,
+        "defined_prev_success_units": 19,
+        "defined_prev_fail_units": 19,
+        "both_defined_units": 19,
+        "unit_count": 19,
+        "pair_count": 687643
+      },
+      "equal_user_day_mean": {
+        "p_success_given_prev_success": 0.859724,
+        "p_success_given_prev_fail": 0.867565,
+        "gap": -0.00784,
+        "common_support_gap": -0.029236,
+        "defined_prev_success_units": 9207,
+        "defined_prev_fail_units": 7673,
+        "both_defined_units": 7617,
+        "unit_count": 9263,
+        "pair_count": 687643
+      },
+      "pooled_on_common_support_user_days": {
+        "p_success_given_prev_success": 0.873575,
+        "p_success_given_prev_fail": 0.827954,
+        "gap": 0.045621,
+        "pair_count": 674422,
+        "user_count": 19,
+        "user_day_count": 7617
+      },
+      "equal_user_mean_on_common_support_user_days": {
+        "p_success_given_prev_success": 0.839272,
+        "p_success_given_prev_fail": 0.810501,
+        "gap": 0.028772,
+        "common_support_gap": 0.028772,
+        "defined_prev_success_units": 19,
+        "defined_prev_fail_units": 19,
+        "both_defined_units": 19,
+        "unit_count": 19,
+        "pair_count": 674422
+      }
+    },
+    "same_day_first_per_card": {
+      "pooled": {
+        "p_success_given_prev_success": 0.879741,
+        "p_success_given_prev_fail": 0.828505,
+        "gap": 0.051236,
+        "pair_count": 673682,
+        "user_count": 19,
+        "user_day_count": 8944
+      },
+      "equal_user_mean": {
+        "p_success_given_prev_success": 0.859291,
+        "p_success_given_prev_fail": 0.811798,
+        "gap": 0.047493,
+        "common_support_gap": 0.047493,
+        "defined_prev_success_units": 19,
+        "defined_prev_fail_units": 19,
+        "both_defined_units": 19,
+        "unit_count": 19,
+        "pair_count": 673682
+      },
+      "equal_user_day_mean": {
+        "p_success_given_prev_success": 0.858726,
+        "p_success_given_prev_fail": 0.867476,
+        "gap": -0.00875,
+        "common_support_gap": -0.029523,
+        "defined_prev_success_units": 8898,
+        "defined_prev_fail_units": 7428,
+        "both_defined_units": 7382,
+        "unit_count": 8944,
+        "pair_count": 673682
+      },
+      "pooled_on_common_support_user_days": {
+        "p_success_given_prev_success": 0.877302,
+        "p_success_given_prev_fail": 0.828654,
+        "gap": 0.048648,
+        "pair_count": 660589,
+        "user_count": 19,
+        "user_day_count": 7382
+      },
+      "equal_user_mean_on_common_support_user_days": {
+        "p_success_given_prev_success": 0.839231,
+        "p_success_given_prev_fail": 0.814113,
+        "gap": 0.025118,
+        "common_support_gap": 0.025118,
+        "defined_prev_success_units": 19,
+        "defined_prev_fail_units": 19,
+        "both_defined_units": 19,
+        "unit_count": 19,
+        "pair_count": 660589
+      }
+    }
+  },
+  "per_user": {
+    "Hansel221": {
+      "raw_long_term": {
+        "pooled": {
+          "ps_num": 3162.0,
+          "ps_den": 4561.0,
+          "pf_num": 1399.0,
+          "pf_den": 2501.0,
+          "pair_count": 7062.0,
+          "user_count": 1.0,
+          "user_day_count": 184.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.6932690199517649,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.5593762495001999,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.133892770451565,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 7062.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 112.72989076432451,
+          "ps_prob_cnt": 184.0,
+          "pf_prob_sum": 110.48018538629148,
+          "pf_prob_cnt": 175.0,
+          "common_gap_sum": -6.750294621966983,
+          "common_gap_cnt": 175.0,
+          "unit_count": 184.0,
+          "pair_count": 7062.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 3111.0,
+          "ps_den": 4510.0,
+          "pf_num": 1399.0,
+          "pf_den": 2501.0,
+          "pair_count": 7011.0,
+          "user_count": 1.0,
+          "user_day_count": 175.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.6898004434589801,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.5593762495001999,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.13042419395878013,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 7011.0
+        }
+      },
+      "same_day_first_per_card": {
+        "pooled": {
+          "ps_num": 3077.0,
+          "ps_den": 4440.0,
+          "pf_num": 1344.0,
+          "pf_den": 2424.0,
+          "pair_count": 6864.0,
+          "user_count": 1.0,
+          "user_day_count": 183.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.693018018018018,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.5544554455445545,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.13856257247346349,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 6864.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 109.41436321323319,
+          "ps_prob_cnt": 181.0,
+          "pf_prob_sum": 103.99049670781196,
+          "pf_prob_cnt": 169.0,
+          "common_gap_sum": -7.5761334945787775,
+          "common_gap_cnt": 167.0,
+          "unit_count": 183.0,
+          "pair_count": 6864.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 3025.0,
+          "ps_den": 4387.0,
+          "pf_num": 1344.0,
+          "pf_den": 2421.0,
+          "pair_count": 6808.0,
+          "user_count": 1.0,
+          "user_day_count": 167.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.6895372692044678,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.5551425030978935,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.1343947661065743,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 6808.0
+        }
+      }
+    },
+    "Hy-Fran": {
+      "raw_long_term": {
+        "pooled": {
+          "ps_num": 51302.0,
+          "ps_den": 57777.0,
+          "pf_num": 6475.0,
+          "pf_den": 7356.0,
+          "pair_count": 65133.0,
+          "user_count": 1.0,
+          "user_day_count": 869.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8879311836890112,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8802338227297444,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.007697360959266875,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 65133.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 772.9643498131838,
+          "ps_prob_cnt": 869.0,
+          "pf_prob_sum": 611.8313771488642,
+          "pf_prob_cnt": 680.0,
+          "common_gap_sum": -20.850360669013654,
+          "common_gap_cnt": 680.0,
+          "unit_count": 869.0,
+          "pair_count": 65133.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 50580.0,
+          "ps_den": 57041.0,
+          "pf_num": 6475.0,
+          "pf_den": 7356.0,
+          "pair_count": 64397.0,
+          "user_count": 1.0,
+          "user_day_count": 680.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8867305972896689,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8802338227297444,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.006496774559924479,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 64397.0
+        }
+      },
+      "same_day_first_per_card": {
+        "pooled": {
+          "ps_num": 50668.0,
+          "ps_den": 56762.0,
+          "pf_num": 6089.0,
+          "pf_den": 6895.0,
+          "pair_count": 63657.0,
+          "user_count": 1.0,
+          "user_day_count": 830.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8926394418801311,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8831036983321248,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.009535743548006348,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 63657.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 738.1627904170027,
+          "ps_prob_cnt": 826.0,
+          "pf_prob_sum": 595.0642949442652,
+          "pf_prob_cnt": 660.0,
+          "common_gap_sum": -18.284837860595815,
+          "common_gap_cnt": 656.0,
+          "unit_count": 830.0,
+          "pair_count": 63657.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 50020.0,
+          "ps_den": 56103.0,
+          "pf_num": 6085.0,
+          "pf_den": 6891.0,
+          "pair_count": 62994.0,
+          "user_count": 1.0,
+          "user_day_count": 656.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8915744256100386,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8830358438543027,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.008538581755735963,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 62994.0
+        }
+      }
+    },
+    "KKKphelps": {
+      "raw_long_term": {
+        "pooled": {
+          "ps_num": 7839.0,
+          "ps_den": 8975.0,
+          "pf_num": 1136.0,
+          "pf_den": 1404.0,
+          "pair_count": 10379.0,
+          "user_count": 1.0,
+          "user_day_count": 199.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8734261838440112,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8091168091168092,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.064309374727202,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 10379.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 172.9656907916556,
+          "ps_prob_cnt": 199.0,
+          "pf_prob_sum": 151.77099570712102,
+          "pf_prob_cnt": 178.0,
+          "common_gap_sum": 0.9058061956456888,
+          "common_gap_cnt": 178.0,
+          "unit_count": 199.0,
+          "pair_count": 10379.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 7631.0,
+          "ps_den": 8764.0,
+          "pf_num": 1136.0,
+          "pf_den": 1404.0,
+          "pair_count": 10168.0,
+          "user_count": 1.0,
+          "user_day_count": 178.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8707211319032405,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8091168091168092,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.061604322786431354,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 10168.0
+        }
+      },
+      "same_day_first_per_card": {
+        "pooled": {
+          "ps_num": 7633.0,
+          "ps_den": 8752.0,
+          "pf_num": 1108.0,
+          "pf_den": 1373.0,
+          "pair_count": 10125.0,
+          "user_count": 1.0,
+          "user_day_count": 198.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8721435100548446,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8069919883466861,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.06515152170815852,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 10125.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 170.87461996438768,
+          "ps_prob_cnt": 198.0,
+          "pf_prob_sum": 148.82167808857284,
+          "pf_prob_cnt": 175.0,
+          "common_gap_sum": 0.5390529869259261,
+          "common_gap_cnt": 175.0,
+          "unit_count": 198.0,
+          "pair_count": 10125.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 7434.0,
+          "ps_den": 8549.0,
+          "pf_num": 1108.0,
+          "pf_den": 1373.0,
+          "pair_count": 9922.0,
+          "user_count": 1.0,
+          "user_day_count": 175.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8695753889343782,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8069919883466861,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.06258340058769218,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 9922.0
+        }
+      }
+    },
+    "Kubo2": {
+      "raw_long_term": {
+        "pooled": {
+          "ps_num": 27662.0,
+          "ps_den": 31130.0,
+          "pf_num": 3468.0,
+          "pf_den": 4253.0,
+          "pair_count": 35383.0,
+          "user_count": 1.0,
+          "user_day_count": 1729.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.888596209444266,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8154244063014343,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.07317180314283167,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 35383.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 1509.7915846176038,
+          "ps_prob_cnt": 1714.0,
+          "pf_prob_sum": 1033.2162568027288,
+          "pf_prob_cnt": 1170.0,
+          "common_gap_sum": -48.82424344357214,
+          "common_gap_cnt": 1155.0,
+          "unit_count": 1729.0,
+          "pair_count": 35383.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 23974.0,
+          "ps_den": 27382.0,
+          "pf_num": 3454.0,
+          "pf_den": 4234.0,
+          "pair_count": 31616.0,
+          "user_count": 1.0,
+          "user_day_count": 1155.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8755386750419983,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8157770429853566,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.059761632056641756,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 31616.0
+        }
+      },
+      "same_day_first_per_card": {
+        "pooled": {
+          "ps_num": 26191.0,
+          "ps_den": 29500.0,
+          "pf_num": 3280.0,
+          "pf_den": 4036.0,
+          "pair_count": 33536.0,
+          "user_count": 1.0,
+          "user_day_count": 1636.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8878305084745762,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8126858275520317,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.07514468092254456,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 33536.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 1428.5939798528775,
+          "ps_prob_cnt": 1624.0,
+          "pf_prob_sum": 958.3966359474169,
+          "pf_prob_cnt": 1090.0,
+          "common_gap_sum": -50.67305275315235,
+          "common_gap_cnt": 1078.0,
+          "unit_count": 1636.0,
+          "pair_count": 33536.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 22534.0,
+          "ps_den": 25789.0,
+          "pf_num": 3271.0,
+          "pf_den": 4020.0,
+          "pair_count": 29809.0,
+          "user_count": 1.0,
+          "user_day_count": 1078.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8737833960215596,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.813681592039801,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.060101803981758684,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 29809.0
+        }
+      }
+    },
+    "LMSherlock": {
+      "raw_long_term": {
+        "pooled": {
+          "ps_num": 23687.0,
+          "ps_den": 27002.0,
+          "pf_num": 3315.0,
+          "pf_den": 3882.0,
+          "pair_count": 30884.0,
+          "user_count": 1.0,
+          "user_day_count": 615.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8772313161988001,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8539412673879444,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.023290048810855724,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 30884.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 528.4385593109216,
+          "ps_prob_cnt": 613.0,
+          "pf_prob_sum": 484.38901889889956,
+          "pf_prob_cnt": 540.0,
+          "common_gap_sum": -28.890935778454104,
+          "common_gap_cnt": 538.0,
+          "unit_count": 615.0,
+          "pair_count": 30884.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 23074.0,
+          "ps_den": 26385.0,
+          "pf_num": 3314.0,
+          "pf_den": 3880.0,
+          "pair_count": 30265.0,
+          "user_count": 1.0,
+          "user_day_count": 538.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8745120333522834,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8541237113402061,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.020388322012077298,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 30265.0
+        }
+      },
+      "same_day_first_per_card": {
+        "pooled": {
+          "ps_num": 23138.0,
+          "ps_den": 26371.0,
+          "pf_num": 3233.0,
+          "pf_den": 3793.0,
+          "pair_count": 30164.0,
+          "user_count": 1.0,
+          "user_day_count": 606.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8774032080694703,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8523596098075402,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.025043598261930033,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 30164.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 521.4917550681002,
+          "ps_prob_cnt": 604.0,
+          "pf_prob_sum": 474.3336240098938,
+          "pf_prob_cnt": 529.0,
+          "common_gap_sum": -25.841868941793585,
+          "common_gap_cnt": 527.0,
+          "unit_count": 606.0,
+          "pair_count": 30164.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 22539.0,
+          "ps_den": 25767.0,
+          "pf_num": 3231.0,
+          "pf_den": 3791.0,
+          "pair_count": 29558.0,
+          "user_count": 1.0,
+          "user_day_count": 527.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8747234835254395,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8522817198628331,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.022441763662606418,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 29558.0
+        }
+      }
+    },
+    "Leee": {
+      "raw_long_term": {
+        "pooled": {
+          "ps_num": 153551.0,
+          "ps_den": 177415.0,
+          "pf_num": 23864.0,
+          "pf_den": 28635.0,
+          "pair_count": 206050.0,
+          "user_count": 1.0,
+          "user_day_count": 1395.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8654905165854071,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8333857167801642,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.032104799805242945,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 206050.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 1232.2352292629253,
+          "ps_prob_cnt": 1395.0,
+          "pf_prob_sum": 1194.5985192196727,
+          "pf_prob_cnt": 1354.0,
+          "common_gap_sum": -2.992835411292646,
+          "common_gap_cnt": 1354.0,
+          "unit_count": 1395.0,
+          "pair_count": 206050.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 152480.0,
+          "ps_den": 176339.0,
+          "pf_num": 23864.0,
+          "pf_den": 28635.0,
+          "pair_count": 204974.0,
+          "user_count": 1.0,
+          "user_day_count": 1354.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8646981098906085,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8333857167801642,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.031312393110444314,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 204974.0
+        }
+      },
+      "same_day_first_per_card": {
+        "pooled": {
+          "ps_num": 153776.0,
+          "ps_den": 175826.0,
+          "pf_num": 22078.0,
+          "pf_den": 26433.0,
+          "pair_count": 202259.0,
+          "user_count": 1.0,
+          "user_day_count": 1392.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8745919261087666,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.835243824007869,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.039348102100897564,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 202259.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 1237.4493202342587,
+          "ps_prob_cnt": 1392.0,
+          "pf_prob_sum": 1196.1513813451613,
+          "pf_prob_cnt": 1352.0,
+          "common_gap_sum": 1.7260732346228953,
+          "common_gap_cnt": 1352.0,
+          "unit_count": 1392.0,
+          "pair_count": 202259.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 152714.0,
+          "ps_den": 174759.0,
+          "pf_num": 22078.0,
+          "pf_den": 26433.0,
+          "pair_count": 201192.0,
+          "user_count": 1.0,
+          "user_day_count": 1352.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8738548515384044,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.835243824007869,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.03861102753053536,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 201192.0
+        }
+      }
+    },
+    "NoHeartPen": {
+      "raw_long_term": {
+        "pooled": {
+          "ps_num": 1045.0,
+          "ps_den": 1226.0,
+          "pf_num": 180.0,
+          "pf_den": 266.0,
+          "pair_count": 1492.0,
+          "user_count": 1.0,
+          "user_day_count": 121.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8523654159869495,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.6766917293233082,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.17567368666364125,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 1492.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 104.47128981922972,
+          "ps_prob_cnt": 121.0,
+          "pf_prob_sum": 50.864139053794226,
+          "pf_prob_cnt": 61.0,
+          "common_gap_sum": -2.8238016155168824,
+          "common_gap_cnt": 61.0,
+          "unit_count": 121.0,
+          "pair_count": 1492.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 651.0,
+          "ps_den": 822.0,
+          "pf_num": 180.0,
+          "pf_den": 266.0,
+          "pair_count": 1088.0,
+          "user_count": 1.0,
+          "user_day_count": 61.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.791970802919708,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.6766917293233082,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.11527907359639977,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 1088.0
+        }
+      },
+      "same_day_first_per_card": {
+        "pooled": {
+          "ps_num": 951.0,
+          "ps_den": 1125.0,
+          "pf_num": 163.0,
+          "pf_den": 246.0,
+          "pair_count": 1371.0,
+          "user_count": 1.0,
+          "user_day_count": 112.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8453333333333334,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.6626016260162602,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.18273170731707322,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 1371.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 93.53030946315253,
+          "ps_prob_cnt": 112.0,
+          "pf_prob_sum": 43.91186799152317,
+          "pf_prob_cnt": 54.0,
+          "common_gap_sum": -3.7648918617039544,
+          "common_gap_cnt": 54.0,
+          "unit_count": 112.0,
+          "pair_count": 1371.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 591.0,
+          "ps_den": 755.0,
+          "pf_num": 163.0,
+          "pf_den": 246.0,
+          "pair_count": 1001.0,
+          "user_count": 1.0,
+          "user_day_count": 54.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.7827814569536424,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.6626016260162602,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.12017983093738227,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 1001.0
+        }
+      }
+    },
+    "Shore3145": {
+      "raw_long_term": {
+        "pooled": {
+          "ps_num": 2276.0,
+          "ps_den": 2789.0,
+          "pf_num": 514.0,
+          "pf_den": 666.0,
+          "pair_count": 3455.0,
+          "user_count": 1.0,
+          "user_day_count": 133.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8160631050555754,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.7717717717717718,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.044291333283803636,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 3455.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 100.60519960574157,
+          "ps_prob_cnt": 128.0,
+          "pf_prob_sum": 85.49858595314984,
+          "pf_prob_cnt": 106.0,
+          "common_gap_sum": -3.893386347408274,
+          "common_gap_cnt": 101.0,
+          "unit_count": 133.0,
+          "pair_count": 3455.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 2143.0,
+          "ps_den": 2648.0,
+          "pf_num": 510.0,
+          "pf_den": 658.0,
+          "pair_count": 3306.0,
+          "user_count": 1.0,
+          "user_day_count": 101.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8092900302114804,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.7750759878419453,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.03421404236953507,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 3306.0
+        }
+      },
+      "same_day_first_per_card": {
+        "pooled": {
+          "ps_num": 2196.0,
+          "ps_den": 2691.0,
+          "pf_num": 482.0,
+          "pf_den": 625.0,
+          "pair_count": 3316.0,
+          "user_count": 1.0,
+          "user_day_count": 125.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8160535117056856,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.7712,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.044853511705685634,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 3316.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 96.03133095062779,
+          "ps_prob_cnt": 123.0,
+          "pf_prob_sum": 80.69597283913967,
+          "pf_prob_cnt": 100.0,
+          "common_gap_sum": -2.997975221845232,
+          "common_gap_cnt": 98.0,
+          "unit_count": 125.0,
+          "pair_count": 3316.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 2053.0,
+          "ps_den": 2541.0,
+          "pf_num": 480.0,
+          "pf_den": 622.0,
+          "pair_count": 3163.0,
+          "user_count": 1.0,
+          "user_day_count": 98.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8079496261314443,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.7717041800643086,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.036245446067135645,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 3163.0
+        }
+      }
+    },
+    "VSpade7": {
+      "raw_long_term": {
+        "pooled": {
+          "ps_num": 317.0,
+          "ps_den": 344.0,
+          "pf_num": 27.0,
+          "pf_den": 30.0,
+          "pair_count": 374.0,
+          "user_count": 1.0,
+          "user_day_count": 48.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.9215116279069767,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.9,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.021511627906976694,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 374.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 44.62378477378478,
+          "ps_prob_cnt": 48.0,
+          "pf_prob_sum": 17.133333333333333,
+          "pf_prob_cnt": 18.0,
+          "common_gap_sum": -1.849292149292149,
+          "common_gap_cnt": 18.0,
+          "unit_count": 48.0,
+          "pair_count": 374.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 156.0,
+          "ps_den": 180.0,
+          "pf_num": 27.0,
+          "pf_den": 30.0,
+          "pair_count": 210.0,
+          "user_count": 1.0,
+          "user_day_count": 18.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8666666666666667,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.9,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": -0.033333333333333326,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 210.0
+        }
+      },
+      "same_day_first_per_card": {
+        "pooled": {
+          "ps_num": 276.0,
+          "ps_den": 301.0,
+          "pf_num": 23.0,
+          "pf_den": 26.0,
+          "pair_count": 327.0,
+          "user_count": 1.0,
+          "user_day_count": 42.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.9169435215946844,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8846153846153846,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.032328136979299815,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 327.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 38.35478180823008,
+          "ps_prob_cnt": 42.0,
+          "pf_prob_sum": 13.133333333333333,
+          "pf_prob_cnt": 14.0,
+          "common_gap_sum": -1.8618848584365824,
+          "common_gap_cnt": 14.0,
+          "unit_count": 42.0,
+          "pair_count": 327.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 129.0,
+          "ps_den": 151.0,
+          "pf_num": 23.0,
+          "pf_den": 26.0,
+          "pair_count": 177.0,
+          "user_count": 1.0,
+          "user_day_count": 14.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8543046357615894,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8846153846153846,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": -0.030310748853795144,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 177.0
+        }
+      }
+    },
+    "Winston": {
+      "raw_long_term": {
+        "pooled": {
+          "ps_num": 4938.0,
+          "ps_den": 6575.0,
+          "pf_num": 1637.0,
+          "pf_den": 2282.0,
+          "pair_count": 8857.0,
+          "user_count": 1.0,
+          "user_day_count": 570.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.7510266159695818,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.717353198948291,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.033673417021290786,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 8857.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 384.87862015573967,
+          "ps_prob_cnt": 554.0,
+          "pf_prob_sum": 380.48673073994553,
+          "pf_prob_cnt": 484.0,
+          "common_gap_sum": -61.535552586647825,
+          "common_gap_cnt": 468.0,
+          "unit_count": 570.0,
+          "pair_count": 8857.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 4678.0,
+          "ps_den": 6289.0,
+          "pf_num": 1627.0,
+          "pf_den": 2259.0,
+          "pair_count": 8548.0,
+          "user_count": 1.0,
+          "user_day_count": 468.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.7438384480839562,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.7202301903497123,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.02360825773424391,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 8548.0
+        }
+      },
+      "same_day_first_per_card": {
+        "pooled": {
+          "ps_num": 4603.0,
+          "ps_den": 6174.0,
+          "pf_num": 1468.0,
+          "pf_den": 2054.0,
+          "pair_count": 8228.0,
+          "user_count": 1.0,
+          "user_day_count": 532.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.7455458373825721,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.7147030185004869,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.030842818882085177,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 8228.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 347.5554037713248,
+          "ps_prob_cnt": 523.0,
+          "pf_prob_sum": 344.4356332897371,
+          "pf_prob_cnt": 440.0,
+          "common_gap_sum": -66.97070570888856,
+          "common_gap_cnt": 431.0,
+          "unit_count": 532.0,
+          "pair_count": 8228.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 4333.0,
+          "ps_den": 5872.0,
+          "pf_num": 1462.0,
+          "pf_den": 2041.0,
+          "pair_count": 7913.0,
+          "user_count": 1.0,
+          "user_day_count": 431.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.7379087193460491,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.7163155316021558,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.021593187743893294,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 7913.0
+        }
+      }
+    },
+    "WolfSlytherin": {
+      "raw_long_term": {
+        "pooled": {
+          "ps_num": 5763.0,
+          "ps_den": 6843.0,
+          "pf_num": 1080.0,
+          "pf_den": 1319.0,
+          "pair_count": 8162.0,
+          "user_count": 1.0,
+          "user_day_count": 229.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8421744848750548,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8188021228203184,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.023372362054736362,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 8162.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 194.29774188169873,
+          "ps_prob_cnt": 229.0,
+          "pf_prob_sum": 161.8497274414861,
+          "pf_prob_cnt": 188.0,
+          "common_gap_sum": -7.985318893120695,
+          "common_gap_cnt": 188.0,
+          "unit_count": 229.0,
+          "pair_count": 8162.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 5606.0,
+          "ps_den": 6683.0,
+          "pf_num": 1080.0,
+          "pf_den": 1319.0,
+          "pair_count": 8002.0,
+          "user_count": 1.0,
+          "user_day_count": 188.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8388448301660931,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8188021228203184,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.020042707345774735,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 8002.0
+        }
+      },
+      "same_day_first_per_card": {
+        "pooled": {
+          "ps_num": 5581.0,
+          "ps_den": 6637.0,
+          "pf_num": 1056.0,
+          "pf_den": 1292.0,
+          "pair_count": 7929.0,
+          "user_count": 1.0,
+          "user_day_count": 220.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8408919692632213,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8173374613003096,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.023554507962911697,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 7929.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 184.69473323413166,
+          "ps_prob_cnt": 219.0,
+          "pf_prob_sum": 160.17221073304833,
+          "pf_prob_cnt": 186.0,
+          "common_gap_sum": -7.777477498916677,
+          "common_gap_cnt": 185.0,
+          "unit_count": 220.0,
+          "pair_count": 7929.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 5454.0,
+          "ps_den": 6507.0,
+          "pf_num": 1055.0,
+          "pf_den": 1291.0,
+          "pair_count": 7798.0,
+          "user_count": 1.0,
+          "user_day_count": 185.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8381742738589212,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8171959721146398,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.02097830174428139,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 7798.0
+        }
+      }
+    },
+    "anonym1": {
+      "raw_long_term": {
+        "pooled": {
+          "ps_num": 955.0,
+          "ps_den": 1010.0,
+          "pf_num": 55.0,
+          "pf_den": 60.0,
+          "pair_count": 1070.0,
+          "user_count": 1.0,
+          "user_day_count": 57.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.9455445544554455,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.9166666666666666,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.028877887788778867,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 1070.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 51.58402437836173,
+          "ps_prob_cnt": 56.0,
+          "pf_prob_sum": 30.7,
+          "pf_prob_cnt": 32.0,
+          "common_gap_sum": -2.0802613359239857,
+          "common_gap_cnt": 31.0,
+          "unit_count": 57.0,
+          "pair_count": 1070.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 687.0,
+          "ps_den": 740.0,
+          "pf_num": 54.0,
+          "pf_den": 59.0,
+          "pair_count": 799.0,
+          "user_count": 1.0,
+          "user_day_count": 31.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.9283783783783783,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.9152542372881356,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.013124141090242736,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 799.0
+        }
+      },
+      "same_day_first_per_card": {
+        "pooled": {
+          "ps_num": 895.0,
+          "ps_den": 947.0,
+          "pf_num": 50.0,
+          "pf_den": 55.0,
+          "pair_count": 1002.0,
+          "user_count": 1.0,
+          "user_day_count": 53.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.9450897571277719,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.9090909090909091,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.03599884803686282,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 1002.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 49.47398885412936,
+          "ps_prob_cnt": 53.0,
+          "pf_prob_sum": 28.7,
+          "pf_prob_cnt": 30.0,
+          "common_gap_sum": -2.1889741088336065,
+          "common_gap_cnt": 30.0,
+          "unit_count": 53.0,
+          "pair_count": 1002.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 643.0,
+          "ps_den": 694.0,
+          "pf_num": 50.0,
+          "pf_den": 55.0,
+          "pair_count": 749.0,
+          "user_count": 1.0,
+          "user_day_count": 30.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.9265129682997119,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.9090909090909091,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.017422059208802798,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 749.0
+        }
+      }
+    },
+    "anonym2": {
+      "raw_long_term": {
+        "pooled": {
+          "ps_num": 4570.0,
+          "ps_den": 5250.0,
+          "pf_num": 680.0,
+          "pf_den": 793.0,
+          "pair_count": 6043.0,
+          "user_count": 1.0,
+          "user_day_count": 281.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8704761904761905,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8575031525851198,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.012973037891070738,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 6043.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 237.76828184724403,
+          "ps_prob_cnt": 279.0,
+          "pf_prob_sum": 201.69383394383397,
+          "pf_prob_cnt": 226.0,
+          "common_gap_sum": -13.758885429923257,
+          "common_gap_cnt": 224.0,
+          "unit_count": 281.0,
+          "pair_count": 6043.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 4219.0,
+          "ps_den": 4893.0,
+          "pf_num": 678.0,
+          "pf_den": 790.0,
+          "pair_count": 5683.0,
+          "user_count": 1.0,
+          "user_day_count": 224.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8622521970161455,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8582278481012658,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.004024348914879683,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 5683.0
+        }
+      },
+      "same_day_first_per_card": {
+        "pooled": {
+          "ps_num": 4294.0,
+          "ps_den": 4945.0,
+          "pf_num": 641.0,
+          "pf_den": 747.0,
+          "pair_count": 5692.0,
+          "user_count": 1.0,
+          "user_day_count": 271.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8683518705763398,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.85809906291834,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.01025280765799974,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 5692.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 230.11885689841841,
+          "ps_prob_cnt": 267.0,
+          "pf_prob_sum": 194.21029526029525,
+          "pf_prob_cnt": 217.0,
+          "common_gap_sum": -11.91719593763441,
+          "common_gap_cnt": 213.0,
+          "unit_count": 271.0,
+          "pair_count": 5692.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 3952.0,
+          "ps_den": 4598.0,
+          "pf_num": 637.0,
+          "pf_den": 743.0,
+          "pair_count": 5341.0,
+          "user_count": 1.0,
+          "user_day_count": 213.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.859504132231405,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.857335127860027,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.002169004371378014,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 5341.0
+        }
+      }
+    },
+    "gracefeng": {
+      "raw_long_term": {
+        "pooled": {
+          "ps_num": 81.0,
+          "ps_den": 108.0,
+          "pf_num": 27.0,
+          "pf_den": 41.0,
+          "pair_count": 149.0,
+          "user_count": 1.0,
+          "user_day_count": 65.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.75,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.6585365853658537,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.09146341463414631,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 149.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 40.55,
+          "ps_prob_cnt": 56.0,
+          "pf_prob_sum": 20.25,
+          "pf_prob_cnt": 28.0,
+          "common_gap_sum": -5.366666666666667,
+          "common_gap_cnt": 19.0,
+          "unit_count": 65.0,
+          "pair_count": 149.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 26.0,
+          "ps_den": 45.0,
+          "pf_num": 21.0,
+          "pf_den": 30.0,
+          "pair_count": 75.0,
+          "user_count": 1.0,
+          "user_day_count": 19.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.5777777777777777,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.7,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": -0.12222222222222223,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 75.0
+        }
+      },
+      "same_day_first_per_card": {
+        "pooled": {
+          "ps_num": 41.0,
+          "ps_den": 54.0,
+          "pf_num": 17.0,
+          "pf_den": 22.0,
+          "pair_count": 76.0,
+          "user_count": 1.0,
+          "user_day_count": 33.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.7592592592592593,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.7727272727272727,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": -0.013468013468013407,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 76.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 20.416666666666664,
+          "ps_prob_cnt": 29.0,
+          "pf_prob_sum": 13.333333333333332,
+          "pf_prob_cnt": 16.0,
+          "common_gap_sum": -3.5833333333333335,
+          "common_gap_cnt": 12.0,
+          "unit_count": 33.0,
+          "pair_count": 76.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 15.0,
+          "ps_den": 25.0,
+          "pf_num": 13.0,
+          "pf_den": 16.0,
+          "pair_count": 41.0,
+          "user_count": 1.0,
+          "user_day_count": 12.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.6,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8125,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": -0.21250000000000002,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 41.0
+        }
+      }
+    },
+    "hugomarins": {
+      "raw_long_term": {
+        "pooled": {
+          "ps_num": 4453.0,
+          "ps_den": 4804.0,
+          "pf_num": 352.0,
+          "pf_den": 385.0,
+          "pair_count": 5189.0,
+          "user_count": 1.0,
+          "user_day_count": 124.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.9269358867610324,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.9142857142857143,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.012650172475318189,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 5189.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 115.23597916559297,
+          "ps_prob_cnt": 123.0,
+          "pf_prob_sum": 90.6204481792717,
+          "pf_prob_cnt": 96.0,
+          "common_gap_sum": -2.3844690136787277,
+          "common_gap_cnt": 95.0,
+          "unit_count": 124.0,
+          "pair_count": 5189.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 4045.0,
+          "ps_den": 4396.0,
+          "pf_num": 351.0,
+          "pf_den": 384.0,
+          "pair_count": 4780.0,
+          "user_count": 1.0,
+          "user_day_count": 95.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.9201546860782529,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.9140625,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.006092186078252904,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 4780.0
+        }
+      },
+      "same_day_first_per_card": {
+        "pooled": {
+          "ps_num": 4342.0,
+          "ps_den": 4685.0,
+          "pf_num": 346.0,
+          "pf_den": 377.0,
+          "pair_count": 5062.0,
+          "user_count": 1.0,
+          "user_day_count": 120.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.9267876200640341,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.9177718832891246,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.009015736774909522,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 5062.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 112.19278456977923,
+          "ps_prob_cnt": 120.0,
+          "pf_prob_sum": 89.8589402427638,
+          "pf_prob_cnt": 95.0,
+          "common_gap_sum": -2.6661556729845337,
+          "common_gap_cnt": 95.0,
+          "unit_count": 120.0,
+          "pair_count": 5062.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 3962.0,
+          "ps_den": 4305.0,
+          "pf_num": 346.0,
+          "pf_den": 377.0,
+          "pair_count": 4682.0,
+          "user_count": 1.0,
+          "user_day_count": 95.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.9203252032520325,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.9177718832891246,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.002553319962907863,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 4682.0
+        }
+      }
+    },
+    "nocturne2014": {
+      "raw_long_term": {
+        "pooled": {
+          "ps_num": 27829.0,
+          "ps_den": 31366.0,
+          "pf_num": 3537.0,
+          "pf_den": 4190.0,
+          "pair_count": 35556.0,
+          "user_count": 1.0,
+          "user_day_count": 339.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8872345852196646,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8441527446300716,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.04308184058959297,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 35556.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 298.2289860722965,
+          "ps_prob_cnt": 339.0,
+          "pf_prob_sum": 267.8357163189824,
+          "pf_prob_cnt": 308.0,
+          "common_gap_sum": -0.5954942916296366,
+          "common_gap_cnt": 308.0,
+          "unit_count": 339.0,
+          "pair_count": 35556.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 27349.0,
+          "ps_den": 30885.0,
+          "pf_num": 3537.0,
+          "pf_den": 4190.0,
+          "pair_count": 35075.0,
+          "user_count": 1.0,
+          "user_day_count": 308.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8855107657438887,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8441527446300716,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.041358021113817034,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 35075.0
+        }
+      },
+      "same_day_first_per_card": {
+        "pooled": {
+          "ps_num": 27473.0,
+          "ps_den": 30965.0,
+          "pf_num": 3471.0,
+          "pf_den": 4111.0,
+          "pair_count": 35076.0,
+          "user_count": 1.0,
+          "user_day_count": 335.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8872275149362183,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8443201167599125,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.042907398176305844,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 35076.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 293.850243547105,
+          "ps_prob_cnt": 334.0,
+          "pf_prob_sum": 260.23778110707826,
+          "pf_prob_cnt": 301.0,
+          "common_gap_sum": 0.6238260763903443,
+          "common_gap_cnt": 300.0,
+          "unit_count": 335.0,
+          "pair_count": 35076.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 26940.0,
+          "ps_den": 30431.0,
+          "pf_num": 3470.0,
+          "pf_den": 4110.0,
+          "pair_count": 34541.0,
+          "user_count": 1.0,
+          "user_day_count": 300.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8852814564095823,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8442822384428224,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.04099921796675998,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 34541.0
+        }
+      }
+    },
+    "palace": {
+      "raw_long_term": {
+        "pooled": {
+          "ps_num": 68562.0,
+          "ps_den": 72817.0,
+          "pf_num": 4255.0,
+          "pf_den": 5186.0,
+          "pair_count": 78003.0,
+          "user_count": 1.0,
+          "user_day_count": 800.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.9415658431410248,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.820478210566911,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.12108763257411381,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 78003.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 732.7205815845437,
+          "ps_prob_cnt": 799.0,
+          "pf_prob_sum": 577.6807317825626,
+          "pf_prob_cnt": 657.0,
+          "common_gap_sum": 13.913183135314428,
+          "common_gap_cnt": 656.0,
+          "unit_count": 800.0,
+          "pair_count": 78003.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 65585.0,
+          "ps_den": 69836.0,
+          "pf_num": 4254.0,
+          "pf_den": 5185.0,
+          "pair_count": 75021.0,
+          "user_count": 1.0,
+          "user_day_count": 656.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.9391288160833954,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.820443587270974,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.11868522881242138,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 75021.0
+        }
+      },
+      "same_day_first_per_card": {
+        "pooled": {
+          "ps_num": 67664.0,
+          "ps_den": 71819.0,
+          "pf_num": 4179.0,
+          "pf_den": 5094.0,
+          "pair_count": 76913.0,
+          "user_count": 1.0,
+          "user_day_count": 783.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.9421462287138501,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8203769140164899,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.12176931469736019,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 76913.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 713.8961087269442,
+          "ps_prob_cnt": 781.0,
+          "pf_prob_sum": 566.3491942490875,
+          "pf_prob_cnt": 645.0,
+          "common_gap_sum": 12.262823568765668,
+          "common_gap_cnt": 643.0,
+          "unit_count": 783.0,
+          "pair_count": 76913.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 64539.0,
+          "ps_den": 68689.0,
+          "pf_num": 4178.0,
+          "pf_den": 5092.0,
+          "pair_count": 73781.0,
+          "user_count": 1.0,
+          "user_day_count": 643.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.9395827570644499,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8205027494108406,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.11908000765360938,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 73781.0
+        }
+      }
+    },
+    "reallyyy": {
+      "raw_long_term": {
+        "pooled": {
+          "ps_num": 6874.0,
+          "ps_den": 7852.0,
+          "pf_num": 978.0,
+          "pf_den": 1131.0,
+          "pair_count": 8983.0,
+          "user_count": 1.0,
+          "user_day_count": 493.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8754457463066735,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8647214854111406,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.010724260895532911,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 8983.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 425.97658194251994,
+          "ps_prob_cnt": 490.0,
+          "pf_prob_sum": 341.22113164613165,
+          "pf_prob_cnt": 374.0,
+          "common_gap_sum": -26.098878707940713,
+          "common_gap_cnt": 371.0,
+          "unit_count": 493.0,
+          "pair_count": 8983.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 5986.0,
+          "ps_den": 6951.0,
+          "pf_num": 975.0,
+          "pf_den": 1128.0,
+          "pair_count": 8079.0,
+          "user_count": 1.0,
+          "user_day_count": 371.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8611710545245288,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8643617021276596,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": -0.003190647603130814,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 8079.0
+        }
+      },
+      "same_day_first_per_card": {
+        "pooled": {
+          "ps_num": 6484.0,
+          "ps_den": 7421.0,
+          "pf_num": 918.0,
+          "pf_den": 1061.0,
+          "pair_count": 8482.0,
+          "user_count": 1.0,
+          "user_day_count": 465.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8737366931680367,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8652214891611687,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.008515204006868005,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 8482.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 399.5414850758508,
+          "ps_prob_cnt": 463.0,
+          "pf_prob_sum": 330.4462481962482,
+          "pf_prob_cnt": 361.0,
+          "common_gap_sum": -28.894506710141044,
+          "common_gap_cnt": 359.0,
+          "unit_count": 465.0,
+          "pair_count": 8482.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 5620.0,
+          "ps_den": 6546.0,
+          "pf_num": 916.0,
+          "pf_den": 1057.0,
+          "pair_count": 7603.0,
+          "user_count": 1.0,
+          "user_day_count": 359.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8585395661472655,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8666035950804163,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": -0.008064028933150835,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 7603.0
+        }
+      }
+    },
+    "shisuu": {
+      "raw_long_term": {
+        "pooled": {
+          "ps_num": 129103.0,
+          "ps_den": 150250.0,
+          "pf_num": 21147.0,
+          "pf_den": 25169.0,
+          "pair_count": 175419.0,
+          "user_count": 1.0,
+          "user_day_count": 1012.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8592545757071547,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8402002463347769,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.019054329372377832,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 175419.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 855.4150868912368,
+          "ps_prob_cnt": 1011.0,
+          "pf_prob_sum": 844.7027588246096,
+          "pf_prob_cnt": 998.0,
+          "common_gap_sum": -0.8293386000394491,
+          "common_gap_cnt": 997.0,
+          "unit_count": 1012.0,
+          "pair_count": 175419.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 129013.0,
+          "ps_den": 150157.0,
+          "pf_num": 21146.0,
+          "pf_den": 25168.0,
+          "pair_count": 175325.0,
+          "user_count": 1.0,
+          "user_day_count": 997.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.8591873838715478,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8401938970120788,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.018993486859469,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 175325.0
+        }
+      },
+      "same_day_first_per_card": {
+        "pooled": {
+          "ps_num": 128318.0,
+          "ps_den": 148941.0,
+          "pf_num": 20747.0,
+          "pf_den": 24662.0,
+          "pair_count": 173603.0,
+          "user_count": 1.0,
+          "user_day_count": 1008.0
+        },
+        "equal_user_mean": {
+          "ps_prob_sum": 0.8615357759112668,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8412537507095937,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.020282025201673104,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 173603.0
+        },
+        "equal_user_day_mean": {
+          "ps_prob_sum": 855.3012530307776,
+          "ps_prob_cnt": 1007.0,
+          "pf_prob_sum": 841.3696549581133,
+          "pf_prob_cnt": 994.0,
+          "common_gap_sum": 1.9077885488548079,
+          "common_gap_cnt": 993.0,
+          "unit_count": 1008.0,
+          "pair_count": 173603.0
+        },
+        "pooled_on_common_support_user_days": {
+          "ps_num": 128235.0,
+          "ps_den": 148855.0,
+          "pf_num": 20746.0,
+          "pf_den": 24661.0,
+          "pair_count": 173516.0,
+          "user_count": 1.0,
+          "user_day_count": 993.0
+        },
+        "equal_user_mean_on_common_support_user_days": {
+          "ps_prob_sum": 0.861475932954889,
+          "ps_prob_cnt": 1.0,
+          "pf_prob_sum": 0.8412473135720369,
+          "pf_prob_cnt": 1.0,
+          "common_gap_sum": 0.020228619382852142,
+          "common_gap_cnt": 1.0,
+          "unit_count": 1.0,
+          "pair_count": 173516.0
+        }
+      }
+    }
+  }
+}

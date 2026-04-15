@@ -1,10 +1,13 @@
 # Why Does MOVING-AVG Look So Strong?
 
-Date: 2026-04-12
+Date: 2026-04-15
 
-This note audits the current benchmark and documents a reproducible explanation for the strong `MOVING-AVG` results in this repository. The goal is not to dismiss the result, but to explain exactly what signal `MOVING-AVG` is using and why the benchmark rewards it.
+This note audits the current benchmark and documents a reproducible explanation for the strong `MOVING-AVG` results in this repository. The goal is not to dismiss the result, but to explain what benchmark behavior `MOVING-AVG` is exploiting and what this benchmark is actually rewarding.
 
-The supporting script is [research/moving_avg_analysis.py](./moving_avg_analysis.py).
+Supporting files:
+
+- [moving_avg_analysis.py](./moving_avg_analysis.py)
+- [sm17_serial_dependence_averaging_levels.md](./sm17_serial_dependence_averaging_levels.md)
 
 ## Research Question
 
@@ -12,14 +15,16 @@ Why does `MOVING-AVG`, a model with no item-level memory state, rank near or abo
 
 ## Short Answer
 
-`MOVING-AVG` is not discovering a superior memory law. It is an intercept-only online logistic model that tracks the recent calibration level of the review stream. In this benchmark, that signal is unusually strong because:
+`MOVING-AVG` is not discovering a superior memory law. It is an intercept-only online logistic model that adapts to the recent calibration level of the ordered review stream. In this benchmark, that kind of low-capacity adaptation is unusually strong because:
 
 1. The task has a very high success-rate prior.
-2. Reviews are evaluated in global chronological order, so recent outcomes in the same user stream contain predictive information about the next outcome.
+2. Reviews are evaluated in global chronological order, so online stream-level baselines can exploit ordered-stream, non-item variation.
 3. The benchmark emphasizes calibration-oriented metrics, where low-variance baselines can look very strong.
-4. `MOVING-AVG` gets to use short-term stream-level drift, while the main memory models primarily model item state.
+4. `MOVING-AVG` has a strong small-data and warm-start advantage.
 
-The result is real, but it is mostly a result about short-term review-stream calibration under this protocol, not a result that `MOVING-AVG` has learned card memory better than `FSRS` or `SM17`.
+The result is real, but it is mostly a result about benchmark-time calibration under this protocol, not a result that `MOVING-AVG` has learned card memory better than `FSRS` or `SM17`.
+
+One important correction relative to the earlier draft: the old adjacent-outcome argument is not robust. On the same SuperMemo benchmark, pooled and weighted-per-user adjacent conditional gaps stay positive, but equal-user-day averaging removes and slightly reverses that gap. So the publication-safe claim is only that `MOVING-AVG` exploits some ordered-stream, non-item signal under this protocol; the identity of that signal is still unresolved.
 
 ## Protocol Audit
 
@@ -45,14 +50,15 @@ This is stochastic gradient descent on Bernoulli log loss with a single intercep
 
 After preprocessing, the benchmark sorts each user's reviews by `review_date`, then evaluates the probability assigned to each review outcome in that global chronological order.
 
-This means a model can benefit from time-correlated effects in the user stream such as:
+This means a model can benefit from ordered-stream effects such as:
 
 - temporary fatigue
 - changing deck mix
 - onboarding and warm-up phases
-- short-run drift in overall recall rate
+- session composition
+- short-run changes in overall recall level
 
-`MOVING-AVG` explicitly exploits this kind of signal. The present analysis does not causally disentangle fatigue, deck mix, session effects, and other time-correlated mechanisms; it only shows that the ordered review stream contains exploitable short-run calibration signal that item-state models do not explicitly track.
+`MOVING-AVG` explicitly exploits this kind of non-item variation. The present analysis does not causally disentangle fatigue, deck mix, session effects, day composition, and other time-correlated mechanisms. The strongest supported claim is narrower: the benchmark rewards online adaptation to ordered-stream variation that item-state models do not explicitly encode.
 
 ### A subtle protocol asymmetry
 
@@ -101,7 +107,7 @@ A simple causal trailing-window baseline nearly reproduces the published `MOVING
 | WIN-200 | 0.3772 | 0.0431 | 0.0694 |
 | WIN-50 | 0.3915 | 0.0422 | 0.0774 |
 
-`WIN-200` uses only the last 200 outcomes of the same user, causally. This is strong evidence that `MOVING-AVG` behaves like a recent-recall estimator on the ordered review stream. A user-bootstrap over collections does not cleanly separate the two: the weighted log-loss difference `MOVING-AVG - WIN-200` is `0.0013` with a 95% bootstrap CI of `[-0.0030, 0.0035]`.
+`WIN-200` uses only the last 200 outcomes of the same user, causally. This is strong evidence that `MOVING-AVG` behaves like a recent-recall estimator on the ordered review stream. It does **not** by itself identify whether the useful signal is positive serial dependence, day-level composition, or some other form of ordered-stream variation. A user-bootstrap over collections does not cleanly separate the two: the weighted log-loss difference `MOVING-AVG - WIN-200` is `0.0013` with a 95% bootstrap CI of `[-0.0030, 0.0035]`.
 
 ### 3. Part of the `AVG -> MOVING-AVG` gain is consistent with protocol, not magic
 
@@ -125,7 +131,7 @@ From the README tables:
 - weighted `AUC`: `MOVING-AVG = 0.597`, `FSRS-6 = 0.662`
 - unweighted `AUC`: `MOVING-AVG = 0.583`, `FSRS-6 = 0.635`
 
-So `MOVING-AVG` is much worse at separating recalled from forgotten reviews. Its strength is calibration under a high-prior, drifting environment.
+So `MOVING-AVG` is much worse at separating recalled from forgotten reviews. Its strength is calibration under a high-prior environment.
 
 This is also why a constant predictor can look strong under UM:
 
@@ -166,7 +172,7 @@ I tuned a simple logit-space mixture on the first half of each user stream and e
   - `FSRS-6`: `0.3897`
   - `Hybrid`: `0.3817`
 
-If `MOVING-AVG` were just a noisier version of `FSRS-6`, the hybrid would not improve this much. The improvement shows complementarity between the two predictors. A plausible hypothesis is that `MOVING-AVG` contributes a stream-level calibration signal that `FSRS-6` does not explicitly model, but this experiment does not uniquely identify that mechanism.
+If `MOVING-AVG` were just a noisier version of `FSRS-6`, the hybrid would not improve this much. The improvement shows complementarity between the two predictors. A plausible hypothesis is that `MOVING-AVG` contributes a stream-level calibration or composition signal that `FSRS-6` does not explicitly model, but this experiment does not uniquely identify that mechanism.
 
 ### 7. Small numeric gaps should be treated as descriptive, not settled
 
@@ -194,30 +200,62 @@ So one failure moves the predictor much more than one success. In a high-retenti
 - successes are common and weakly informative
 - failures are rare and informative
 
-This asymmetric responsiveness is exactly what helps `MOVING-AVG` track local degradations in stream-level calibration.
+This asymmetric responsiveness is one reason `MOVING-AVG` can react quickly when the ordered stream shifts away from the dominant success prior.
 
-### Why recent outcomes are predictive
+### Adjacent-outcome summaries are not robust to averaging level
 
-Across users, the script reports both weighted per-user and pooled one-step dependence:
+The earlier draft used pooled and weighted-per-user adjacent conditional probabilities to argue that recent outcomes were predictively useful. That argument does not survive the new averaging-level replication on the same SuperMemo benchmark.
 
-- weighted per-user `P(success | previous success) = 0.8747`
-- weighted per-user `P(success | previous failure) = 0.8340`
-- pooled `P(success | previous success) = 0.8761`
-- pooled `P(success | previous failure) = 0.8273`
-- weighted autocorrelation: lag-1 `= 0.0406`, lag-10 `= 0.0296`
+For `raw_long_term`:
 
-The short-lag dependence is modest but clearly positive. This does not identify the source of the dependence, but it is enough to explain why a recent-outcome tracker can be competitive.
+| Level | Gap |
+| --- | ---: |
+| `pooled` | `+0.048294` |
+| `equal_user_mean` | `+0.051205` |
+| `equal_user_day_mean` | `-0.007840` |
+| `equal_user_day_mean.common_support_gap` | `-0.029236` |
+
+For `same_day_first_per_card`:
+
+| Level | Gap |
+| --- | ---: |
+| `pooled` | `+0.051236` |
+| `equal_user_mean` | `+0.047493` |
+| `equal_user_day_mean` | `-0.008750` |
+| `equal_user_day_mean.common_support_gap` | `-0.029523` |
+
+Interpretation:
+
+- `pooled` and `equal_user_mean` answer high-activity-weighted questions
+- the decisive change happens when weighting is pushed down to `user-day`
+- under that correction, the apparent positive adjacent-outcome gap disappears and slightly reverses
+
+So the old section should not be read as evidence for a stable positive one-step predictive effect. At most, it showed that pooled and activity-weighted summaries can make adjacent outcomes look informative. That is not enough to identify the mechanism behind `MOVING-AVG`.
+
+### What the surviving evidence still supports
+
+Even after withdrawing the old adjacent-outcome argument, three facts still survive cleanly:
+
+1. `WIN-200` nearly reproduces `MOVING-AVG`, so recent ordered-stream history really is useful under this benchmark.
+2. `MOVING-AVG` wins early and then loses late, which is exactly what a low-capacity warm-start calibrator should do.
+3. `MOVING-AVG` and `FSRS-6` combine well, so the signal is at least partly complementary to item-memory modeling.
+
+The defensible interpretation is therefore narrower:
+
+- the benchmark rewards adaptation to ordered-stream, non-item variation
+- `MOVING-AVG` is an effective low-capacity estimator of that variation
+- but the identity of that variation remains unresolved
 
 ## Synthesis
 
 `MOVING-AVG` looks excellent because the benchmark is rewarding a different capability than "modeling card memory law":
 
 1. estimate a strong stream-level recall prior
-2. track short-term drift in that prior
+2. adapt quickly to ordered-stream, non-item variation under the evaluation protocol
 3. stay well calibrated under calibration-oriented metrics
 4. avoid overfitting in the low-data regime
 
-That combination is enough to be highly competitive on this benchmark.
+That combination is enough to be highly competitive on this benchmark. What has changed after the new replication is not the benchmark-performance fact; it is the level of confidence we should assign to one particular mechanism story.
 
 ## What This Does Not Mean
 
@@ -225,25 +263,30 @@ These results do **not** imply that `MOVING-AVG` is a better scheduler than `FSR
 
 This benchmark measures predictive accuracy of recall probability at review time. It does not directly measure the counterfactual quality of the intervals that each algorithm would choose under deployment.
 
-`MOVING-AVG` is a strong benchmark participant because it models short-term stream-level calibration drift. It is not a plausible standalone replacement for an item-level scheduler.
+These results also do **not** imply that the useful signal has been identified as positive adjacent-outcome dependence. The current evidence only supports a weaker statement: some ordered-stream, non-item information is useful under this protocol.
+
+`MOVING-AVG` is therefore a strong benchmark participant, not a plausible standalone replacement for an item-level scheduler.
 
 ## Practical Recommendations
 
 1. Add `ONLINE-AVG` and `WIN-k` baselines to the benchmark. Without them, `MOVING-AVG` looks more mysterious than it is.
 2. Report both weighted and unweighted metrics, but interpret them differently. Unweighted metrics exaggerate small-data advantages.
 3. Treat UM results with care. A constant baseline already does surprisingly well.
-4. Evaluate hybrids such as `FSRS + stream-level calibration bias`. The second-half mixture result suggests clear room for improvement.
-5. Separate two questions:
+4. If the benchmark reports adjacent-outcome or serial-dependence summaries, report them at multiple averaging levels, including `equal_user_day_mean` and common-support diagnostics.
+5. Evaluate hybrids such as `FSRS + stream-level calibration bias`. The second-half mixture result suggests clear room for improvement.
+6. Separate two questions:
    - item-memory modeling quality
-   - stream-level calibration quality
+   - stream-level calibration / composition quality
 
 ## Open Questions
 
-1. Would `FSRS-6 + online stream-level calibration bias` dominate both `FSRS-6` and `MOVING-AVG` on the full benchmark?
-2. How much of the temporal signal comes from session effects vs deck-mixture effects vs fatigue?
+1. What ordered-stream or protocol-level non-item variation actually explains the `WIN-200` and hybrid gains?
+2. Would user-day-controlled or day-demeaned dependence diagnostics recover any robust short-lag signal after the averaging correction?
 3. Would the ranking change under a deployment-faithful scheduling simulation instead of pure next-outcome prediction?
 4. How robust are these conclusions on additional collections outside the current 19-user sample?
 
 ## Bottom Line
 
-`MOVING-AVG` performs so well because the benchmark contains a strong, time-varying calibration signal in the ordered review stream, and `MOVING-AVG` is an extremely effective low-capacity estimator of that signal. Its success is mostly about **tracking short-term stream calibration under the current evaluation protocol**, not about discovering a better spaced-repetition memory model.
+`MOVING-AVG` performs so well because the benchmark rewards low-capacity adaptation to ordered-stream, non-item variation, and `MOVING-AVG` is an extremely effective estimator of that variation under the current protocol. Its success is mostly about benchmark-time stream-level calibration or composition effects, not about discovering a better spaced-repetition memory model.
+
+The earlier claim that this had been established by positive adjacent conditional dependence of recent outcomes should be treated as withdrawn.
