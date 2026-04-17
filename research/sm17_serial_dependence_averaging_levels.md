@@ -59,7 +59,7 @@ This is only an analog of the Anki `same_day_first_of_day_review` target because
 
 ### 1. `raw_long_term`
 
-| Level | `P(success | prev success)` | `P(success | prev fail)` | Gap |
+| Level | `P(success \| prev success)` | `P(success \| prev fail)` | Gap |
 | --- | ---: | ---: | ---: |
 | `pooled` | `0.876065` | `0.827770` | `0.048294` |
 | `equal_user_mean` | `0.859239` | `0.808034` | `0.051205` |
@@ -82,7 +82,7 @@ Shrinkage summary:
 
 ### 2. `same_day_first_per_card`
 
-| Level | `P(success | prev success)` | `P(success | prev fail)` | Gap |
+| Level | `P(success \| prev success)` | `P(success \| prev fail)` | Gap |
 | --- | ---: | ---: | ---: |
 | `pooled` | `0.879741` | `0.828505` | `0.051236` |
 | `equal_user_mean` | `0.859291` | `0.811798` | `0.047493` |
